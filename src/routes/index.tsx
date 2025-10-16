@@ -102,26 +102,23 @@ function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-base-100">
       {/* Navbar */}
-      <nav className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b border-base-300 bg-base-200/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-8 h-8 text-primary" />
-            <span className="text-2xl font-bold text-white">hilm.ai</span>
+            <span className="text-2xl font-bold">hilm.ai</span>
           </div>
           <div className="flex items-center gap-4">
             <Link
               to="/sign-in"
-              className="text-gray-300 hover:text-white transition-colors"
+              className="link link-hover"
             >
               Sign In
             </Link>
-            <Link
-              to="/sign-in"
-              className="btn btn-primary"
-            >
-              Get Started Free
+            <Link to="/sign-in">
+              <button className="btn btn-primary bg-green-500">Get Started Free</button>
             </Link>
           </div>
         </div>
@@ -135,7 +132,7 @@ function HomePage() {
             <span className="inline-block px-4 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium mb-6">
               AI-Powered Financial Insights
             </span>
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">
               Your Financial Dreams,{' '}
               <span className="text-primary">
                 Clarified
@@ -149,7 +146,7 @@ function HomePage() {
 
           {/* Interactive Chat Demo */}
           <div className="max-w-2xl mx-auto mb-12">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 shadow-2xl">
+            <div className="card bg-base-200 border border-base-300 p-6 shadow-2xl">
               <div className="space-y-4 mb-4">
                 {chatMessages.map((msg, idx) => (
                   <div
@@ -160,7 +157,7 @@ function HomePage() {
                       className={`max-w-[80%] px-4 py-3 rounded-lg ${
                         msg.type === 'user'
                           ? 'bg-primary text-primary-content'
-                          : 'bg-slate-700 text-gray-200'
+                          : 'bg-base-300 text-base-content'
                       }`}
                     >
                       {msg.text}
@@ -176,19 +173,18 @@ function HomePage() {
                   placeholder="Try: How much did I spend on Amazon?"
                   className="input input-bordered flex-1"
                 />
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={() => {}}>
                   Ask
                 </button>
               </div>
             </div>
           </div>
 
-          <Link
-            to="/sign-in"
-            className="btn btn-primary btn-lg"
-          >
-            Start Free Today
-            <ArrowRight className="w-5 h-5" />
+          <Link to="/sign-in">
+            <button className="btn btn-primary btn-lg">
+              Start Free Today
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </Link>
           <p className="text-gray-400 text-sm mt-4">
             No credit card required • Free forever plan available
@@ -197,10 +193,10 @@ function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 bg-slate-900/50">
+      <section className="py-20 px-6 bg-base-200/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
               How It Works
             </h2>
             <p className="text-xl text-gray-400">
@@ -212,10 +208,10 @@ function HomePage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="card bg-base-200 border border-base-300 hover:border-primary/50 transition-all duration-300"
+                className="card bg-base-200 border border-base-300 hover:border-primary/50 transition-all duration-300 p-8"
               >
                 <div className="mb-6">{feature.icon}</div>
-                <h3 className="text-2xl font-semibold text-white mb-3">
+                <h3 className="text-2xl font-semibold mb-3">
                   {feature.title}
                 </h3>
                 <p className="text-gray-400 leading-relaxed">
@@ -240,7 +236,7 @@ function HomePage() {
                   {item.step}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                  <h3 className="text-2xl font-bold mb-2">
                     {item.title}
                   </h3>
                   <p className="text-gray-400 text-lg">{item.description}</p>
@@ -252,10 +248,10 @@ function HomePage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 px-6 bg-slate-900/50">
+      <section className="py-20 px-6 bg-base-200/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Simple, Transparent Pricing
             </h2>
             <p className="text-xl text-gray-400">
@@ -278,11 +274,11 @@ function HomePage() {
                     Most Popular
                   </span>
                 )}
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <h3 className="text-2xl font-bold mb-2">
                   {plan.name}
                 </h3>
                 <div className="mb-4">
-                  <span className="text-5xl font-bold text-white">
+                  <span className="text-5xl font-bold">
                     {plan.price}
                   </span>
                   <span className="text-gray-400 ml-2">{plan.period}</span>
@@ -298,15 +294,16 @@ function HomePage() {
                   ))}
                 </ul>
 
-                <Link
-                  to="/sign-in"
-                  className={`btn w-full ${
-                    plan.highlighted
-                      ? 'btn-primary'
-                      : 'btn-neutral'
-                  }`}
-                >
-                  {plan.cta}
+                <Link to="/sign-in">
+                  <button
+                    className={`btn w-full ${
+                      plan.highlighted
+                        ? 'btn-primary'
+                        : 'btn-neutral'
+                    }`}
+                  >
+                    {plan.cta}
+                  </button>
                 </Link>
               </div>
             ))}
@@ -323,18 +320,17 @@ function HomePage() {
           <p className="text-xl text-gray-400 mb-8">
             Join thousands who have gained clarity on their finances with AI
           </p>
-          <Link
-            to="/sign-in"
-            className="btn btn-primary btn-lg"
-          >
-            Get Started Free
-            <ArrowRight className="w-5 h-5" />
+          <Link to="/sign-in">
+            <button className="btn btn-primary btn-lg">
+              Get Started Free
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-700 py-12 px-6 bg-slate-900/50">
+      <footer className="border-t border-base-300 py-12 px-6 bg-base-200/50">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -408,7 +404,7 @@ function HomePage() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-700 pt-8 text-center text-gray-400 text-sm">
+          <div className="border-t border-base-300 pt-8 text-center text-gray-400 text-sm">
             © 2025 hilm.ai. All rights reserved.
           </div>
         </div>
