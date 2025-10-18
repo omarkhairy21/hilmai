@@ -17,6 +17,8 @@ Edit `.env` and add your tokens:
 ```bash
 OPENAI_API_KEY=your_openai_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 **Get a Telegram Bot Token:**
@@ -24,6 +26,9 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 2. Send `/newbot` command
 3. Follow the instructions to create your bot
 4. Copy the token and add it to `.env`
+
+**Setup Supabase Database:**
+See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed instructions
 
 ### 3. Run the Bot
 
@@ -40,19 +45,22 @@ npm run bot
 ```
 agent/
 ├── src/
-│   ├── bot.ts                           # Telegram bot entry point
+│   ├── bot.ts                            # Telegram bot entry point
+│   ├── lib/
+│   │   ├── supabase.ts                   # Supabase client
+│   │   └── database.types.ts             # Database TypeScript types
 │   └── mastra/
 │       ├── index.ts                      # Mastra configuration
 │       ├── agents/
-│       │   ├── transaction-extractor-agent.ts   # Transaction NLU agent
-│       │   └── weather-agent.ts          # Example weather agent
-│       ├── tools/
-│       │   ├── extract-transaction-tool.ts      # Transaction extraction tool
-│       │   └── weather-tool.ts           # Example weather tool
-│       └── workflows/
-│           └── weather-workflow.ts       # Example workflow
+│       │   └── transaction-extractor-agent.ts   # Transaction NLU agent
+│       └── tools/
+│           ├── extract-transaction-tool.ts      # Transaction extraction
+│           └── save-transaction-tool.ts         # Save to database
+├── supabase/
+│   └── schema.sql                        # Database schema
 ├── .env                                  # Environment variables
 ├── package.json
+├── SUPABASE_SETUP.md                     # Supabase setup guide
 └── tsconfig.json
 ```
 
@@ -63,14 +71,17 @@ agent/
 - ✅ Smart categorization
 - ✅ OpenAI GPT-4o integration
 - ✅ Telegram bot interface
+- ✅ Supabase database storage
+- ✅ User management
+- ✅ Transaction history
 
 ### Coming Soon
 - 📸 Receipt OCR scanning
 - 🎤 Voice message transcription
-- 💾 Database storage (Supabase)
-- 📊 Spending insights
+- 📊 Spending insights & analytics
 - 🔔 Budget alerts
 - 🔍 Semantic search (RAG)
+- 📈 Monthly reports
 
 ## Commands
 

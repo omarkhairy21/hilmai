@@ -40,9 +40,12 @@ bot.onText(/\/help/, async (msg) => {
 });
 
 // Handle text messages
-bot.on('message', async (msg) => {
+bot.on('message', async (msg, metadata) => {
   const chatId = msg.chat.id;
   const text = msg.text;
+  const fromUser = msg.from;
+  console.log('fromUser', fromUser);
+  const messageType = metadata?.type;
 
   // Ignore commands
   if (!text || text.startsWith('/')) {
@@ -61,11 +64,23 @@ bot.on('message', async (msg) => {
       return;
     }
 
-    const result = await agent.generate(text, {
-      onStepFinish: (step) => {
-        console.log('Step finished:', step);
-      },
-    });
+    // Gather user information
+    const userInfo = {
+      chatId,
+      username: msg.from?.username || '',
+      firstName: msg.from?.first_name || '',
+      lastName: msg.from?.last_name || '',
+    };
+
+    const result = await agent.generate(
+      `${text}\n\n[User Info: Chat ID: ${userInfo.chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName} ${userInfo.lastName}]`,
+      {
+        onStepFinish: (step) => {
+          console.log('Step finished:', step);
+        },
+        resourceId: chatId.toString(),
+      }
+    );
 
     // Send response
     await bot.sendMessage(

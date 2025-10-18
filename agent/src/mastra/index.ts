@@ -13,7 +13,7 @@ export const mastra = new Mastra({
   }),
   logger: new PinoLogger({
     name: 'Hilm.ai',
-    level: 'info',
+    level: 'debug',
   }),
   telemetry: {
     // Telemetry is deprecated and will be removed in the Nov 4th release
