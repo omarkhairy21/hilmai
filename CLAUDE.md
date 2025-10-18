@@ -2,474 +2,652 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Development Commands
+## Project Overview
 
-### Core Development
+hilm.ai is an AI-powered financial management platform, currently consisting of:
+- **Astro waitlist landing page** (production)
+- **Telegram bot** (in development) using Mastra.ai framework
 
-- `npm run dev` - Start development server (Vite on port 3000)
-- `npm run build` - Build production bundle
-- `npm run serve` - Preview production build locally
-- `npm run deploy` - Deploy to Cloudflare Workers
+## Project Structure
 
-### Testing
-
-- `npm test` - Run all tests with Vitest
-
-### Code Quality & Linting
-
-- `npm run lint` - Run ESLint on entire codebase
-- `npm run format` - Run Prettier formatter
-- `npm run check` - Format and fix lint errors (Prettier + ESLint --fix)
-- `npx eslint <file-path>` - Run ESLint on specific file
-- `npx eslint <file-path> --fix` - Auto-fix ESLint errors where possible
-
-### Database Operations
-
-- `npm run db:generate` - Generate Drizzle migrations
-- `npm run db:migrate:local` - Apply migrations to local D1 database
-- `npm run db:migrate:prod` - Apply migrations to production D1 database
-- `npm run db:studio` - Open Drizzle Studio for local database inspection
-- `npm run db:studio:prod` - Open Drizzle Studio for production database
-
-## Architecture Overview
-
-### TanStack Start v1.132+ Architecture
-
-This project uses **TanStack Start v1.132** which has significant differences from v1.120:
-
-**Key Changes:**
-- Uses **Vite** instead of Vinxi as build tool
-- Different routing patterns (simpler, more consistent)
-- New file structure conventions
-- Improved TypeScript support
-- Better Cloudflare Workers integration
-
-**Critical Files:**
-- `vite.config.ts` - Vite + TanStack Router + Cloudflare plugin configuration
-- `src/routes/__root.tsx` - Root shell component (not just a route)
-- `app.config.ts` - TanStack Start application config (if present)
-
-### Routing in v1.132
-
-**File-Based Routing:**
-- `src/routes/index.tsx` → `/`
-- `src/routes/about.tsx` → `/about`
-- `src/routes/posts/[id].tsx` → `/posts/:id`
-- `src/routes/__root.tsx` → Shell component (wraps all routes)
-
-**Route Export Pattern:**
-```typescript
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/about')({
-  component: AboutPage,
-})
-
-function AboutPage() {
-  return <div>About</div>
-}
+```
+hilm.ai/
+├── .claude/          # Claude Code configuration
+├── .vscode/          # VS Code settings
+├── web/              # Astro website (waitlist landing page)
+│   ├── src/
+│   │   ├── components/    # Astro components (.astro)
+│   │   ├── layouts/       # Base layouts
+│   │   ├── pages/         # File-based routing
+│   │   ├── content/       # Content collections (blog, pages)
+│   │   └── styles/        # Global styles + Tailwind
+│   ├── public/            # Static assets
+│   ├── astro.config.mjs   # Astro configuration
+│   └── package.json
+├── CLAUDE.md              # This file
+├── product-roadmap.md     # Telegram bot roadmap
+└── README.md
 ```
 
-**API Routes:**
-```typescript
-import { createAPIFileRoute } from '@tanstack/react-router'
+---
 
-export const APIRoute = createAPIFileRoute('/api/upload')({
-  GET: async ({ request }) => {
-    return Response.json({ message: 'Hello' })
-  },
-  POST: async ({ request }) => {
-    // Handle POST
-  },
-})
+## Astro Website Development
+
+### Development Commands
+
+Run all commands from the `web/` directory:
+
+```bash
+cd web
+
+# Development
+npm install           # Install dependencies
+npm run dev          # Start dev server (localhost:4321)
+npm run build        # Build for production
+npm run preview      # Preview production build
+
+# Astro CLI
+npm run astro        # Run Astro CLI commands
 ```
 
-### Root Component Pattern (v1.132)
+### Project Architecture
 
-The `__root.tsx` file uses `shell
+This is an **Astro v5** static site with:
+- **Cloudflare Pages** deployment target
+- **Tailwind CSS v4** via Vite plugin
+- **Content Collections** for blog and pages
+- **TypeScript** for type safety
 
-Component` instead of regular component:
+### File-Based Routing
 
-```typescript
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+Astro uses file-based routing in `src/pages/`:
 
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'hilm.ai' },
-    ],
-    links: [{ rel: 'stylesheet', href: appCss }],
-  }),
-  shellComponent: RootDocument,
-})
-
-function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-    <html>
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  )
-}
 ```
-
-### Cloudflare Workers Integration
-
-**Vite Config with Cloudflare:**
-```typescript
-import { cloudflare } from '@cloudflare/vite-plugin'
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  plugins: [
-    cloudflare({
-      // Cloudflare-specific config
-    }),
-  ],
-})
-```
-
-**Accessing Cloudflare Bindings:**
-```typescript
-// In API routes
-export const APIRoute = createAPIFileRoute('/api/data')({
-  GET: async ({ request, context }) => {
-    // Access D1 database
-    const db = context.cloudflare.env.DB
-
-    // Use bindings
-    return Response.json({ success: true })
-  },
-})
-```
-
-## Key Development Patterns
-
-### Database Access Pattern
-
-**Always use Cloudflare context to access D1:**
-
-```typescript
-// ✅ Correct - Access via context
-export const APIRoute = createAPIFileRoute('/api/data')({
-  GET: async ({ context }) => {
-    const db = context.cloudflare.env.DB
-    const drizzle = createDB(db)
-    return drizzle.select().from(users)
-  },
-})
-
-// ❌ Wrong - No static connections
-const staticDB = createDB(someGlobal)
+src/pages/
+├── index.astro           → /
+├── blog/
+│   ├── index.astro       → /blog
+│   └── [slug].astro      → /blog/post-slug
+└── 404.astro             → 404 page
 ```
 
 ### Component Patterns
 
-**Page Components:**
-```typescript
-import { createFileRoute } from '@tanstack/react-router'
+**Page Component:**
+```astro
+---
+// Frontmatter (JavaScript/TypeScript)
+import Layout from '../layouts/Layout.astro';
 
-export const Route = createFileRoute('/dashboard')({
-  component: Dashboard,
-})
-
-function Dashboard() {
-  return <div>Dashboard</div>
+interface Props {
+  title: string;
 }
+
+const { title } = Astro.props;
+---
+
+<Layout title={title}>
+  <h1>{title}</h1>
+  <!-- HTML template -->
+</Layout>
 ```
 
-**Layout Components:**
-```typescript
-import { createFileRoute, Outlet } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/_layout')({
-  component: Layout,
-})
-
-function Layout() {
-  return (
-    <div>
-      <nav>Navigation</nav>
-      <Outlet />
-    </div>
-  )
+**Reusable Component:**
+```astro
+---
+// src/components/Hero.astro
+interface Props {
+  heading: string;
+  description?: string;
 }
+
+const { heading, description } = Astro.props;
+---
+
+<section class="hero">
+  <h1>{heading}</h1>
+  {description && <p>{description}</p>}
+</section>
+
+<style>
+  .hero {
+    padding: 2rem;
+  }
+</style>
 ```
 
-### Links and Navigation
+### Content Collections
 
-**Use TanStack Router Link:**
-```typescript
-import { Link } from '@tanstack/react-router'
-
-<Link to="/dashboard">Dashboard</Link>
-<Link to="/posts/$id" params={{ id: '123' }}>Post</Link>
-```
-
-## API Route Patterns
-
-**CRITICAL**: Always use `APIRoute` (not `Route`) for API routes:
-
-```typescript
-// ✅ Correct
-export const APIRoute = createAPIFileRoute('/api/upload')({
-  POST: async ({ request }) => {
-    // Implementation
-  },
-})
-
-// ❌ Wrong - Will cause 404 errors
-export const Route = createAPIFileRoute('/api/upload')({
-  // This won't work!
-})
-```
-
-### API Route Structure
+Located in `src/content/`:
 
 ```typescript
-import { createAPIFileRoute } from '@tanstack/react-router'
+// src/content/blog/my-post.md
+---
+title: "My Blog Post"
+description: "Post description"
+pubDate: 2025-01-15
+author: "Author Name"
+tags: ["tag1", "tag2"]
+---
 
-export const APIRoute = createAPIFileRoute('/api/statements')({
-  // GET handler
-  GET: async ({ request, context }) => {
-    const db = context.cloudflare.env.DB
-    // Fetch statements
-    return Response.json({ statements })
-  },
-
-  // POST handler
-  POST: async ({ request, context }) => {
-    const body = await request.json()
-    // Create statement
-    return Response.json({ success: true })
-  },
-})
+Post content here...
 ```
 
-## Testing Strategy
+Query collections:
+```astro
+---
+import { getCollection } from 'astro:content';
 
-- **Unit Tests**: Vitest with React Testing Library
-- **Test Location**: `src/__tests__/` or co-located `.test.tsx` files
-- **Run Tests**: `npm test`
-
-## Environment Configuration
-
-### Environment Variables
-
-**Frontend (Vite - VITE\_ prefix):**
-```typescript
-// Exposed to client
-import.meta.env.VITE_APP_URL
-import.meta.env.VITE_STRIPE_KEY
+const posts = await getCollection('blog');
+---
 ```
 
-**Backend (Cloudflare Workers):**
-```typescript
-// Accessed via context
-context.cloudflare.env.BETTER_AUTH_SECRET
-context.cloudflare.env.DATABASE_URL
+### Layouts
+
+Base layout pattern:
+```astro
+---
+// src/layouts/Layout.astro
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
 ```
 
-## Code Quality Standards
+---
 
-### ESLint Requirements
+## Tailwind CSS v4
 
-**After ANY code changes, MUST run:**
+This project uses **Tailwind CSS v4** with the new Vite plugin:
 
-1. `npm run check` - Auto-format and fix lint errors
-2. OR manually: `npx eslint <file> --fix`
-3. Verify: `npm run lint`
-4. Run tests: `npm test`
+### Configuration
 
-**Common Issues:**
-- Unused variables → Remove or prefix with `_`
-- Missing types → Add TypeScript interfaces
-- Non-null assertions → Use optional chaining `?.`
+**astro.config.mjs:**
+```javascript
+import { defineConfig } from 'astro/config';
+import tailwindcss from '@tailwindcss/vite';
 
-### TypeScript Standards
+export default defineConfig({
+  vite: {
+    plugins: [tailwindcss()]
+  }
+});
+```
 
-- Use proper interfaces for props
-- Avoid `any` types
-- Use optional chaining (`?.`) not non-null assertions (`!`)
-- Import types: `import { type MyType } from './types'`
-
-## Tailwind CSS (v4.0+)
-
-This project uses **Tailwind CSS v4** with:
-- New Vite plugin: `@tailwindcss/vite`
-- CSS imports in `src/styles.css`
-- No separate config file needed (CSS-first configuration)
-
+**src/styles/global.css:**
 ```css
-/* src/styles.css */
 @import "tailwindcss";
 
 @theme {
-  /* Custom theme values */
+  --color-lime: #d4ff2a;
+  --font-sans: system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  /* Base styles */
 }
 ```
 
-## DaisyUI Integration (When Added)
+### Usage
 
-**Install DaisyUI:**
+Use Tailwind utility classes directly in templates:
+```astro
+<div class="bg-black text-white p-8 rounded-lg">
+  <h1 class="text-4xl font-bold">Hello</h1>
+</div>
+```
+
+---
+
+## Deployment
+
+### Cloudflare Pages
+
+**Build settings:**
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Root directory: `web`
+
+**Deploy via Wrangler:**
 ```bash
-npm install daisyui
+cd web
+npm run build
+npx wrangler pages deploy dist
 ```
 
-**Configure in tailwind.config.js:**
-```javascript
-export default {
-  plugins: [require('daisyui')],
-  daisyui: {
-    themes: ['light', 'dark'],
-  },
-}
-```
+**Deploy via Cloudflare Dashboard:**
+1. Connect GitHub repository
+2. Set build command: `npm run build`
+3. Set build output: `dist`
+4. Set root directory: `web`
 
-**Common Components:**
-```tsx
-<button className="btn btn-primary">Button</button>
-<div className="card">Card</div>
-<div className="alert alert-success">Alert</div>
-```
+---
 
-## n8n Integration Pattern
+## Mastra.ai Integration (Telegram Bot)
 
-For MVP, **ALL AI features are handled by n8n webhooks**:
+The Telegram bot (in development) uses **Mastra.ai** - a TypeScript-first agent framework.
 
-❌ **DO NOT add these to dependencies:**
-- `openai` SDK
-- `pdf-parse`
-- `papaparse`
-- `langchain`
-- Vector database libraries
+### Technology Stack
 
-✅ **DO use simple fetch calls:**
-```typescript
-const response = await fetch(N8N_WEBHOOK_URL, {
-  method: 'POST',
-  body: formData,
-})
-```
+- **Framework:** Mastra.ai
+- **Bot API:** node-telegram-bot-api
+- **LLM:** OpenAI GPT-4o
+- **Database:** Supabase (PostgreSQL + pgvector)
+- **Vector DB:** Pinecone
+- **Language:** TypeScript
 
-## File Structure Best Practices
+### Mastra.ai Architecture
+
+**Core Concepts:**
+- **Agents**: AI agents with specific roles (transaction extraction, insights, etc.)
+- **Tools**: Functions agents can call (OCR, voice transcription, database queries)
+- **Workflows**: Multi-step automated processes (budget alerts, summaries)
+- **RAG**: Retrieval-Augmented Generation for semantic search
+- **Memory**: Conversation context and history
+
+### Project Structure (When Implemented)
 
 ```
 src/
-├── routes/              # File-based routing
-│   ├── __root.tsx       # Shell component
-│   ├── index.tsx        # Homepage (/)
-│   ├── sign-in.tsx      # Auth page
-│   └── api/             # API routes
-│       └── upload.ts    # API endpoints
-├── components/          # Reusable components
-├── lib/                 # Utilities & helpers
-├── db/                  # Database schema
-├── styles.css           # Tailwind imports
-└── utils/               # Helper functions
+├── mastra/
+│   ├── index.ts                      # Mastra instance
+│   ├── agents/
+│   │   ├── transaction-extractor.ts  # NLU for expense logging
+│   │   ├── finance-insights.ts       # Query answering agent
+│   │   └── budget-advisor.ts         # Budget recommendations
+│   ├── tools/
+│   │   ├── extract-transaction.ts    # Parse text transactions
+│   │   ├── extract-receipt.ts        # OCR with GPT-4o Vision
+│   │   ├── transcribe-voice.ts       # Whisper API
+│   │   ├── search-transactions.ts    # RAG semantic search
+│   │   └── check-budget.ts           # Budget calculations
+│   ├── workflows/
+│   │   ├── process-transaction.ts    # Transaction pipeline
+│   │   ├── budget-alert.ts           # Daily budget checks
+│   │   └── weekly-summary.ts         # Weekly reports
+│   └── rag/
+│       ├── vector-store.ts           # Pinecone config
+│       └── embeddings.ts             # Embedding generation
+├── telegram/
+│   ├── bot.ts                        # Bot initialization
+│   └── handlers/                     # Message handlers
+└── database/
+    ├── supabase.ts                   # Supabase client
+    └── repositories/                 # Data access layer
 ```
+
+### Mastra.ai Configuration Pattern
+
+```typescript
+import { Mastra } from '@mastra/core';
+
+export const mastra = new Mastra({
+  name: 'hilm-ai',
+
+  agents: {
+    transactionExtractor: './agents/transaction-extractor',
+    financeInsights: './agents/finance-insights',
+  },
+
+  workflows: {
+    processTransaction: './workflows/process-transaction',
+    budgetAlert: './workflows/budget-alert',
+  },
+
+  tools: {
+    extractTransaction: './tools/extract-transaction',
+    searchTransactions: './tools/search-transactions',
+  },
+
+  rag: {
+    vectorStore: {
+      provider: 'pinecone',
+      config: {
+        apiKey: process.env.PINECONE_API_KEY,
+        index: 'hilm-transactions',
+      },
+    },
+    embeddings: {
+      provider: 'openai',
+      model: 'text-embedding-3-large',
+    },
+  },
+
+  memory: {
+    provider: 'supabase',
+    config: {
+      url: process.env.SUPABASE_URL,
+      key: process.env.SUPABASE_KEY,
+    },
+  },
+
+  models: {
+    default: {
+      provider: 'openai',
+      name: 'gpt-4o',
+    },
+  },
+});
+```
+
+### Agent Pattern
+
+```typescript
+import { Agent } from '@mastra/core';
+import { extractTransactionTool } from '../tools/extract-transaction';
+
+export const transactionExtractorAgent = new Agent({
+  name: 'transaction-extractor',
+  instructions: 'Extract transaction details from natural language.',
+  tools: [extractTransactionTool],
+  model: {
+    provider: 'openai',
+    name: 'gpt-4o',
+  },
+});
+```
+
+### Tool Pattern
+
+```typescript
+import { createTool } from '@mastra/core';
+import { z } from 'zod';
+
+export const extractTransactionTool = createTool({
+  id: 'extract-transaction',
+  description: 'Extract transaction details from text',
+  inputSchema: z.object({
+    text: z.string(),
+  }),
+  outputSchema: z.object({
+    amount: z.number(),
+    merchant: z.string(),
+    category: z.string(),
+    date: z.string(),
+  }),
+  execute: async ({ context, input }) => {
+    // Implementation
+  },
+});
+```
+
+### Workflow Pattern
+
+```typescript
+import { Workflow } from '@mastra/core';
+
+export const budgetAlertWorkflow = new Workflow({
+  name: 'budget-alert',
+  trigger: {
+    type: 'schedule',
+    schedule: '0 20 * * *', // Daily at 8 PM
+  },
+  steps: [
+    {
+      id: 'check-budgets',
+      tool: 'check-budget',
+    },
+    {
+      id: 'send-alerts',
+      action: async ({ context, previousStepOutput }) => {
+        // Send Telegram messages
+      },
+    },
+  ],
+});
+```
+
+### Important: NO AI Libraries in Web Project
+
+For the **Astro website**, do NOT add:
+- ❌ `openai` SDK
+- ❌ `pdf-parse`
+- ❌ `papaparse`
+- ❌ `langchain`
+- ❌ Vector database libraries
+
+All AI features are handled by the **Mastra.ai Telegram bot** (separate project).
+
+---
+
+## Code Quality Standards
+
+### ESLint & Prettier
+
+**After ANY code changes, MUST run:**
+
+```bash
+npm run check      # Format + auto-fix lint errors
+# OR
+npx eslint <file> --fix
+```
+
+**Verify:**
+```bash
+npm run lint       # Check for errors
+npm test           # Run tests (if applicable)
+```
+
+### TypeScript Standards
+
+- ✅ Use proper interfaces for props
+- ✅ Avoid `any` types
+- ✅ Use optional chaining (`?.`) not non-null assertions (`!`)
+- ✅ Import types: `import { type MyType } from './types'`
+
+### Common ESLint Issues
+
+- Unused variables → Remove or prefix with `_`
+- Missing types → Add TypeScript interfaces
+- Non-null assertions → Use optional chaining
+
+---
+
+## Git Workflow & Commits
+
+### Committing Changes
+
+Only create commits when **explicitly requested** by the user.
+
+**Git Safety Protocol:**
+- ✅ NEVER update git config
+- ✅ NEVER run destructive commands (force push, hard reset)
+- ✅ NEVER skip hooks (--no-verify)
+- ✅ NEVER force push to main/master
+- ✅ NEVER commit unless user explicitly asks
+
+**Commit Process:**
+1. Run `git status` and `git diff` in parallel
+2. Analyze changes and draft commit message
+3. Add relevant files to staging
+4. Create commit with message ending in:
+   ```
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   ```
+
+**Commit Message Format:**
+```bash
+git commit -m "$(cat <<'EOF'
+Add waitlist landing page with Astro
+
+Implemented hero, features, FAQ, and footer sections.
+Uses Tailwind CSS v4 and Cloudflare Pages deployment.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+### Pull Requests
+
+**Using GitHub CLI:**
+```bash
+# Check current state
+git status
+git diff main...HEAD
+
+# Create PR
+gh pr create --title "PR Title" --body "$(cat <<'EOF'
+## Summary
+- Bullet points
+
+## Test plan
+- [ ] Checklist items
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)"
+```
+
+---
+
+## Development Best Practices
+
+### Astro-Specific
+
+1. ✅ Use `.astro` components for static content
+2. ✅ Use Astro's built-in optimization for images
+3. ✅ Keep JavaScript minimal (Astro is static-first)
+4. ✅ Use content collections for blog/pages
+5. ✅ Leverage Astro's partial hydration for interactivity
+
+### General
+
+6. ✅ Always use Tailwind utility classes
+7. ✅ Add `data-testid` for testing
+8. ✅ Handle errors gracefully
+9. ✅ Show loading states
+10. ✅ Run `npm run check` before committing
+
+---
 
 ## Common Mistakes to Avoid
 
-### Version-Specific Issues
+### Astro Website
 
-1. ❌ **Never** use Vinxi patterns (v1.120) - Use Vite patterns (v1.132)
-2. ❌ **Never** use old `createRouteRoot()` - Use `createRootRoute()`
-3. ❌ **Never** use `Route` for API routes - Use `APIRoute`
-4. ❌ **Never** use `component` in root route - Use `shellComponent`
+1. ❌ **Never** add AI/RAG libraries to web project
+2. ❌ **Never** use client-side JavaScript for content that can be static
+3. ❌ **Never** forget to run from `web/` directory
+4. ❌ **Never** commit without running lint + format
 
-### General Issues
+### Mastra.ai Bot (Future)
 
 5. ❌ **Never** create static database connections
-6. ❌ **Never** add AI/RAG libraries during MVP
-7. ❌ **Never** expose backend secrets to frontend
-8. ❌ **Never** commit without running lint + tests
+6. ❌ **Never** expose backend secrets to frontend
+7. ❌ **Never** use synchronous blocking operations
+8. ❌ **Never** skip error handling for external APIs
+
+### General
+
 9. ❌ **Never** use non-null assertions - use optional chaining
 10. ❌ **Never** commit unless explicitly asked by user
 
-## Best Practices to Follow
+---
 
-1. ✅ **Always** use latest TanStack Router v1.132 patterns
-2. ✅ **Always** use `shellComponent` in root route
-3. ✅ **Always** use `APIRoute` for API endpoints
-4. ✅ **Always** access Cloudflare bindings via context
-5. ✅ **Always** use Tailwind utility classes
-6. ✅ **Always** add `data-testid` for testing
-7. ✅ **Always** handle errors gracefully
-8. ✅ **Always** show loading states
-9. ✅ **Always** use TypeScript interfaces
-10. ✅ **Always** run `npm run check` before committing
+## Environment Variables
 
-## Migration Notes (v1.120 → v1.132)
+### Astro Website (.env)
 
-If migrating from older TanStack Start:
+```bash
+# Astro environment variables (VITE_ prefix for client-side)
+VITE_API_URL=https://api.hilm.ai
+```
 
-### Build Tool
-- **Old**: Vinxi (`vinxi dev`, `vinxi.config.ts`)
-- **New**: Vite (`vite dev`, `vite.config.ts`)
+### Mastra.ai Bot (.env - Future)
 
-### Root Route
-- **Old**: `component: Root`
-- **New**: `shellComponent: RootDocument`
+```bash
+# Telegram
+TELEGRAM_BOT_TOKEN=your_token
 
-### Scripts
-- **Old**: `npm run dev` (Vinxi)
-- **New**: `npm run dev` (Vite on port 3000)
+# OpenAI
+OPENAI_API_KEY=your_key
 
-### Configuration
-- **Old**: `app.config.ts` with complex Vinxi setup
-- **New**: `vite.config.ts` with Cloudflare plugin
+# Supabase
+SUPABASE_URL=your_url
+SUPABASE_KEY=your_key
+
+# Pinecone
+PINECONE_API_KEY=your_key
+PINECONE_ENVIRONMENT=your_env
+PINECONE_INDEX=hilm-transactions
+
+# App
+NODE_ENV=development
+LOG_LEVEL=info
+```
+
+---
+
+## Testing
+
+**Astro Website:**
+```bash
+cd web
+npm test              # Run tests (if configured)
+npm run build         # Verify build works
+```
+
+**Future Mastra.ai Bot:**
+- Unit tests for tools and agents
+- Integration tests for workflows
+- E2E tests for critical user flows
+
+---
 
 ## Path Aliases
 
 TypeScript path alias `@/*` maps to `./src/*`:
 
 ```typescript
-// ✅ Good - Use path alias
-import { Button } from '@/components/Button'
+// ✅ Good
+import { Button } from '@/components/Button';
 
-// ❌ Avoid - Relative paths
-import { Button } from '../../../components/Button'
+// ❌ Avoid
+import { Button } from '../../../components/Button';
 ```
-
-## Deployment
-
-### Cloudflare Workers Deployment
-
-```bash
-# Build
-npm run build
-
-# Deploy
-npm run deploy
-
-# Or with wrangler directly
-wrangler deploy
-```
-
-### Environment Variables
-
-Set production secrets via Wrangler:
-```bash
-wrangler secret put BETTER_AUTH_SECRET
-wrangler secret put DATABASE_URL
-```
-
-## Resources
-
-- [TanStack Start Docs](https://tanstack.com/start)
-- [TanStack Router v1.132](https://tanstack.com/router)
-- [Vite Documentation](https://vitejs.dev)
-- [Cloudflare Workers](https://developers.cloudflare.com/workers)
-- [Tailwind CSS v4](https://tailwindcss.com)
 
 ---
 
-**Key Takeaway**: TanStack Start v1.132 uses **Vite**, **simpler routing**, and **context-based Cloudflare bindings**. Always use the latest patterns and avoid v1.120 conventions.
+## Resources
+
+### Astro
+- [Astro Docs](https://docs.astro.build)
+- [Astro Content Collections](https://docs.astro.build/en/guides/content-collections/)
+- [Cloudflare Pages Adapter](https://docs.astro.build/en/guides/deploy/cloudflare/)
+
+### Mastra.ai
+- [Mastra.ai LLM Guide](https://mastra.ai/llms-full.txt) - Comprehensive LLM integration guide
+
+### Styling
+- [Tailwind CSS v4](https://tailwindcss.com)
+- [Tailwind Vite Plugin](https://tailwindcss.com/docs/installation/vite)
+
+### Deployment
+- [Cloudflare Pages](https://pages.cloudflare.com)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/)
+
+---
+
+**Key Takeaway**: This is an Astro-based static site with Tailwind CSS v4, deployed on Cloudflare Pages. Future AI features will be handled by a separate Mastra.ai-powered Telegram bot.
