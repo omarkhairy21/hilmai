@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   telegram_chat_id BIGINT NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'USD',
   merchant TEXT NOT NULL,
   category TEXT NOT NULL,
   description TEXT,

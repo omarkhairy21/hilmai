@@ -15,6 +15,7 @@ export interface Database {
           user_id: string
           telegram_chat_id: number
           amount: number
+          currency: string
           merchant: string
           category: string
           description: string | null
@@ -27,6 +28,7 @@ export interface Database {
           user_id: string
           telegram_chat_id: number
           amount: number
+          currency?: string
           merchant: string
           category: string
           description?: string | null
@@ -39,6 +41,7 @@ export interface Database {
           user_id?: string
           telegram_chat_id?: number
           amount?: number
+          currency?: string
           merchant?: string
           category?: string
           description?: string | null

@@ -9,7 +9,8 @@ export const saveTransactionTool = createTool({
   id: 'save-transaction',
   description: 'Save a transaction to the database after extracting details',
   inputSchema: z.object({
-    amount: z.number().describe('Transaction amount in USD'),
+    amount: z.number().describe('Transaction amount'),
+    currency: z.string().default('USD').describe('Currency code (USD, EUR, GBP, AED, SAR, etc.)'),
     merchant: z.string().describe('Merchant or vendor name'),
     category: z.string().describe('Spending category (groceries, dining, transport, shopping, bills, entertainment, healthcare, education, other)'),
     description: z.string().optional().describe('Additional transaction details'),
@@ -27,6 +28,7 @@ export const saveTransactionTool = createTool({
   execute: async ({ context }) => {
     const {
       amount,
+      currency,
       merchant,
       category,
       description,
@@ -86,6 +88,7 @@ export const saveTransactionTool = createTool({
           user_id: userId,
           telegram_chat_id: telegramChatId,
           amount,
+          currency: currency || 'USD',
           merchant,
           category,
           description: description || null,
