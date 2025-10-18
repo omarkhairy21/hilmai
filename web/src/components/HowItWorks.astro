@@ -1,0 +1,72 @@
+---
+// How it works section with video
+---
+
+<section class="py-20 px-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Decorative dots -->
+    <div class="flex justify-center gap-2 mb-16">
+      <div class="w-2 h-2 rounded-full bg-gray-700"></div>
+      <div class="w-2 h-2 rounded-full bg-gray-700"></div>
+      <div class="w-2 h-2 rounded-full bg-gray-700"></div>
+    </div>
+
+    <!-- Video Container -->
+    <div class="relative max-w-4xl mx-auto">
+      <!-- Glow effect -->
+      <div class="absolute inset-0 bg-[#d4ff2a]/20 blur-[100px] rounded-full"></div>
+
+      <!-- Video wrapper -->
+      <div class="relative bg-gray-900 rounded-3xl overflow-hidden border border-gray-800 aspect-video">
+        <!-- Video placeholder / Thumbnail -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <button
+            class="group relative z-10"
+            id="play-button"
+            aria-label="Play video"
+          >
+            <!-- Play button circle -->
+            <div class="w-20 h-20 bg-[#d4ff2a] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 8L24 16L12 24V8Z" fill="black"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <!-- Video element (hidden initially) -->
+        <video
+          id="demo-video"
+          class="w-full h-full object-cover hidden"
+          controls
+          poster="/video-thumbnail.jpg"
+        >
+          <source src="/demo-video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <!-- Caption -->
+      <div class="text-center mt-6">
+        <p class="text-sm text-gray-400">See how Wait works (3m)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const playButton = document.getElementById('play-button');
+  const video = document.getElementById('demo-video') as HTMLVideoElement;
+
+  playButton?.addEventListener('click', () => {
+    playButton.style.display = 'none';
+    video?.classList.remove('hidden');
+    video?.play();
+  });
+
+  // Show play button again when video ends
+  video?.addEventListener('ended', () => {
+    playButton!.style.display = 'block';
+    video.classList.add('hidden');
+  });
+</script>

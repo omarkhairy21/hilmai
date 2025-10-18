@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-lime: #d4ff2a;
+  --font-sans: system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}

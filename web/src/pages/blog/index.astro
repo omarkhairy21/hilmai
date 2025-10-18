@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const blogPosts = await getCollection('blog');
+const sortedPosts = blogPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Layout title="Blog - Wait">
+  <div class="min-h-screen px-4 py-20">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <div class="mb-16">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">Blog</h1>
+        <p class="text-xl text-gray-400">
+          Insights, updates, and tips for building successful product launches
+        </p>
+      </div>
+
+      <!-- Blog Posts -->
+      <div class="space-y-8">
+        {sortedPosts.map((post) => (
+          <article class="border border-gray-800 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-colors">
+            <a href={`/blog/${post.slug}`} class="block">
+              <time class="text-sm text-gray-500 mb-2 block">
+                {post.data.pubDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+              <h2 class="text-2xl font-bold mb-3 hover:text-[#d4ff2a] transition-colors">
+                {post.data.title}
+              </h2>
+              <p class="text-gray-400 mb-4">
+                {post.data.description}
+              </p>
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-500">By {post.data.author}</span>
+                {post.data.tags && post.data.tags.length > 0 && (
+                  <div class="flex gap-2">
+                    {post.data.tags.map((tag: string) => (
+                      <span class="text-xs bg-gray-800 px-2 py-1 rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>

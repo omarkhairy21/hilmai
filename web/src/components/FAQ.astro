@@ -1,0 +1,98 @@
+---
+// FAQ Section with accordion
+const faqs = [
+  {
+    question: 'What is Wait?',
+    answer: 'Wait is a modern waitlist platform that helps you build viral waitlists for your product launches. It includes built-in referral mechanics, analytics, and customization options.'
+  },
+  {
+    question: "What's included in this template?",
+    answer: 'The template includes a landing page, waitlist form, countdown timer, email collection, referral system, analytics dashboard, and admin panel. Everything you need to launch a successful waitlist.'
+  },
+  {
+    question: 'How do I customize this template?',
+    answer: 'You can customize colors, fonts, copy, and components using Tailwind CSS and Astro components. The template is fully modular and easy to modify to match your brand.'
+  },
+  {
+    question: 'Is there support available?',
+    answer: 'Yes! We provide documentation, video tutorials, and email support. Premium customers get priority support and custom development assistance.'
+  },
+  {
+    question: 'How much will this cost?',
+    answer: 'Wait will offer a free tier for small waitlists, with paid plans starting at $29/month for advanced features, custom branding, and higher limits.'
+  }
+];
+---
+
+<section class="py-20 px-4">
+  <div class="max-w-3xl mx-auto">
+    <!-- Section Header -->
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4">
+        Frequently asked questions
+      </h2>
+      <p class="text-lg text-gray-400">
+        Everything you need to know about the Wait template. Find answers to the most common questions below.
+      </p>
+    </div>
+
+    <!-- FAQ Accordion -->
+    <div class="space-y-4">
+      {faqs.map((faq, index) => (
+        <div class="border border-gray-800 rounded-xl overflow-hidden">
+          <button
+            class="faq-question w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-900/50 transition-colors"
+            data-index={index}
+          >
+            <span class="font-medium text-lg">{faq.question}</span>
+            <svg
+              class="faq-icon w-6 h-6 transition-transform flex-shrink-0 ml-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+            <div class="px-6 pb-5 text-gray-400 leading-relaxed">
+              {faq.answer}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  const questions = document.querySelectorAll('.faq-question');
+
+  questions.forEach((question) => {
+    question.addEventListener('click', () => {
+      const answer = question.nextElementSibling as HTMLElement;
+      const icon = question.querySelector('.faq-icon') as HTMLElement;
+      const isOpen = answer.style.maxHeight && answer.style.maxHeight !== '0px';
+
+      // Close all other FAQs
+      document.querySelectorAll('.faq-answer').forEach((item) => {
+        (item as HTMLElement).style.maxHeight = '0';
+      });
+      document.querySelectorAll('.faq-icon').forEach((item) => {
+        (item as HTMLElement).style.transform = 'rotate(0deg)';
+      });
+
+      // Toggle current FAQ
+      if (!isOpen) {
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+</script>
+
+<style>
+  .faq-icon {
+    color: #d4ff2a;
+  }
+</style>

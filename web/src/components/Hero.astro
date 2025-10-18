@@ -1,0 +1,98 @@
+---
+// Hero section with value proposition
+---
+
+<section class="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+  <!-- Background gradient -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
+
+  <!-- Animated background elements -->
+  <div class="absolute inset-0 opacity-30">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+  </div>
+
+  <div class="relative max-w-6xl mx-auto text-center z-10">
+    <!-- Logo -->
+    <div class="mb-8 flex justify-center">
+      <div class="w-20 h-20 bg-[#d4ff2a] rounded-3xl flex items-center justify-center transform hover:scale-110 transition-transform">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 10L20 20M20 20L30 30M20 20L30 10M20 20L10 30" stroke="black" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Badge -->
+    <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-800/50 border border-gray-700 backdrop-blur-sm mb-8">
+      <span class="w-2 h-2 bg-[#d4ff2a] rounded-full animate-pulse"></span>
+      <span class="text-sm text-gray-300 font-medium">AI-Powered Financial Intelligence</span>
+    </div>
+
+    <!-- Main Heading -->
+    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
+      Your Financial
+      <br />
+      <span class="bg-gradient-to-r from-[#d4ff2a] to-green-400 bg-clip-text text-transparent">
+        Command Center
+      </span>
+    </h1>
+
+    <!-- Subheading -->
+    <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+      Transform bank statements into actionable insights with AI.
+      <br class="hidden md:block" />
+      Upload, analyze, and optimize your finances in seconds.
+    </p>
+
+    <!-- CTA Buttons -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+      <a
+        href="/dashboard"
+        class="px-8 py-4 bg-[#d4ff2a] text-black font-semibold rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+      >
+        Get Started Free
+      </a>
+      <a
+        href="#features"
+        class="px-8 py-4 bg-gray-800/50 text-white font-semibold rounded-xl border border-gray-700 hover:bg-gray-800 hover:border-gray-600 transition-all backdrop-blur-sm"
+      >
+        Learn More
+      </a>
+    </div>
+
+    <!-- Stats / Social Proof -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
+      <div class="text-center">
+        <div class="text-4xl md:text-5xl font-bold text-[#d4ff2a] mb-2">10k+</div>
+        <div class="text-sm text-gray-400 uppercase tracking-wider">Statements Analyzed</div>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl md:text-5xl font-bold text-[#d4ff2a] mb-2">$2M+</div>
+        <div class="text-sm text-gray-400 uppercase tracking-wider">Insights Generated</div>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl md:text-5xl font-bold text-[#d4ff2a] mb-2">99%</div>
+        <div class="text-sm text-gray-400 uppercase tracking-wider">Accuracy Rate</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .delay-1000 {
+    animation-delay: 1s;
+  }
+</style>

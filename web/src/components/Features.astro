@@ -1,0 +1,82 @@
+---
+// Features section
+const features = [
+  {
+    iconPath: 'M13 2L3 14h8l-1 8 10-12h-8l1-8z', // Lightning bolt
+    title: 'AI-Powered Analysis',
+    description: 'Instantly extract insights from bank statements using advanced machine learning algorithms.'
+  },
+  {
+    iconPath: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', // Bar chart
+    title: 'Smart Categorization',
+    description: 'Automatically categorize transactions and identify spending patterns across all accounts.'
+  },
+  {
+    iconPath: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', // Shield with checkmark
+    title: 'Bank-Level Security',
+    description: 'Your financial data is encrypted end-to-end with enterprise-grade security protocols.'
+  },
+  {
+    iconPath: 'M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z', // Trending up
+    title: 'Real-time Insights',
+    description: 'Get instant notifications and actionable insights about your spending and savings.'
+  },
+  {
+    iconPath: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12', // Upload cloud
+    title: 'Multi-Format Support',
+    description: 'Upload PDFs, CSVs, or connect directly to your bank for seamless data import.'
+  },
+  {
+    iconPath: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z', // Calculator
+    title: 'Custom Reports',
+    description: 'Generate detailed financial reports and export data in multiple formats.'
+  }
+];
+---
+
+<section id="features" class="py-20 px-4 bg-gradient-to-b from-black to-gray-900">
+  <div class="max-w-6xl mx-auto">
+    <!-- Section Header -->
+    <div class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4">
+        Powerful features for financial clarity
+      </h2>
+      <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+        Everything you need to understand, analyze, and optimize your financial life.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {features.map((feature) => (
+        <div class="group relative bg-gray-900/50 border border-gray-800 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300">
+          <!-- Hover glow effect -->
+          <div class="absolute inset-0 bg-[#d4ff2a]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+          <div class="relative">
+            <!-- Icon -->
+            <div class="w-12 h-12 mb-4 rounded-xl bg-[#d4ff2a]/10 flex items-center justify-center group-hover:bg-[#d4ff2a]/20 transition-colors">
+              <svg
+                class="w-6 h-6 text-[#d4ff2a]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d={feature.iconPath} />
+              </svg>
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-xl font-semibold mb-3">{feature.title}</h3>
+
+            <!-- Description -->
+            <p class="text-gray-400 leading-relaxed">{feature.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

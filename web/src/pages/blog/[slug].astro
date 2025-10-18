@@ -1,0 +1,111 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const blogPosts = await getCollection('blog');
+  return blogPosts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<Layout title={post.data.title}>
+  <article class="min-h-screen px-4 py-20">
+    <div class="max-w-3xl mx-auto">
+      <!-- Back link -->
+      <a
+        href="/blog"
+        class="inline-flex items-center gap-2 text-gray-400 hover:text-[#d4ff2a] transition-colors mb-8"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to blog
+      </a>
+
+      <!-- Article header -->
+      <header class="mb-12">
+        <time class="text-sm text-gray-500 mb-4 block">
+          {post.data.pubDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </time>
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+          {post.data.title}
+        </h1>
+        <div class="flex items-center gap-4">
+          <span class="text-gray-400">By {post.data.author}</span>
+          {post.data.tags && post.data.tags.length > 0 && (
+            <div class="flex gap-2">
+              {post.data.tags.map((tag: string) => (
+                <span class="text-xs bg-gray-800 px-3 py-1 rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </header>
+
+      <!-- Article content -->
+      <div class="prose prose-invert prose-lg max-w-none">
+        <Content />
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<style is:global>
+  .prose {
+    color: #e5e7eb;
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    color: #fff;
+    font-weight: 700;
+  }
+  .prose h2 {
+    font-size: 2rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose h3 {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose p {
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+  }
+  .prose a {
+    color: #d4ff2a;
+    text-decoration: none;
+  }
+  .prose a:hover {
+    text-decoration: underline;
+  }
+  .prose ul, .prose ol {
+    margin: 1.5rem 0;
+    padding-left: 1.5rem;
+  }
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  .prose strong {
+    color: #fff;
+    font-weight: 600;
+  }
+  .prose code {
+    background: #1f2937;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+  }
+</style>

@@ -1,12 +1,23 @@
+# Dependencies
 node_modules
-.DS_Store
+
+# Build output
 dist
 dist-ssr
-*.local
-count.txt
-.env
-.nitro
-.tanstack
 .output
-.vinxi
+
+# Environment
+.env
+.env.*
+*.local
+
+# System
+.DS_Store
+count.txt
 todos.json
+
+# Astro
+.astro
+
+# Cloudflare
+.wrangler
