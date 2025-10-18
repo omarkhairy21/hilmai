@@ -30,7 +30,7 @@ bot.onText(/\/help/, async (msg) => {
     chatId,
     `📚 How to use Hilm.ai:\n\n` +
     `• Send transaction text: "Bought coffee for $5"\n` +
-    `• Send a receipt photo (coming soon)\n` +
+    `• Send a receipt photo 📷\n` +
     `• Send voice message (coming soon)\n` +
     `• Ask questions about your spending\n\n` +
     `Commands:\n` +
@@ -93,6 +93,80 @@ bot.on('message', async (msg, metadata) => {
     await bot.sendMessage(
       chatId,
       `❌ Sorry, I encountered an error processing your message. Please try again.`
+    );
+  }
+});
+
+// Handle photo messages (receipts)
+bot.on('photo', async (msg) => {
+  const chatId = msg.chat.id;
+
+  try {
+    // Send processing message
+    await bot.sendMessage(chatId, '📷 Scanning receipt...');
+    await bot.sendChatAction(chatId, 'typing');
+
+    // Get highest quality photo
+    const photos = msg.photo;
+    if (!photos || photos.length === 0) {
+      await bot.sendMessage(chatId, '❌ No photo found. Please try again.');
+      return;
+    }
+
+    // Get the largest photo (highest resolution)
+    const photo = photos[photos.length - 1];
+    const fileId = photo.file_id;
+
+    // Get file info and construct URL
+    const file = await bot.getFile(fileId);
+    const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+
+    // Gather user information
+    const userInfo = {
+      chatId,
+      username: msg.from?.username || '',
+      firstName: msg.from?.first_name || '',
+      lastName: msg.from?.last_name || '',
+    };
+
+    // Use the transaction extractor agent with receipt extraction
+    const agent = await mastra.getAgent('transactionExtractor');
+
+    if (!agent) {
+      await bot.sendMessage(chatId, 'Agent not found. Please check configuration.');
+      return;
+    }
+
+    // Create a prompt for the agent to extract and save the receipt
+    const prompt = `Extract transaction details from this receipt image and save it to the database.
+
+Image URL: ${fileUrl}
+
+[User Info: Chat ID: ${userInfo.chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName} ${userInfo.lastName}]
+
+Use the extract-receipt tool to analyze this receipt image, then save the transaction using the save-transaction tool.`;
+
+    const result = await agent.generate(prompt, {
+      onStepFinish: (step) => {
+        console.log('Step finished:', step);
+      },
+      resourceId: chatId.toString(),
+    });
+
+    // Send response
+    await bot.sendMessage(
+      chatId,
+      `✅ Receipt processed!\n\n${result.text}`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    console.error('Error processing photo:', error);
+    await bot.sendMessage(
+      chatId,
+      `❌ Sorry, I couldn't process that receipt. Try:\n` +
+      `• Better lighting\n` +
+      `• Clearer photo\n` +
+      `• Or just type the amount!`
     );
   }
 });

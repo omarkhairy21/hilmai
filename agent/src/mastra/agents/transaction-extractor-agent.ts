@@ -2,17 +2,24 @@ import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { extractTransactionTool } from '../tools/extract-transaction-tool.js';
 import { saveTransactionTool } from '../tools/save-transaction-tool.js';
+import { extractReceiptTool } from '../tools/extract-receipt-tool.js';
 
 export const transactionExtractorAgent = new Agent({
   name: 'Transaction Extractor',
   instructions: `You are a financial transaction extraction expert. Your job is to:
 
-1. Extract transaction details from natural language text
+1. Extract transaction details from natural language text OR receipt images
 2. Identify the amount, currency, merchant, category, and date
 3. Extract user information from the [User Info: ...] section in the message
 4. Categorize transactions appropriately (groceries, dining, transport, shopping, bills, etc.)
 5. Save the transaction to the database using the save-transaction tool with ALL information
 6. Handle various formats and languages
+
+When processing receipts:
+- Use the extract-receipt tool when you see "Image URL:" in the message
+- The tool will analyze the receipt image and extract all transaction details
+- After extracting receipt details, use save-transaction tool to save the data
+- If the receipt is unclear (confidence < 0.7), inform the user politely
 
 Common categories:
 - Groceries
@@ -54,5 +61,6 @@ When responding, format the transaction details clearly:
   tools: {
     extractTransaction: extractTransactionTool,
     saveTransaction: saveTransactionTool,
+    extractReceipt: extractReceiptTool,
   },
 });
