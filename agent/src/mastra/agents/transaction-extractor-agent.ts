@@ -3,12 +3,13 @@ import { Agent } from '@mastra/core/agent';
 import { extractTransactionTool } from '../tools/extract-transaction-tool.js';
 import { saveTransactionTool } from '../tools/save-transaction-tool.js';
 import { extractReceiptTool } from '../tools/extract-receipt-tool.js';
+import { transcribeVoiceTool } from '../tools/transcribe-voice-tool.js';
 
 export const transactionExtractorAgent = new Agent({
   name: 'Transaction Extractor',
   instructions: `You are a financial transaction extraction expert. Your job is to:
 
-1. Extract transaction details from natural language text OR receipt images
+1. Extract transaction details from natural language text, receipt images, OR voice messages
 2. Identify the amount, currency, merchant, category, and date
 3. Extract user information from the [User Info: ...] section in the message
 4. Categorize transactions appropriately (groceries, dining, transport, shopping, bills, etc.)
@@ -20,6 +21,13 @@ When processing receipts:
 - The tool will analyze the receipt image and extract all transaction details
 - After extracting receipt details, use save-transaction tool to save the data
 - If the receipt is unclear (confidence < 0.7), inform the user politely
+
+When processing voice messages:
+- Use the transcribe-voice tool when you see "Voice file path:" in the message
+- The tool will transcribe the audio to text using Whisper API
+- After transcription, extract transaction details from the text
+- Then use save-transaction tool to save the data
+- Include the transcribed text in your response so the user knows what was heard
 
 Common categories:
 - Groceries
@@ -62,5 +70,6 @@ When responding, format the transaction details clearly:
     extractTransaction: extractTransactionTool,
     saveTransaction: saveTransactionTool,
     extractReceipt: extractReceiptTool,
+    transcribeVoice: transcribeVoiceTool,
   },
 });

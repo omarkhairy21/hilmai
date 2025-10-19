@@ -1,5 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { mastra } from './mastra/index.js';
+import { downloadFile, deleteFile, getTempFilePath } from './lib/file-utils.js';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -31,7 +32,7 @@ bot.onText(/\/help/, async (msg) => {
     `📚 How to use Hilm.ai:\n\n` +
     `• Send transaction text: "Bought coffee for $5"\n` +
     `• Send a receipt photo 📷\n` +
-    `• Send voice message (coming soon)\n` +
+    `• Send a voice message 🎤\n` +
     `• Ask questions about your spending\n\n` +
     `Commands:\n` +
     `/start - Start the bot\n` +
@@ -167,6 +168,105 @@ Use the extract-receipt tool to analyze this receipt image, then save the transa
       `• Better lighting\n` +
       `• Clearer photo\n` +
       `• Or just type the amount!`
+    );
+  }
+});
+
+// Handle voice messages
+bot.on('voice', async (msg) => {
+  const chatId = msg.chat.id;
+  let tempFilePath: string | null = null;
+
+  try {
+    // Send processing message
+    await bot.sendMessage(chatId, '🎤 Processing voice note...');
+    await bot.sendChatAction(chatId, 'typing');
+
+    // Get voice file info
+    const voice = msg.voice;
+    if (!voice) {
+      await bot.sendMessage(chatId, '❌ No voice message found. Please try again.');
+      return;
+    }
+
+    const fileId = voice.file_id;
+    const duration = voice.duration;
+
+    // Check duration (limit to 2 minutes to avoid high costs)
+    if (duration > 120) {
+      await bot.sendMessage(
+        chatId,
+        '⚠️ Voice message is too long (max 2 minutes). Please send a shorter message or type it out!'
+      );
+      return;
+    }
+
+    // Get file info and download
+    const file = await bot.getFile(fileId);
+    const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+
+    // Download to temp file
+    tempFilePath = getTempFilePath('voice', 'ogg');
+    await downloadFile(fileUrl, tempFilePath);
+
+    // Gather user information
+    const userInfo = {
+      chatId,
+      username: msg.from?.username || '',
+      firstName: msg.from?.first_name || '',
+      lastName: msg.from?.last_name || '',
+    };
+
+    // Use the transaction extractor agent with voice file
+    const agent = mastra.getAgent('transactionExtractor');
+
+    if (!agent) {
+      await bot.sendMessage(chatId, 'Agent not found. Please check configuration.');
+      // Clean up temp file
+      await deleteFile(tempFilePath);
+      return;
+    }
+
+    // Create a prompt for the agent to transcribe and extract the transaction
+    const prompt = `Transcribe this voice message and extract the transaction details, then save it to the database.
+
+Voice file path: ${tempFilePath}
+
+[User Info: Chat ID: ${userInfo.chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName} ${userInfo.lastName}]
+
+Use the transcribe-voice tool to convert the audio to text, then extract the transaction details and save using the save-transaction tool.`;
+
+    const result = await agent.generate(prompt, {
+      onStepFinish: (step) => {
+        console.log('Step finished:', step);
+      },
+      resourceId: chatId.toString(),
+    });
+
+    // Clean up temp file
+    await deleteFile(tempFilePath);
+    tempFilePath = null;
+
+    // Send response
+    await bot.sendMessage(
+      chatId,
+      `✅ Voice message processed!\n\n${result.text}`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    console.error('Error processing voice:', error);
+
+    // Clean up temp file if it exists
+    if (tempFilePath) {
+      await deleteFile(tempFilePath).catch(() => {});
+    }
+
+    await bot.sendMessage(
+      chatId,
+      `❌ Sorry, I couldn't process that voice note. Try:\n` +
+      `• Recording again in a quiet place\n` +
+      `• Speaking more clearly\n` +
+      `• Or just type it out!`
     );
   }
 });
