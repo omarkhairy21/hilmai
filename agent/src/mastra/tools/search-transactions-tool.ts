@@ -87,6 +87,7 @@ export const searchTransactionsTool = createTool({
       }
 
       // Fetch full transaction details from Supabase
+      // Note: Pinecone has metadata, but we fetch from Supabase for complete/authoritative data
       const transactionIds = matches.map((m) => m.id);
       const { data: transactions, error } = await db
         .from('transactions')

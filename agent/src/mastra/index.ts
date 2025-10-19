@@ -9,14 +9,17 @@ export const mastra = new Mastra({
     transactionExtractor: transactionExtractorAgent,
     financeInsights: financeInsightsAgent,
   },
+
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
     url: ':memory:',
   }),
+
   logger: new PinoLogger({
     name: 'Hilm.ai',
     level: 'debug',
   }),
+
   telemetry: {
     // Telemetry is deprecated and will be removed in the Nov 4th release
     enabled: false,

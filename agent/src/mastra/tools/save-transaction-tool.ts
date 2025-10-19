@@ -105,7 +105,7 @@ export const saveTransactionTool = createTool({
         // Continue without embedding - we'll still save the transaction
       }
 
-      // Insert transaction with embedding
+      // Insert transaction (without embedding - stored in Pinecone only)
       const { data, error } = await db
         .from('transactions')
         .insert({
@@ -117,7 +117,6 @@ export const saveTransactionTool = createTool({
           category,
           description: description || null,
           transaction_date: finalTransactionDate,
-          embedding: embedding ? `[${embedding.join(',')}]` : null,
         })
         .select('id')
         .single();
@@ -126,7 +125,7 @@ export const saveTransactionTool = createTool({
         throw new Error(`Failed to save transaction: ${error.message}`);
       }
 
-      // Store in Pinecone if embedding was generated
+      // Store embedding in Pinecone
       if (embedding && data.id) {
         try {
           const index = getTransactionsIndex();
@@ -135,7 +134,7 @@ export const saveTransactionTool = createTool({
               id: data.id,
               values: embedding,
               metadata: {
-                user_id: userId,
+                userId,
                 telegram_chat_id: telegramChatId,
                 amount: amount,
                 currency: currency || 'USD',
@@ -146,9 +145,11 @@ export const saveTransactionTool = createTool({
               },
             },
           ]);
+          console.log(`✅ Embedding stored in Pinecone for transaction ${data.id}`);
         } catch (pineconeError) {
-          console.error('Failed to store in Pinecone:', pineconeError);
-          // Don't fail the transaction if Pinecone fails
+          console.error('⚠️ Failed to store in Pinecone:', pineconeError);
+          // Transaction still saved in Supabase even if Pinecone fails
+          // User can retry embedding later if needed
         }
       }
 
