@@ -55,7 +55,10 @@ Respond with ONLY a JSON object in this exact format:
       });
 
       // Parse JSON response
-      const cleanResponse = response.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      const cleanResponse = response
+        .trim()
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '');
       const extracted = JSON.parse(cleanResponse);
 
       return {

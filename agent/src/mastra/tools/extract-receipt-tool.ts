@@ -18,10 +18,15 @@ export const extractReceiptTool = createTool({
     merchant: z.string().describe('Merchant or store name'),
     category: z.string().describe('Spending category'),
     date: z.string().describe('Transaction date in ISO format'),
-    items: z.array(z.object({
-      name: z.string(),
-      price: z.number(),
-    })).optional().describe('Individual items from receipt'),
+    items: z
+      .array(
+        z.object({
+          name: z.string(),
+          price: z.number(),
+        })
+      )
+      .optional()
+      .describe('Individual items from receipt'),
     confidence: z.number().min(0).max(1).describe('Confidence score 0-1'),
   }),
   execute: async ({ context }) => {
@@ -113,7 +118,9 @@ Return ONLY valid JSON matching this schema:
       return result;
     } catch (error) {
       console.error('Error extracting receipt:', error);
-      throw new Error(`Failed to extract receipt: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to extract receipt: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   },
 });

@@ -18,10 +18,10 @@ bot.onText(/\/start/, async (msg) => {
   await bot.sendMessage(
     chatId,
     `Welcome to Hilm.ai! 🤖\n\nI'm your personal financial assistant. I can help you:\n\n` +
-    `💰 Track expenses\n` +
-    `📊 Analyze spending patterns\n` +
-    `💡 Get financial insights\n\n` +
-    `Try sending me a transaction like: "Spent $50 on groceries at Walmart"`
+      `💰 Track expenses\n` +
+      `📊 Analyze spending patterns\n` +
+      `💡 Get financial insights\n\n` +
+      `Try sending me a transaction like: "Spent $50 on groceries at Walmart"`
   );
 });
 
@@ -31,13 +31,13 @@ bot.onText(/\/help/, async (msg) => {
   await bot.sendMessage(
     chatId,
     `📚 How to use Hilm.ai:\n\n` +
-    `• Send transaction text: "Bought coffee for $5"\n` +
-    `• Send a receipt photo 📷\n` +
-    `• Send a voice message 🎤\n` +
-    `• Ask questions about your spending\n\n` +
-    `Commands:\n` +
-    `/start - Start the bot\n` +
-    `/help - Show this help message`
+      `• Send transaction text: "Bought coffee for $5"\n` +
+      `• Send a receipt photo 📷\n` +
+      `• Send a voice message 🎤\n` +
+      `• Ask questions about your spending\n\n` +
+      `Commands:\n` +
+      `/start - Start the bot\n` +
+      `/help - Show this help message`
   );
 });
 
@@ -82,7 +82,12 @@ bot.on('message', async (msg) => {
     // The tool result is in classificationResult.toolResults[0].payload.result
     if (classificationResult.toolResults && classificationResult.toolResults.length > 0) {
       const toolResult = classificationResult.toolResults[0];
-      if (toolResult && 'payload' in toolResult && toolResult.payload && 'result' in toolResult.payload) {
+      if (
+        toolResult &&
+        'payload' in toolResult &&
+        toolResult.payload &&
+        'result' in toolResult.payload
+      ) {
         classification = toolResult.payload.result as typeof classification;
       }
     }
@@ -111,7 +116,7 @@ bot.on('message', async (msg) => {
         await bot.sendMessage(
           chatId,
           '💡 I can answer questions about your spending, but you need to log some transactions first!\n\n' +
-          'Try: "Spent $50 on groceries at Walmart"'
+            'Try: "Spent $50 on groceries at Walmart"'
         );
         return;
       }
@@ -135,12 +140,7 @@ bot.on('message', async (msg) => {
       );
 
       // Send response
-      await bot.sendMessage(
-        chatId,
-        result.text,
-        { parse_mode: 'Markdown' }
-      );
-
+      await bot.sendMessage(chatId, result.text, { parse_mode: 'Markdown' });
     } else if (classification.type === 'transaction') {
       // Use transaction extractor agent for transactions
       const agent = mastra.getAgent('transactionExtractor');
@@ -161,22 +161,19 @@ bot.on('message', async (msg) => {
       );
 
       // Send response
-      await bot.sendMessage(
-        chatId,
-        `✅ Transaction recorded!\n\n${result.text}`,
-        { parse_mode: 'Markdown' }
-      );
-
+      await bot.sendMessage(chatId, `✅ Transaction recorded!\n\n${result.text}`, {
+        parse_mode: 'Markdown',
+      });
     } else {
       // Handle other message types
       await bot.sendMessage(
         chatId,
         `I can help you with:\n\n` +
-        `💰 Logging transactions: "Spent $50 at Target"\n` +
-        `📊 Answering questions: "How much did I spend on groceries?"\n` +
-        `📷 Scanning receipts (send a photo)\n` +
-        `🎤 Voice notes (send a voice message)\n\n` +
-        `What would you like to do?`
+          `💰 Logging transactions: "Spent $50 at Target"\n` +
+          `📊 Answering questions: "How much did I spend on groceries?"\n` +
+          `📷 Scanning receipts (send a photo)\n` +
+          `🎤 Voice notes (send a voice message)\n\n` +
+          `What would you like to do?`
       );
     }
   } catch (error) {
@@ -245,19 +242,17 @@ Use the extract-receipt tool to analyze this receipt image, then save the transa
     });
 
     // Send response
-    await bot.sendMessage(
-      chatId,
-      `✅ Receipt processed!\n\n${result.text}`,
-      { parse_mode: 'Markdown' }
-    );
+    await bot.sendMessage(chatId, `✅ Receipt processed!\n\n${result.text}`, {
+      parse_mode: 'Markdown',
+    });
   } catch (error) {
     console.error('Error processing photo:', error);
     await bot.sendMessage(
       chatId,
       `❌ Sorry, I couldn't process that receipt. Try:\n` +
-      `• Better lighting\n` +
-      `• Clearer photo\n` +
-      `• Or just type the amount!`
+        `• Better lighting\n` +
+        `• Clearer photo\n` +
+        `• Or just type the amount!`
     );
   }
 });
@@ -338,11 +333,9 @@ Use the transcribe-voice tool to convert the audio to text, then extract the tra
     tempFilePath = null;
 
     // Send response
-    await bot.sendMessage(
-      chatId,
-      `✅ Voice message processed!\n\n${result.text}`,
-      { parse_mode: 'Markdown' }
-    );
+    await bot.sendMessage(chatId, `✅ Voice message processed!\n\n${result.text}`, {
+      parse_mode: 'Markdown',
+    });
   } catch (error) {
     console.error('Error processing voice:', error);
 
@@ -354,9 +347,9 @@ Use the transcribe-voice tool to convert the audio to text, then extract the tra
     await bot.sendMessage(
       chatId,
       `❌ Sorry, I couldn't process that voice note. Try:\n` +
-      `• Recording again in a quiet place\n` +
-      `• Speaking more clearly\n` +
-      `• Or just type it out!`
+        `• Recording again in a quiet place\n` +
+        `• Speaking more clearly\n` +
+        `• Or just type it out!`
     );
   }
 });

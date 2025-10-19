@@ -14,11 +14,7 @@ export const searchTransactionsTool = createTool({
   inputSchema: z.object({
     userId: z.string().describe('User ID to filter transactions'),
     query: z.string().describe('Natural language search query'),
-    topK: z
-      .number()
-      .optional()
-      .default(10)
-      .describe('Number of results to return (default: 10)'),
+    topK: z.number().optional().default(10).describe('Number of results to return (default: 10)'),
     minSimilarity: z
       .number()
       .optional()

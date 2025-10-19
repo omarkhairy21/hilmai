@@ -63,10 +63,7 @@ export function formatTransactionForEmbedding(transaction: {
  * @param maxRetries - Maximum number of retry attempts
  * @returns Promise<number[]> - The embedding vector
  */
-export async function generateEmbeddingWithRetry(
-  text: string,
-  maxRetries = 3
-): Promise<number[]> {
+export async function generateEmbeddingWithRetry(text: string, maxRetries = 3): Promise<number[]> {
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {

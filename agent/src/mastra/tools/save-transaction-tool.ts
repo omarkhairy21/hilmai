@@ -2,10 +2,7 @@ import { createTool } from '@mastra/core';
 import { z } from 'zod';
 import { supabase } from '../../lib/supabase.js';
 import { getTransactionsIndex } from '../../lib/pinecone.js';
-import {
-  generateEmbeddingWithRetry,
-  formatTransactionForEmbedding,
-} from '../rag/embeddings.js';
+import { generateEmbeddingWithRetry, formatTransactionForEmbedding } from '../rag/embeddings.js';
 
 // Type-safe wrapper for Supabase operations
 const db = supabase.schema('public');
@@ -17,7 +14,11 @@ export const saveTransactionTool = createTool({
     amount: z.number().describe('Transaction amount'),
     currency: z.string().default('USD').describe('Currency code (USD, EUR, GBP, AED, SAR, etc.)'),
     merchant: z.string().describe('Merchant or vendor name'),
-    category: z.string().describe('Spending category (groceries, dining, transport, shopping, bills, entertainment, healthcare, education, other)'),
+    category: z
+      .string()
+      .describe(
+        'Spending category (groceries, dining, transport, shopping, bills, entertainment, healthcare, education, other)'
+      ),
     description: z.string().optional().describe('Additional transaction details'),
     transactionDate: z.string().optional().describe('Transaction date in ISO format'),
     telegramChatId: z.number().describe('Telegram chat ID of the user'),
@@ -41,7 +42,7 @@ export const saveTransactionTool = createTool({
       telegramChatId,
       telegramUsername,
       firstName,
-      lastName
+      lastName,
     } = context;
 
     try {

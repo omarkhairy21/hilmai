@@ -106,7 +106,10 @@ IMPORTANT:
     });
 
     // Parse the response
-    const cleaned = response.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    const cleaned = response
+      .trim()
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '');
     const parsed = JSON.parse(cleaned);
 
     return {

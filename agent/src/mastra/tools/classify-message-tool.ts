@@ -11,12 +11,8 @@ export const classifyMessageTool = createTool({
     text: z.string().describe('The user message to classify'),
   }),
   outputSchema: z.object({
-    type: z
-      .enum(['transaction', 'query', 'other'])
-      .describe('Message classification type'),
-    confidence: z
-      .enum(['high', 'medium', 'low'])
-      .describe('Classification confidence level'),
+    type: z.enum(['transaction', 'query', 'other']).describe('Message classification type'),
+    confidence: z.enum(['high', 'medium', 'low']).describe('Classification confidence level'),
     reason: z.string().describe('Brief explanation for the classification'),
   }),
   execute: async ({ context }) => {

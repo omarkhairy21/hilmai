@@ -8,7 +8,10 @@ export const transcribeVoiceTool = createTool({
   description: 'Transcribe voice message using OpenAI Whisper API',
   inputSchema: z.object({
     audioFilePath: z.string().describe('Local file path to the audio file'),
-    language: z.string().optional().describe('Language code (e.g., en, ar, es) - auto-detect if not provided'),
+    language: z
+      .string()
+      .optional()
+      .describe('Language code (e.g., en, ar, es) - auto-detect if not provided'),
   }),
   outputSchema: z.object({
     text: z.string().describe('Transcribed text from the audio'),
@@ -43,7 +46,9 @@ export const transcribeVoiceTool = createTool({
       };
     } catch (error) {
       console.error('Error transcribing audio:', error);
-      throw new Error(`Failed to transcribe audio: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to transcribe audio: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   },
 });

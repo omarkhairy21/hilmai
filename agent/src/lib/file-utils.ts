@@ -9,27 +9,29 @@ export async function downloadFile(url: string, destPath: string): Promise<void>
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(destPath);
 
-    https.get(url, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`Failed to download file: ${response.statusCode}`));
-        return;
-      }
+    https
+      .get(url, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`Failed to download file: ${response.statusCode}`));
+          return;
+        }
 
-      response.pipe(file);
+        response.pipe(file);
 
-      file.on('finish', () => {
-        file.close();
-        resolve();
-      });
+        file.on('finish', () => {
+          file.close();
+          resolve();
+        });
 
-      file.on('error', (err) => {
+        file.on('error', (err) => {
+          fs.unlink(destPath, () => {}); // Clean up on error
+          reject(err);
+        });
+      })
+      .on('error', (err) => {
         fs.unlink(destPath, () => {}); // Clean up on error
         reject(err);
       });
-    }).on('error', (err) => {
-      fs.unlink(destPath, () => {}); // Clean up on error
-      reject(err);
-    });
   });
 }
 
