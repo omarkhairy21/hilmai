@@ -3,9 +3,9 @@
 ## Overview
 This document outlines all phases needed to implement the remaining features for the hilm.ai Telegram bot using Mastra.ai framework.
 
-**Current Status:** ✅ Text-based transaction extraction | ✅ Receipt OCR | ✅ Voice transcription
+**Current Status:** ✅ Text/Receipt/Voice transaction extraction | ✅ RAG & Semantic Search | ✅ Query Agent
 
-**Goal:** Implement RAG/semantic search, budget tracking, workflows, and query agent.
+**Goal:** Implement budget tracking and workflows.
 
 ---
 
@@ -102,81 +102,85 @@ Enable users to send voice messages describing transactions, automatically trans
 
 ---
 
-## Phase 3: RAG & Semantic Search (Pinecone + Embeddings)
+## Phase 3: RAG & Semantic Search (Pinecone + Embeddings) ✅ COMPLETED
 
 ### Overview
 Enable semantic search over transaction history using vector embeddings stored in Pinecone, allowing users to ask natural language questions.
 
+### Status: ✅ COMPLETED
+**Completion Date:** 2025-10-19
+**Details:** See [PHASE_3_COMPLETED.md](./PHASE_3_COMPLETED.md)
+
 ### Tasks
 
 #### 3.1 Database Setup
-- [ ] Enable pgvector extension in Supabase
-- [ ] Add `embedding` column to transactions table (vector(3072))
-- [ ] Create migration file: `supabase/migrations/add_embeddings.sql`
-- [ ] Test pgvector functionality
+- [x] Enable pgvector extension in Supabase
+- [x] Add `embedding` column to transactions table (vector(3072))
+- [x] Create migration file: `add_embeddings.sql`
+- [x] Test pgvector functionality
 
 #### 3.2 Pinecone Setup
-- [ ] Install `@pinecone-database/pinecone` package
-- [ ] Create Pinecone account and get API key
-- [ ] Create index: `hilm-transactions` (dimension: 3072)
-- [ ] Add Pinecone environment variables to `.env`
-- [ ] Create `src/lib/pinecone.ts` - centralized Pinecone client
+- [x] Install `@pinecone-database/pinecone` package
+- [x] Create Pinecone account and get API key
+- [x] Create index: `hilm-transactions` (dimension: 3072)
+- [x] Add Pinecone environment variables to `.env`
+- [x] Create `src/lib/pinecone.ts` - centralized Pinecone client
 
 #### 3.3 Embeddings Infrastructure
-- [ ] Create `src/mastra/rag/embeddings.ts`
-- [ ] Implement `generateEmbedding(text)` function using OpenAI
-- [ ] Use `text-embedding-3-large` model (3072 dimensions)
-- [ ] Add error handling and retry logic
+- [x] Create `src/mastra/rag/embeddings.ts`
+- [x] Implement `generateEmbedding(text)` function using OpenAI
+- [x] Use `text-embedding-3-large` model (3072 dimensions)
+- [x] Add error handling and retry logic
 
 #### 3.4 Update Save Transaction Flow
-- [ ] Modify `src/mastra/tools/save-transaction-tool.ts`
-- [ ] Generate embedding text: `${amount} ${currency} at ${merchant} for ${category} on ${date}`
-- [ ] Call `generateEmbedding()` function
-- [ ] Save embedding to Supabase transactions table
-- [ ] Upsert embedding to Pinecone with metadata (user_id, amount, category, merchant, date)
-- [ ] Handle embedding generation failures
+- [x] Modify `src/mastra/tools/save-transaction-tool.ts`
+- [x] Generate embedding text: `${amount} ${currency} at ${merchant} for ${category} on ${date}`
+- [x] Call `generateEmbedding()` function
+- [x] Save embedding to Supabase transactions table
+- [x] Upsert embedding to Pinecone with metadata (user_id, amount, category, merchant, date)
+- [x] Handle embedding generation failures
 
 #### 3.5 Semantic Search Tool
-- [ ] Create `src/mastra/tools/search-transactions-tool.ts`
-- [ ] Define input schema (userId, query, topK)
-- [ ] Define output schema (transactions array)
-- [ ] Generate query embedding
-- [ ] Search Pinecone with user_id filter
-- [ ] Fetch full transaction details from Supabase
-- [ ] Return ranked results
+- [x] Create `src/mastra/tools/search-transactions-tool.ts`
+- [x] Define input schema (userId, query, topK)
+- [x] Define output schema (transactions array)
+- [x] Generate query embedding
+- [x] Search Pinecone with user_id filter
+- [x] Fetch full transaction details from Supabase
+- [x] Return ranked results
 
 #### 3.6 Testing
-- [ ] Test embedding generation
-- [ ] Test Pinecone upsert
-- [ ] Test semantic search with various queries
-- [ ] Test filtering by user_id
-- [ ] Verify results are relevant
+- [x] Test embedding generation
+- [x] Test Pinecone upsert
+- [x] Test semantic search with various queries
+- [x] Test filtering by user_id
+- [x] Verify results are relevant
 
-### Files to Create/Modify
-**New:**
-- `agent/src/lib/pinecone.ts`
-- `agent/src/mastra/rag/embeddings.ts`
-- `agent/src/mastra/tools/search-transactions-tool.ts`
-- `agent/supabase/migrations/add_embeddings.sql`
+### Files Created
+- ✅ `agent/src/lib/pinecone.ts`
+- ✅ `agent/src/mastra/rag/embeddings.ts`
+- ✅ `agent/src/mastra/tools/search-transactions-tool.ts`
+- ✅ `agent/add_embeddings.sql`
 
-**Modified:**
-- `agent/src/mastra/tools/save-transaction-tool.ts` (add embedding generation)
+### Files Modified
+- ✅ `agent/src/mastra/tools/save-transaction-tool.ts` (add embedding generation)
+- ✅ `agent/.env` (added Pinecone variables)
 
 ### Dependencies
-**To Install:**
+✅ **Installed:**
 ```bash
 npm install @pinecone-database/pinecone
 ```
 
 ### Environment Variables
+✅ **Added:**
 ```bash
-PINECONE_API_KEY=xxx
-PINECONE_ENVIRONMENT=xxx
+PINECONE_API_KEY=your_pinecone_api_key_here
 PINECONE_INDEX=hilm-transactions
 ```
 
-### Estimated Time
-**4-6 hours**
+### Actual Time Spent
+**~2 hours**
 
 ---
 
@@ -320,76 +324,79 @@ Implement scheduled workflows for budget alerts and weekly summaries using Mastr
 
 ---
 
-## Phase 6: Enhanced Query Agent (Finance Insights)
+## Phase 6: Enhanced Query Agent (Finance Insights) ✅ COMPLETED
 
 ### Overview
 Create a dedicated agent for answering natural language questions about spending using RAG and conversation context.
 
+### Status: ✅ COMPLETED
+**Completion Date:** 2025-10-19
+**Details:** See [PHASE_6_COMPLETED.md](./PHASE_6_COMPLETED.md)
+
 ### Tasks
 
 #### 6.1 Finance Insights Agent
-- [ ] Create `src/mastra/agents/finance-insights-agent.ts`
-- [ ] Define agent name and description
-- [ ] Write comprehensive instructions (see example code)
-- [ ] Register tools: search-transactions-tool, check-budget-tool
-- [ ] Configure model: GPT-4o
-- [ ] Set tool choice to 'auto'
+- [x] Create `src/mastra/agents/finance-insights-agent.ts`
+- [x] Define agent name and description
+- [x] Write comprehensive instructions
+- [x] Register tools: search-transactions-tool
+- [x] Configure model: GPT-4o
+- [x] Set tool choice to 'auto'
 
 #### 6.2 Query Detection Logic
-- [ ] Create `src/lib/message-classifier.ts`
-- [ ] Implement `isTransaction(text)` function
-- [ ] Check for keywords: spent, paid, bought, purchase, $, etc.
-- [ ] Implement `isQuery(text)` function
-- [ ] Check for question words: how much, what, when, where, show me
-- [ ] Return classification: 'transaction' | 'query' | 'other'
+- [x] Create `src/lib/message-classifier.ts`
+- [x] Implement `isTransaction(text)` function
+- [x] Check for keywords: spent, paid, bought, purchase, $, etc.
+- [x] Implement `isQuery(text)` function
+- [x] Check for question words: how much, what, when, where, show me
+- [x] Return classification: 'transaction' | 'query' | 'other'
 
 #### 6.3 Update Bot Message Handler
-- [ ] Modify message handler in `src/bot.ts`
-- [ ] Call message classifier on incoming text
-- [ ] If transaction: use transaction-extractor-agent
-- [ ] If query: use finance-insights-agent
-- [ ] Pass user context (userId) to agent
-- [ ] Format agent response with markdown
+- [x] Modify message handler in `src/bot.ts`
+- [x] Call message classifier on incoming text
+- [x] If transaction: use transaction-extractor-agent
+- [x] If query: use finance-insights-agent
+- [x] Pass user context (userId) to agent
+- [x] Format agent response with markdown
 
 #### 6.4 Agent Instructions
 The finance insights agent should:
-- [ ] Use semantic search to find relevant transactions
-- [ ] Analyze transaction data
-- [ ] Provide specific numbers and insights
-- [ ] Cite which transactions were referenced
-- [ ] Offer actionable suggestions
-- [ ] Use friendly, conversational tone with emojis
-- [ ] Handle follow-up questions with context
+- [x] Use semantic search to find relevant transactions
+- [x] Analyze transaction data
+- [x] Provide specific numbers and insights
+- [x] Cite which transactions were referenced
+- [x] Offer actionable suggestions
+- [x] Use friendly, conversational tone with emojis
+- [x] Handle follow-up questions with context
 
 #### 6.5 Example Queries to Support
-- [ ] "How much did I spend on groceries this month?"
-- [ ] "Where do I spend the most money?"
-- [ ] "Show me my coffee purchases"
-- [ ] "What was my biggest expense last week?"
-- [ ] "Am I overspending on dining out?"
+- [x] "How much did I spend on groceries this month?"
+- [x] "Where do I spend the most money?"
+- [x] "Show me my coffee purchases"
+- [x] "What was my biggest expense last week?"
+- [x] "Am I overspending on dining out?"
 
 #### 6.6 Testing
-- [ ] Test various question types
-- [ ] Test with different time ranges (today, this week, last month)
-- [ ] Test category-based queries
-- [ ] Test merchant-based queries
-- [ ] Test conversation context (follow-up questions)
-- [ ] Verify RAG retrieval is accurate
+- [x] Test various question types
+- [x] Test with different time ranges (today, this week, last month)
+- [x] Test category-based queries
+- [x] Test merchant-based queries
+- [x] Test conversation context (follow-up questions)
+- [x] Verify RAG retrieval is accurate
 
-### Files to Create/Modify
-**New:**
-- `agent/src/mastra/agents/finance-insights-agent.ts`
-- `agent/src/lib/message-classifier.ts`
+### Files Created
+- ✅ `agent/src/mastra/agents/finance-insights-agent.ts`
+- ✅ `agent/src/lib/message-classifier.ts`
 
-**Modified:**
-- `agent/src/bot.ts` (add query routing logic)
-- `agent/src/mastra/index.ts` (register finance-insights-agent)
+### Files Modified
+- ✅ `agent/src/bot.ts` (added intelligent query routing)
+- ✅ `agent/src/mastra/index.ts` (registered finance-insights-agent)
 
 ### Dependencies
-- Requires Phase 3 (RAG) to be completed first
+- ✅ Requires Phase 3 (RAG) - COMPLETED
 
-### Estimated Time
-**1-2 hours**
+### Actual Time Spent
+**~1 hour**
 
 ---
 
@@ -398,27 +405,27 @@ The finance insights agent should:
 ### Phase Priority Order
 1. ✅ **Phase 1: Receipt OCR** (2-3 hrs) - COMPLETED
 2. ✅ **Phase 2: Voice Transcription** (1-2 hrs) - COMPLETED
-3. **Phase 4: Budget Tracking** (3-4 hrs) - High value, moderate complexity - NEXT
-4. **Phase 3: RAG & Semantic Search** (4-6 hrs) - Medium value, high complexity
-5. **Phase 6: Query Agent** (1-2 hrs) - Medium value, low complexity (depends on Phase 3)
+3. ✅ **Phase 3: RAG & Semantic Search** (~2 hrs) - COMPLETED
+4. ✅ **Phase 6: Query Agent** (~1 hr) - COMPLETED
+5. **Phase 4: Budget Tracking** (3-4 hrs) - High value, moderate complexity - NEXT
 6. **Phase 5: Workflows** (2-3 hrs) - Low priority, moderate complexity
 
 ### Total Estimated Time
-**15-20 hours** (3-5 hours completed, 10-15 hours remaining)
+**15-20 hours** (6-8 hours completed, 5-7 hours remaining)
 
 ### Progress
 - ✅ Phase 1: Receipt OCR - COMPLETED
 - ✅ Phase 2: Voice Transcription - COMPLETED
-- ⏸️ Phase 3: RAG & Semantic Search - PENDING
+- ✅ Phase 3: RAG & Semantic Search - COMPLETED
 - ⏸️ Phase 4: Budget Tracking - PENDING
 - ⏸️ Phase 5: Workflows - PENDING
-- ⏸️ Phase 6: Query Agent - PENDING
+- ✅ Phase 6: Query Agent - COMPLETED
 
 ### Recommended Sequence
 1. ✅ ~~Start with **Phases 1 & 2** (multi-input methods) - No DB changes, immediate user value~~
-2. **Continue with Phase 4** (budgets) - Core feature, requires DB migration - NEXT
-3. Then **Phase 3** (RAG) - Foundation for intelligent queries
-4. Then **Phase 6** (query agent) - Natural extension of RAG
+2. ✅ ~~**Phase 3** (RAG) - Foundation for intelligent queries~~
+3. ✅ ~~**Phase 6** (query agent) - Natural extension of RAG~~
+4. **Continue with Phase 4** (budgets) - Core feature, requires DB migration - NEXT
 5. Finally **Phase 5** (workflows) - Nice-to-have automation
 
 ---
@@ -541,21 +548,35 @@ All other phases use existing dependencies!
 - **Status:** Fully functional
 - **Details:** [PHASE_2_COMPLETED.md](./PHASE_2_COMPLETED.md)
 
+### Phase 3: RAG & Semantic Search ✅
+- **Completion Date:** 2025-10-19
+- **Time Spent:** ~2 hours
+- **Status:** Fully functional
+- **Details:** [PHASE_3_COMPLETED.md](./PHASE_3_COMPLETED.md)
+
+### Phase 6: Query Agent ✅
+- **Completion Date:** 2025-10-19
+- **Time Spent:** ~1 hour
+- **Status:** Fully functional
+- **Details:** [PHASE_6_COMPLETED.md](./PHASE_6_COMPLETED.md)
+
 ---
 
 ## Next Steps
 
 1. ✅ ~~Phase 1: Receipt OCR~~ - COMPLETED
 2. ✅ ~~Phase 2: Voice Transcription~~ - COMPLETED
-3. **NEXT:** Phase 4: Budget Tracking (3-4 hours)
+3. ✅ ~~Phase 3: RAG & Semantic Search~~ - COMPLETED
+4. ✅ ~~Phase 6: Query Agent~~ - COMPLETED
+5. **NEXT:** Phase 4: Budget Tracking (3-4 hours)
    - Create budgets table in database
    - Implement check-budget and set-budget tools
    - Add budget tracking to transaction flow
    - Add /budget commands to bot
-4. Phase 3: RAG & Semantic Search (4-6 hours)
-5. Phase 6: Query Agent (1-2 hours)
 6. Phase 5: Workflows (2-3 hours)
+   - Budget alert workflow (daily)
+   - Weekly summary workflow
 
 ---
 
-**Current Progress:** 2/6 phases complete (30-35% done)
+**Current Progress:** 4/6 phases complete (67% done)

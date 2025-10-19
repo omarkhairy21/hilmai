@@ -1,6 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { mastra } from './mastra/index.js';
 import { downloadFile, deleteFile, getTempFilePath } from './lib/file-utils.js';
+import { classifyWithConfidence } from './lib/message-classifier.js';
+import { supabase } from './lib/supabase.js';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -57,13 +59,9 @@ bot.on('message', async (msg, metadata) => {
     // Send typing indicator
     await bot.sendChatAction(chatId, 'typing');
 
-    // Use the transaction extractor agent
-    const agent = await mastra.getAgent('transactionExtractor');
-
-    if (!agent) {
-      await bot.sendMessage(chatId, 'Agent not found. Please check configuration.');
-      return;
-    }
+    // Classify the message
+    const classification = classifyWithConfidence(text);
+    console.log('Message classification:', classification);
 
     // Gather user information
     const userInfo = {
@@ -73,22 +71,88 @@ bot.on('message', async (msg, metadata) => {
       lastName: msg.from?.last_name || '',
     };
 
-    const result = await agent.generate(
-      `${text}\n\n[User Info: Chat ID: ${userInfo.chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName} ${userInfo.lastName}]`,
-      {
-        onStepFinish: (step) => {
-          console.log('Step finished:', step);
-        },
-        resourceId: chatId.toString(),
-      }
-    );
+    // Route to appropriate agent based on classification
+    if (classification.type === 'query') {
+      // Get user_id from database for query filtering
+      const { data: userData } = await supabase
+        .schema('public')
+        .from('users')
+        .select('id')
+        .eq('telegram_chat_id', chatId)
+        .single();
 
-    // Send response
-    await bot.sendMessage(
-      chatId,
-      `✅ Transaction recorded!\n\n${result.text}`,
-      { parse_mode: 'Markdown' }
-    );
+      if (!userData?.id) {
+        await bot.sendMessage(
+          chatId,
+          '💡 I can answer questions about your spending, but you need to log some transactions first!\n\n' +
+          'Try: "Spent $50 on groceries at Walmart"'
+        );
+        return;
+      }
+
+      // Use finance insights agent for queries
+      const agent = mastra.getAgent('financeInsights');
+
+      if (!agent) {
+        await bot.sendMessage(chatId, 'Query agent not found. Please check configuration.');
+        return;
+      }
+
+      const result = await agent.generate(
+        `User ID: ${userData.id}\n\nUser Question: ${text}\n\n[Context: User ${userInfo.firstName} (Chat ID: ${userInfo.chatId}) is asking about their spending history]`,
+        {
+          onStepFinish: (step) => {
+            console.log('Query step finished:', step);
+          },
+          resourceId: chatId.toString(),
+        }
+      );
+
+      // Send response
+      await bot.sendMessage(
+        chatId,
+        result.text,
+        { parse_mode: 'Markdown' }
+      );
+
+    } else if (classification.type === 'transaction') {
+      // Use transaction extractor agent for transactions
+      const agent = mastra.getAgent('transactionExtractor');
+
+      if (!agent) {
+        await bot.sendMessage(chatId, 'Transaction agent not found. Please check configuration.');
+        return;
+      }
+
+      const result = await agent.generate(
+        `${text}\n\n[User Info: Chat ID: ${userInfo.chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName} ${userInfo.lastName}]`,
+        {
+          onStepFinish: (step) => {
+            console.log('Transaction step finished:', step);
+          },
+          resourceId: chatId.toString(),
+        }
+      );
+
+      // Send response
+      await bot.sendMessage(
+        chatId,
+        `✅ Transaction recorded!\n\n${result.text}`,
+        { parse_mode: 'Markdown' }
+      );
+
+    } else {
+      // Handle other message types
+      await bot.sendMessage(
+        chatId,
+        `I can help you with:\n\n` +
+        `💰 Logging transactions: "Spent $50 at Target"\n` +
+        `📊 Answering questions: "How much did I spend on groceries?"\n` +
+        `📷 Scanning receipts (send a photo)\n` +
+        `🎤 Voice notes (send a voice message)\n\n` +
+        `What would you like to do?`
+      );
+    }
   } catch (error) {
     console.error('Error processing message:', error);
     await bot.sendMessage(

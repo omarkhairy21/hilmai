@@ -1,6 +1,11 @@
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
 import { supabase } from '../../lib/supabase.js';
+import { getTransactionsIndex } from '../../lib/pinecone.js';
+import {
+  generateEmbeddingWithRetry,
+  formatTransactionForEmbedding,
+} from '../rag/embeddings.js';
 
 // Type-safe wrapper for Supabase operations
 const db = supabase.schema('public');
@@ -81,7 +86,26 @@ export const saveTransactionTool = createTool({
         }
       }
 
-      // Insert transaction
+      // Generate embedding for the transaction
+      const finalTransactionDate = transactionDate || new Date().toISOString();
+      const embeddingText = formatTransactionForEmbedding({
+        amount,
+        currency: currency || 'USD',
+        merchant,
+        category,
+        date: finalTransactionDate,
+        description,
+      });
+
+      let embedding: number[] | null = null;
+      try {
+        embedding = await generateEmbeddingWithRetry(embeddingText);
+      } catch (embeddingError) {
+        console.error('Failed to generate embedding:', embeddingError);
+        // Continue without embedding - we'll still save the transaction
+      }
+
+      // Insert transaction with embedding
       const { data, error } = await db
         .from('transactions')
         .insert({
@@ -92,13 +116,40 @@ export const saveTransactionTool = createTool({
           merchant,
           category,
           description: description || null,
-          transaction_date: transactionDate || new Date().toISOString(),
+          transaction_date: finalTransactionDate,
+          embedding: embedding ? `[${embedding.join(',')}]` : null,
         })
         .select('id')
         .single();
 
       if (error) {
         throw new Error(`Failed to save transaction: ${error.message}`);
+      }
+
+      // Store in Pinecone if embedding was generated
+      if (embedding && data.id) {
+        try {
+          const index = getTransactionsIndex();
+          await index.upsert([
+            {
+              id: data.id,
+              values: embedding,
+              metadata: {
+                user_id: userId,
+                telegram_chat_id: telegramChatId,
+                amount: amount,
+                currency: currency || 'USD',
+                merchant: merchant,
+                category: category,
+                date: finalTransactionDate,
+                description: description || '',
+              },
+            },
+          ]);
+        } catch (pineconeError) {
+          console.error('Failed to store in Pinecone:', pineconeError);
+          // Don't fail the transaction if Pinecone fails
+        }
       }
 
       return {
