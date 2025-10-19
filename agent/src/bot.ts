@@ -264,7 +264,7 @@ bot.on('voice', async (msg) => {
 
   try {
     // Send processing message
-    await bot.sendMessage(chatId, '🎤 Processing voice note...');
+    await bot.sendMessage(chatId, '🎤 Transcribing voice note...');
     await bot.sendChatAction(chatId, 'typing');
 
     // Get voice file info
@@ -302,40 +302,169 @@ bot.on('voice', async (msg) => {
       lastName: msg.from?.last_name || '',
     };
 
-    // Use the transaction extractor agent with voice file
-    const agent = mastra.getAgent('transactionExtractor');
+    // Step 1: Transcribe the voice message to text
+    const transactionAgent = mastra.getAgent('transactionExtractor');
 
-    if (!agent) {
+    if (!transactionAgent) {
       await bot.sendMessage(chatId, 'Agent not found. Please check configuration.');
-      // Clean up temp file
       await deleteFile(tempFilePath);
       return;
     }
 
-    // Create a prompt for the agent to transcribe and extract the transaction
-    const prompt = `Transcribe this voice message and extract the transaction details, then save it to the database.
+    // Transcribe using the transcribe-voice tool
+    const transcribePrompt = `Transcribe this voice message to text.
 
 Voice file path: ${tempFilePath}
 
-[User Info: Chat ID: ${userInfo.chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName} ${userInfo.lastName}]
+Use the transcribe-voice tool to convert the audio to text. Only return the transcription, don't process it further.`;
 
-Use the transcribe-voice tool to convert the audio to text, then extract the transaction details and save using the save-transaction tool.`;
-
-    const result = await agent.generate(prompt, {
+    const transcriptionResult = await transactionAgent.generate(transcribePrompt, {
       onStepFinish: (step) => {
-        console.log('Step finished:', step);
+        console.log('Transcription step:', step);
       },
       resourceId: chatId.toString(),
     });
 
-    // Clean up temp file
+    // Extract transcribed text from tool results
+    let transcribedText = '';
+    if (transcriptionResult.toolResults && transcriptionResult.toolResults.length > 0) {
+      const toolResult = transcriptionResult.toolResults[0];
+      if (toolResult && 'payload' in toolResult && toolResult.payload && 'result' in toolResult.payload) {
+        transcribedText = (toolResult.payload.result as { text: string }).text;
+      }
+    }
+
+    // Fallback to text response if no tool result
+    if (!transcribedText) {
+      transcribedText = transcriptionResult.text;
+    }
+
+    console.log('Transcribed text:', transcribedText);
+
+    // Clean up temp file (no longer needed)
     await deleteFile(tempFilePath);
     tempFilePath = null;
 
-    // Send response
-    await bot.sendMessage(chatId, `✅ Voice message processed!\n\n${result.text}`, {
-      parse_mode: 'Markdown',
+    if (!transcribedText || transcribedText.trim().length === 0) {
+      await bot.sendMessage(
+        chatId,
+        '❌ Could not transcribe the voice note. Please try again or type your message.'
+      );
+      return;
+    }
+
+    // Step 2: Classify the transcribed text (same as text message handler)
+    await bot.sendChatAction(chatId, 'typing');
+
+    const classifierAgent = mastra.getAgent('messageClassifier');
+
+    if (!classifierAgent) {
+      console.error('Classifier agent not found');
+      await bot.sendMessage(chatId, '❌ System error. Please try again.');
+      return;
+    }
+
+    const classificationResult = await classifierAgent.generate(transcribedText, {
+      onStepFinish: (step) => {
+        console.log('Classification step:', step);
+      },
     });
+
+    // Extract classification from the agent's tool results
+    let classification: { type: string; confidence: string; reason: string } = {
+      type: 'other',
+      confidence: 'low',
+      reason: 'No classification performed',
+    };
+
+    if (classificationResult.toolResults && classificationResult.toolResults.length > 0) {
+      const toolResult = classificationResult.toolResults[0];
+      if (
+        toolResult &&
+        'payload' in toolResult &&
+        toolResult.payload &&
+        'result' in toolResult.payload
+      ) {
+        classification = toolResult.payload.result as typeof classification;
+      }
+    }
+
+    console.log('Voice message classification:', classification);
+
+    // Step 3: Route to appropriate agent based on classification
+    if (classification.type === 'query') {
+      // Get user_id from database for query filtering
+      const { data: userData } = await supabase
+        .schema('public')
+        .from('users')
+        .select('id')
+        .eq('telegram_chat_id', chatId)
+        .single();
+
+      if (!userData?.id) {
+        await bot.sendMessage(
+          chatId,
+          '💡 I can answer questions about your spending, but you need to log some transactions first!\n\n' +
+            'Try: "Spent $50 on groceries at Walmart"'
+        );
+        return;
+      }
+
+      // Use finance insights agent for queries
+      const agent = mastra.getAgent('financeInsights');
+
+      if (!agent) {
+        await bot.sendMessage(chatId, 'Query agent not found. Please check configuration.');
+        return;
+      }
+
+      const result = await agent.generate(
+        `User ID: ${userData.id}\n\nUser Question: ${transcribedText}\n\n[Context: User ${userInfo.firstName} (Chat ID: ${userInfo.chatId}) asked via voice message]`,
+        {
+          onStepFinish: (step) => {
+            console.log('Query step finished:', step);
+          },
+          resourceId: chatId.toString(),
+        }
+      );
+
+      // Send response
+      await bot.sendMessage(chatId, result.text, { parse_mode: 'Markdown' });
+    } else if (classification.type === 'transaction') {
+      // Use transaction extractor agent
+      const agent = mastra.getAgent('transactionExtractor');
+
+      if (!agent) {
+        await bot.sendMessage(chatId, 'Transaction agent not found. Please check configuration.');
+        return;
+      }
+
+      const result = await agent.generate(
+        `${transcribedText}\n\n[User Info: Chat ID: ${userInfo.chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName} ${userInfo.lastName}]`,
+        {
+          onStepFinish: (step) => {
+            console.log('Transaction step finished:', step);
+          },
+          resourceId: chatId.toString(),
+        }
+      );
+
+      // Send response
+      await bot.sendMessage(chatId, `✅ Transaction recorded!\n\n${result.text}`, {
+        parse_mode: 'Markdown',
+      });
+    } else {
+      // Handle other message types
+      await bot.sendMessage(
+        chatId,
+        `I can help you with:\n\n` +
+          `💰 Logging transactions: "Spent $50 at Target"\n` +
+          `📊 Answering questions: "How much did I spend on groceries?"\n` +
+          `📷 Scanning receipts (send a photo)\n` +
+          `🎤 Voice notes (send a voice message)\n\n` +
+          `What would you like to do?`
+      );
+    }
   } catch (error) {
     console.error('Error processing voice:', error);
 
