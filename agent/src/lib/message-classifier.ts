@@ -1,194 +1,148 @@
 /**
- * Message Classifier
- * Determines whether a user message is a transaction or a query
+ * LLM-based Message Classifier
+ * Uses OpenAI to classify messages as transaction, query, or other
+ * Supports multilingual inputs and better context understanding
  */
+
+import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
 
 export type MessageType = 'transaction' | 'query' | 'other';
 
 /**
- * Transaction keywords that indicate the user is logging an expense
+ * Classify a user message using LLM
  */
-const TRANSACTION_KEYWORDS = [
-  // Action verbs
-  'spent', 'paid', 'bought', 'purchased', 'cost', 'costs',
-  // Transaction indicators
-  'transaction', 'expense', 'buy', 'pay', 'charge',
-  // Currency symbols (will be checked separately)
-];
-
-/**
- * Query keywords that indicate the user is asking a question
- */
-const QUERY_KEYWORDS = [
-  // Question words
-  'how much', 'what', 'when', 'where', 'which', 'who',
-  'show', 'show me', 'find', 'search', 'list',
-  // Analysis words
-  'total', 'sum', 'average', 'spending', 'spent on',
-  'analyze', 'breakdown', 'summary', 'report',
-  // Time-based queries
-  'last month', 'this month', 'last week', 'this week',
-  'today', 'yesterday', 'last year', 'this year',
-];
-
-/**
- * Check if message contains a currency symbol or amount pattern
- */
-function hasCurrencyOrAmount(text: string): boolean {
-  // Currency symbols
-  const currencySymbols = /[$€£¥₹₽฿₪₩]/;
-
-  // Amount patterns: "25.50", "100", "1,500.00", etc.
-  const amountPattern = /\b\d+([,.]?\d+)*(\.\d{2})?\b/;
-
-  return currencySymbols.test(text) || amountPattern.test(text);
-}
-
-/**
- * Check if message starts with a question word or contains question mark
- */
-function isQuestion(text: string): boolean {
-  const questionWords = /^(how|what|when|where|which|who|why|can|could|would|should|is|are|was|were|do|does|did|show|find)\b/i;
-  return questionWords.test(text) || text.includes('?');
-}
-
-/**
- * Classify a user message as transaction, query, or other
- */
-export function classifyMessage(text: string): MessageType {
-  const lowerText = text.toLowerCase().trim();
-
-  // Handle commands separately
-  if (lowerText.startsWith('/')) {
-    return 'other';
-  }
-
-  // Check if it's a question
-  const hasQuestionIndicator = isQuestion(lowerText);
-
-  // Check for query keywords
-  const hasQueryKeyword = QUERY_KEYWORDS.some(keyword =>
-    lowerText.includes(keyword.toLowerCase())
-  );
-
-  // Check for transaction keywords
-  const hasTransactionKeyword = TRANSACTION_KEYWORDS.some(keyword =>
-    lowerText.includes(keyword.toLowerCase())
-  );
-
-  // Check for currency/amount
-  const hasAmount = hasCurrencyOrAmount(text);
-
-  // Decision logic
-  // If it's a question OR has query keywords, treat as query
-  if (hasQuestionIndicator || hasQueryKeyword) {
-    return 'query';
-  }
-
-  // If it has transaction keywords AND amount, it's a transaction
-  if (hasTransactionKeyword && hasAmount) {
-    return 'transaction';
-  }
-
-  // If it has amount but no question words, likely a transaction
-  if (hasAmount && !hasQuestionIndicator) {
-    return 'transaction';
-  }
-
-  // If it has transaction keywords without query context, it's a transaction
-  if (hasTransactionKeyword && !hasQueryKeyword) {
-    return 'transaction';
-  }
-
-  // Default to other
-  return 'other';
+export async function classifyMessage(text: string): Promise<MessageType> {
+  const result = await classifyWithConfidence(text);
+  return result.type;
 }
 
 /**
  * Check if a message is a transaction (convenience function)
  */
-export function isTransaction(text: string): boolean {
-  return classifyMessage(text) === 'transaction';
+export async function isTransaction(text: string): Promise<boolean> {
+  const type = await classifyMessage(text);
+  return type === 'transaction';
 }
 
 /**
  * Check if a message is a query (convenience function)
  */
-export function isQuery(text: string): boolean {
-  return classifyMessage(text) === 'query';
+export async function isQuery(text: string): Promise<boolean> {
+  const type = await classifyMessage(text);
+  return type === 'query';
 }
 
 /**
- * Get a detailed classification with confidence
+ * Get a detailed classification with confidence using LLM
  */
-export function classifyWithConfidence(text: string): {
+export async function classifyWithConfidence(text: string): Promise<{
   type: MessageType;
   confidence: 'high' | 'medium' | 'low';
   reason: string;
-} {
-  const lowerText = text.toLowerCase().trim();
-  const type = classifyMessage(text);
+}> {
+  const trimmedText = text.trim();
 
-  if (type === 'other') {
+  // Handle commands separately
+  if (trimmedText.startsWith('/')) {
     return {
-      type,
+      type: 'other',
       confidence: 'high',
-      reason: 'No transaction or query indicators found',
+      reason: 'Bot command',
     };
   }
 
-  const hasQuestion = isQuestion(lowerText);
-  const hasAmount = hasCurrencyOrAmount(text);
-  const hasTransactionKeyword = TRANSACTION_KEYWORDS.some(k => lowerText.includes(k));
-  const hasQueryKeyword = QUERY_KEYWORDS.some(k => lowerText.includes(k));
-
-  if (type === 'query') {
-    if (hasQuestion && hasQueryKeyword) {
-      return {
-        type,
-        confidence: 'high',
-        reason: 'Contains question word and query keywords',
-      };
-    }
-    if (hasQuestion || hasQueryKeyword) {
-      return {
-        type,
-        confidence: 'medium',
-        reason: hasQuestion ? 'Contains question word' : 'Contains query keywords',
-      };
-    }
+  // Handle empty messages
+  if (!trimmedText) {
     return {
-      type,
-      confidence: 'low',
-      reason: 'Unclear query pattern',
+      type: 'other',
+      confidence: 'high',
+      reason: 'Empty message',
     };
   }
 
-  if (type === 'transaction') {
-    if (hasTransactionKeyword && hasAmount) {
-      return {
-        type,
-        confidence: 'high',
-        reason: 'Contains transaction keyword and amount',
-      };
-    }
-    if (hasAmount) {
-      return {
-        type,
-        confidence: 'medium',
-        reason: 'Contains amount but no explicit transaction keyword',
-      };
-    }
+  try {
+    const { text: response } = await generateText({
+      model: openai('gpt-4o-mini'),
+      messages: [
+        {
+          role: 'system',
+          content: `You are a message classifier for a financial assistant bot. Classify user messages into one of three categories:
+
+1. TRANSACTION: User is logging an expense/transaction
+   - Examples: "I bought coffee for $5", "Spent 50 AED on groceries", "اشتريت قهوة بـ 20 درهم", "Pagué 100 euros en el supermercado"
+   - Indicators: Contains amount + action (bought, spent, paid) OR just amount with merchant
+   - Language: Any language (English, Arabic, Spanish, French, etc.)
+
+2. QUERY: User is asking about their spending/transactions
+   - Examples: "How much did I spend on coffee?", "Show my groceries", "كم صرفت على القهوة؟", "¿Cuánto gasté en comida?"
+   - Indicators: Questions about past spending, requests for analysis/reports/summaries
+   - Language: Any language
+
+3. OTHER: Greetings, chitchat, or unclear messages
+   - Examples: "Hello", "Thanks", "What can you do?"
+
+Respond in this EXACT JSON format:
+{
+  "type": "transaction" | "query" | "other",
+  "confidence": "high" | "medium" | "low",
+  "reason": "brief explanation"
+}
+
+IMPORTANT:
+- If the message contains an amount/price AND describes a purchase/expense, classify as TRANSACTION
+- If the message asks about past spending or requests information, classify as QUERY
+- Confidence should be:
+  * HIGH: Clear indicators present
+  * MEDIUM: Some ambiguity but leaning towards one category
+  * LOW: Very unclear or could be multiple categories`,
+        },
+        {
+          role: 'user',
+          content: trimmedText,
+        },
+      ],
+      temperature: 0.3,
+    });
+
+    // Parse the response
+    const cleaned = response.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    const parsed = JSON.parse(cleaned);
+
     return {
-      type,
+      type: parsed.type as MessageType,
+      confidence: parsed.confidence as 'high' | 'medium' | 'low',
+      reason: parsed.reason,
+    };
+  } catch (error) {
+    console.error('Error classifying message with LLM:', error);
+
+    // Fallback to simple heuristic
+    const lowerText = trimmedText.toLowerCase();
+    const hasQuestionMark = trimmedText.includes('?');
+    const hasNumber = /\d/.test(trimmedText);
+    const hasQuestionWord = /^(how|what|when|where|which|who|why|show|find)/i.test(lowerText);
+
+    if (hasQuestionMark || hasQuestionWord) {
+      return {
+        type: 'query',
+        confidence: 'low',
+        reason: 'Fallback: detected question pattern',
+      };
+    }
+
+    if (hasNumber) {
+      return {
+        type: 'transaction',
+        confidence: 'low',
+        reason: 'Fallback: detected number (possible amount)',
+      };
+    }
+
+    return {
+      type: 'other',
       confidence: 'low',
-      reason: 'Transaction keyword found but no amount',
+      reason: 'Fallback: no clear indicators',
     };
   }
-
-  return {
-    type,
-    confidence: 'low',
-    reason: 'Default classification',
-  };
 }

@@ -415,6 +415,146 @@ export const budgetAlertWorkflow = new Workflow({
 });
 ```
 
+---
+
+## Mastra.ai Best Practices
+
+### ✅ When to Use Tools vs Agents
+
+**Use a Tool when:**
+- You need to perform a specific, well-defined operation
+- The logic involves external API calls or database operations
+- You want structured input/output with Zod schemas
+- Examples: Extract transaction, search database, transcribe audio
+
+**Use an Agent when:**
+- You need LLM reasoning and decision-making
+- The task requires using multiple tools
+- You want the LLM to decide which tool to use
+- Examples: Transaction extractor (uses multiple tools), Finance insights
+
+**Use an Agent + Tool together when:**
+- You need LLM-based classification/reasoning with structured output
+- The agent calls the tool, which handles the LLM call and returns structured data
+- Example: Message classifier (agent calls classify-message tool)
+
+### 🔧 Creating Tools with LLM Integration
+
+When you need LLM-based logic (like classification), create a tool that:
+
+1. **Has proper schemas:**
+```typescript
+import { createTool } from '@mastra/core';
+import { z } from 'zod';
+import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
+
+export const classifyMessageTool = createTool({
+  id: 'classify-message',
+  description: 'Classify user messages (multilingual support)',
+  inputSchema: z.object({
+    text: z.string().describe('The user message to classify'),
+  }),
+  outputSchema: z.object({
+    type: z.enum(['transaction', 'query', 'other']),
+    confidence: z.enum(['high', 'medium', 'low']),
+    reason: z.string(),
+  }),
+  execute: async ({ context }) => {
+    const { text } = context;
+
+    // Call LLM here
+    const { text: response } = await generateText({
+      model: openai('gpt-4o-mini'),
+      messages: [/* ... */],
+    });
+
+    // Parse and return structured data matching outputSchema
+    return { type: 'transaction', confidence: 'high', reason: '...' };
+  },
+});
+```
+
+2. **Install required packages:**
+```bash
+npm install ai  # For generateText
+```
+
+3. **Create a simple agent wrapper:**
+```typescript
+import { Agent } from '@mastra/core/agent';
+import { classifyMessageTool } from '../tools/classify-message-tool.js';
+
+export const messageClassifierAgent = new Agent({
+  name: 'Message Classifier',
+  instructions: 'Use the classify-message tool to classify the user message.',
+  model: openai('gpt-4o-mini'),
+  tools: {
+    classifyMessage: classifyMessageTool,
+  },
+});
+```
+
+4. **Register in Mastra:**
+```typescript
+// src/mastra/index.ts
+import { messageClassifierAgent } from './agents/message-classifier-agent.js';
+
+export const mastra = new Mastra({
+  agents: {
+    messageClassifier: messageClassifierAgent,
+    // ... other agents
+  },
+});
+```
+
+5. **Call from bot and extract result:**
+```typescript
+const classifierAgent = mastra.getAgent('messageClassifier');
+const result = await classifierAgent.generate(text);
+
+// Extract tool result from agent response
+const classification = result.toolResults?.[0]?.payload?.result;
+// classification = { type: 'transaction', confidence: 'high', reason: '...' }
+```
+
+### 🎯 Key Lessons
+
+**❌ Don't do this:**
+- Call tools directly with `.execute()` (hard to get context right)
+- Parse JSON manually from agent text responses
+- Use rule-based logic for multilingual classification
+
+**✅ Do this:**
+- Create tool with LLM call inside
+- Use agent to call the tool
+- Extract result from `toolResults[0].payload.result`
+- Use Zod schemas for type safety
+- Let LLM handle multilingual logic
+
+### 📍 Accessing Tool Results
+
+When an agent calls a tool, access the result like this:
+
+```typescript
+const result = await agent.generate(input);
+
+// Tool result structure:
+// result.toolResults[0].payload = {
+//   toolName: 'classifyMessage',
+//   args: { text: '...' },
+//   result: { type: 'transaction', confidence: 'high', reason: '...' }
+// }
+
+if (result.toolResults && result.toolResults.length > 0) {
+  const toolResult = result.toolResults[0];
+  if (toolResult && 'payload' in toolResult) {
+    const data = toolResult.payload.result;
+    // Use data here - it matches your outputSchema!
+  }
+}
+```
+
 ### Important: NO AI Libraries in Web Project
 
 For the **Astro website**, do NOT add:

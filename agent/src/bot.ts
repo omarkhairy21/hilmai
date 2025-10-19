@@ -1,7 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { mastra } from './mastra/index.js';
 import { downloadFile, deleteFile, getTempFilePath } from './lib/file-utils.js';
-import { classifyWithConfidence } from './lib/message-classifier.js';
 import { supabase } from './lib/supabase.js';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -43,12 +42,11 @@ bot.onText(/\/help/, async (msg) => {
 });
 
 // Handle text messages
-bot.on('message', async (msg, metadata) => {
+bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
   const fromUser = msg.from;
   console.log('fromUser', fromUser);
-  const messageType = metadata?.type;
 
   // Ignore commands
   if (!text || text.startsWith('/')) {
@@ -59,8 +57,36 @@ bot.on('message', async (msg, metadata) => {
     // Send typing indicator
     await bot.sendChatAction(chatId, 'typing');
 
-    // Classify the message
-    const classification = classifyWithConfidence(text);
+    // Classify the message using the classifier agent
+    const classifierAgent = mastra.getAgent('messageClassifier');
+
+    if (!classifierAgent) {
+      console.error('Classifier agent not found');
+      await bot.sendMessage(chatId, '❌ System error. Please try again.');
+      return;
+    }
+
+    const classificationResult = await classifierAgent.generate(text, {
+      onStepFinish: (step) => {
+        console.log('Classification step:', step);
+      },
+    });
+
+    // Extract classification from the agent's tool results
+    let classification: { type: string; confidence: string; reason: string } = {
+      type: 'other',
+      confidence: 'low',
+      reason: 'No classification performed',
+    };
+
+    // The tool result is in classificationResult.toolResults[0].payload.result
+    if (classificationResult.toolResults && classificationResult.toolResults.length > 0) {
+      const toolResult = classificationResult.toolResults[0];
+      if (toolResult && 'payload' in toolResult && toolResult.payload && 'result' in toolResult.payload) {
+        classification = toolResult.payload.result as typeof classification;
+      }
+    }
+
     console.log('Message classification:', classification);
 
     // Gather user information
@@ -195,7 +221,7 @@ bot.on('photo', async (msg) => {
     };
 
     // Use the transaction extractor agent with receipt extraction
-    const agent = await mastra.getAgent('transactionExtractor');
+    const agent = mastra.getAgent('transactionExtractor');
 
     if (!agent) {
       await bot.sendMessage(chatId, 'Agent not found. Please check configuration.');

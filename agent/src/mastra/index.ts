@@ -3,11 +3,13 @@ import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { transactionExtractorAgent } from './agents/transaction-extractor-agent.js';
 import { financeInsightsAgent } from './agents/finance-insights-agent.js';
+import { messageClassifierAgent } from './agents/message-classifier-agent.js';
 
 export const mastra = new Mastra({
   agents: {
     transactionExtractor: transactionExtractorAgent,
     financeInsights: financeInsightsAgent,
+    messageClassifier: messageClassifierAgent,
   },
 
   storage: new LibSQLStore({
