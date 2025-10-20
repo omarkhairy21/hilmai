@@ -3,7 +3,7 @@ import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { registerApiRoute } from '@mastra/core/server';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { transactionExtractorAgent } from './agents/transaction-extractor-agent.js';
 import { financeInsightsAgent } from './agents/finance-insights-agent.js';
 import { messageClassifierAgent } from './agents/message-classifier-agent.js';
@@ -58,7 +58,11 @@ export const mastra = new Mastra({
           }
 
           const update = await c.req.json();
-          const { handleUpdate } = await import('../bot.js');
+          // Compute a file URL at runtime to avoid circular import during bundling
+          const botModuleUrl = pathToFileURL(
+            path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../bot.js')
+          ).href;
+          const { handleUpdate } = await import(botModuleUrl);
           await handleUpdate(update);
 
           return c.json({ ok: true });
