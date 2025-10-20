@@ -7,12 +7,18 @@ import { fileURLToPath } from 'node:url';
 import { transactionExtractorAgent } from './agents/transaction-extractor-agent.js';
 import { financeInsightsAgent } from './agents/finance-insights-agent.js';
 import { messageClassifierAgent } from './agents/message-classifier-agent.js';
+import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow.js';
+import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow.js';
 
 export const mastra = new Mastra({
   agents: {
     transactionExtractor: transactionExtractorAgent,
     financeInsights: financeInsightsAgent,
     messageClassifier: messageClassifierAgent,
+  },
+  workflows: {
+    telegramRouting: telegramRoutingWorkflow,
+    telegramVoice: telegramVoiceWorkflow,
   },
 
   storage: new LibSQLStore({
