@@ -1,4 +1,4 @@
-import TelegramBot from 'node-telegram-bot-api';
+import TelegramBot, { Update } from 'node-telegram-bot-api';
 import { mastra } from './mastra/index.js';
 import { downloadFile, deleteFile, getTempFilePath } from './lib/file-utils.js';
 import { supabase } from './lib/supabase.js';
@@ -9,8 +9,16 @@ if (!token) {
   throw new Error('TELEGRAM_BOT_TOKEN is required');
 }
 
-// Create bot instance
-export const bot = new TelegramBot(token, { polling: true });
+// Toggle polling for DX: use polling in dev/local, webhooks in production
+const usePolling = process.env.TELEGRAM_POLLING === 'true' || process.env.NODE_ENV !== 'production';
+
+export const bot = new TelegramBot(token, { polling: usePolling });
+
+
+export async function handleUpdate(update: Update) {
+  await bot.processUpdate(update);
+}
+
 
 // Handle /start command
 bot.onText(/\/start/, async (msg) => {
