@@ -1,7 +1,7 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { registerApiRoute } from '@mastra/core/server';
+import { defineAuth, registerApiRoute } from '@mastra/core/server';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { transactionExtractorAgent } from './agents/transaction-extractor-agent.js';
@@ -41,6 +41,19 @@ export const mastra = new Mastra({
   },
   server: {
     port: 4111,
+    experimental_auth: defineAuth({
+      public: [
+        '/health',
+        ['/telegram/webhook', ['POST']]
+      ],
+      authenticateToken: async (token) => {
+        if (token && token === process.env.MASTRA_DASHBOARD_TOKEN) {
+          return { role: 'admin' };
+        }
+        throw new Error('invalid token');
+      },
+      authorize: async () => true
+    }),
     apiRoutes: [
       registerApiRoute('/health', {
         method: 'GET',
