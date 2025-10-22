@@ -42,6 +42,17 @@ export const mastra = new Mastra({
   server: {
     port: 4111,
     apiRoutes: [
+      registerApiRoute('/health', {
+        method: 'GET',
+        handler: async (c: any) => {
+          return c.json({
+            status: 'ok',
+            service: 'hilm-ai-agent',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+          });
+        },
+      }),
       registerApiRoute('/telegram/webhook', {
         method: 'POST',
         handler: async (c: any) => {
