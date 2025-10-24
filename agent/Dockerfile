@@ -2,20 +2,26 @@ FROM node:20.9.0
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json package-lock.json ./
+# Enable corepack for yarn
+RUN corepack enable
 
-# Install dependencies (with clean install to avoid version conflicts)
-RUN npm ci
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install dependencies using yarn
+RUN yarn install --frozen-lockfile --production=false
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN yarn build
 
 # Expose Mastra server port
 EXPOSE 4111
 
+# Set environment to production
+ENV NODE_ENV=production
+
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["yarn", "start"]
