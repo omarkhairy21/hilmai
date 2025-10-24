@@ -127,7 +127,8 @@ export const mastra = new Mastra({
           if (!bot) {
             const { createBot } = await import('../bot.js');
             bot = createBot(mastra);
-            // Don't call bot.start() for webhook mode - just init the bot instance
+            // Initialize bot for webhook mode - required by Grammy before handleUpdate
+            await bot.init();
             logger?.debug('telegram:webhook:bot_initialized');
           }
 
