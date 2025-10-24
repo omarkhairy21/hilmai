@@ -3,13 +3,14 @@ import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { defineAuth, registerApiRoute } from '@mastra/core/server';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { transactionExtractorAgent } from './agents/transaction-extractor-agent.js';
 import { financeInsightsAgent } from './agents/finance-insights-agent.js';
 import { messageClassifierAgent } from './agents/message-classifier-agent.js';
 import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow.js';
 import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow.js';
 import { LangfuseExporter } from '@mastra/langfuse';
+import { handleWebhookUpdate } from '../webhook-handler.js';
 
 export const mastra = new Mastra({
   agents: {
@@ -34,7 +35,7 @@ export const mastra = new Mastra({
 
   telemetry: {
     serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
-    enabled: true,
+    enabled: process.env.NODE_ENV === 'production',
     export: {
       type: 'otlp',
       endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -122,12 +123,8 @@ export const mastra = new Mastra({
             hasCallbackQuery: Boolean(update?.callback_query),
             updateId: update?.update_id,
           });
-          // Compute a file URL at runtime to avoid circular import during bundling
-          const botModuleUrl = pathToFileURL(
-            path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../bot.js')
-          ).href;
-          const { handleUpdate } = await import(botModuleUrl);
-          await handleUpdate(update);
+
+          await handleWebhookUpdate(update);
           logger?.debug('telegram:webhook:processed');
           return c.json({ ok: true });
         },
