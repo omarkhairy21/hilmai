@@ -88,27 +88,47 @@ export const mastra = new Mastra({
       }),
       registerApiRoute('/telegram/webhook', {
         method: 'POST',
-        handler: async (c: any) => {
+        handler: async (c) => {
+          const logger = c.get('mastra').getLogger();
           const secret = c.req.header('x-telegram-bot-api-secret-token');
           const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
 
-          if (!expected || secret !== expected) {
+          // Log receipt (without sensitive data)
+          logger.debug('telegram:webhook:received', {
+            hasHeader: Boolean(secret),
+            expectedConfigured: Boolean(expected),
+          });
+
+          if (!expected) {
+            logger?.warn('telegram:webhook:reject:no_expected_secret_configured');
+            return new Response('unauthorized', { status: 401 });
+          }
+          if (secret !== expected) {
+            logger?.warn('telegram:webhook:reject:secret_mismatch', {
+              providedLen: secret?.length ?? 0,
+            });
             return new Response('unauthorized', { status: 401 });
           }
 
           // If running in polling mode locally, ignore webhook to avoid double-processing
           if (process.env.TELEGRAM_POLLING === 'true') {
+            logger?.debug('telegram:webhook:ignored_due_to_polling');
             return c.json({ ok: true });
           }
 
           const update = await c.req.json();
+          logger?.debug('telegram:webhook:update_received', {
+            hasMessage: Boolean(update?.message),
+            hasCallbackQuery: Boolean(update?.callback_query),
+            updateId: update?.update_id,
+          });
           // Compute a file URL at runtime to avoid circular import during bundling
           const botModuleUrl = pathToFileURL(
             path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../bot.js')
           ).href;
           const { handleUpdate } = await import(botModuleUrl);
           await handleUpdate(update);
-
+          logger?.debug('telegram:webhook:processed');
           return c.json({ ok: true });
         },
       }),
