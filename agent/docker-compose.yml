@@ -32,6 +32,19 @@ services:
 
       # App settings
       LOG_LEVEL: ${LOG_LEVEL:-info}
+
+      # --- Observability (SigNoz via OTEL) ---
+      # Optional: set these if you have a SigNoz resource in Coolify
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-hilm-agent}
+      # Choose one protocol and endpoint
+      # For HTTP collector
+      # OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}
+      # OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      # For gRPC collector
+      # OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
+      # OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      # SigNoz Cloud token header
+      # OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS}
     volumes:
       # Persist Mastra database
       - mastra-data:/app/data

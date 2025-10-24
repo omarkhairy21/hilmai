@@ -56,6 +56,26 @@ PINECONE_INDEX=hilm-transactions
 
 # App Settings
 LOG_LEVEL=info
+
+# Observability (optional but recommended)
+# --- SigNoz / OTEL ---
+# Your service name (shows up in SigNoz)
+OTEL_SERVICE_NAME=hilm-agent
+# Choose one protocol and endpoint
+# HTTP (collector v1/traces)
+# OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+# OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-signoz-collector>/v1/traces
+# or gRPC (collector :4317)
+# OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+# OTEL_EXPORTER_OTLP_ENDPOINT=grpc://<your-signoz-collector>:4317
+# If using SigNoz Cloud, pass ingestion token via headers:
+# OTEL_EXPORTER_OTLP_HEADERS=signoz-access-token=<YOUR_TOKEN>
+
+# --- Langfuse (optional) ---
+# Set only if you want AI trace dashboards in Langfuse
+# LANGFUSE_PUBLIC_KEY=pk_...
+# LANGFUSE_SECRET_KEY=sk_...
+# LANGFUSE_BASE_URL=https://cloud.langfuse.com
 ```
 
 #### Generate Webhook Secret
@@ -210,6 +230,24 @@ Coolify provides:
 - Application logs
 - Health check status
 - Container restart policy
+
+### Using a pre-configured SigNoz resource in Coolify
+
+If you already have SigNoz running as a Coolify resource (self-hosted or cloud agent), you can wire the agent to it via OTLP:
+
+1. In Coolify, open your SigNoz resource and locate its OTLP endpoint:
+   - HTTP: `https://<collector-host>/v1/traces`
+   - gRPC: `grpc://<collector-host>:4317`
+   - If SigNoz Cloud, copy the ingestion token.
+2. In your Hilm Agent resource → Environment variables, set:
+   - `OTEL_SERVICE_NAME=hilm-agent`
+   - Either HTTP or gRPC pair:
+     - HTTP: `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`
+       `OTEL_EXPORTER_OTLP_ENDPOINT=https://<collector>/v1/traces`
+     - gRPC: `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`
+       `OTEL_EXPORTER_OTLP_ENDPOINT=grpc://<collector>:4317`
+   - If SigNoz Cloud: `OTEL_EXPORTER_OTLP_HEADERS=signoz-access-token=<YOUR_TOKEN>`
+3. Redeploy the agent. You should see a new service named `hilm-agent` in SigNoz within a few minutes as traffic flows.
 
 ## Production Checklist
 

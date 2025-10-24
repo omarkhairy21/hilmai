@@ -9,6 +9,7 @@ import { financeInsightsAgent } from './agents/finance-insights-agent.js';
 import { messageClassifierAgent } from './agents/message-classifier-agent.js';
 import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow.js';
 import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow.js';
+import { LangfuseExporter } from '@mastra/langfuse';
 
 export const mastra = new Mastra({
   agents: {
@@ -32,12 +33,31 @@ export const mastra = new Mastra({
   }),
 
   telemetry: {
-    // Telemetry is deprecated and will be removed in the Nov 4th release
-    enabled: false,
+    serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
+    enabled: true,
+    export: {
+      type: 'otlp',
+      endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+    },
   },
   observability: {
-    // Enables DefaultExporter and CloudExporter for AI tracing
+    // Enables DefaultExporter and optional custom exporters
     default: { enabled: true },
+    configs: {
+      default: {
+        serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
+        exporters: [
+          process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY
+            ? new LangfuseExporter({
+                publicKey: process.env.LANGFUSE_PUBLIC_KEY!,
+                secretKey: process.env.LANGFUSE_SECRET_KEY!,
+                baseUrl: process.env.LANGFUSE_BASE_URL,
+                options: { environment: process.env.NODE_ENV },
+              })
+            : undefined,
+        ].filter(Boolean) as any,
+      },
+    },
   },
   server: {
     port: 4111,
