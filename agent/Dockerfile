@@ -1,4 +1,4 @@
-FROM node:20.9.0
+FROM node:22
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN corepack enable
 COPY package.json yarn.lock ./
 
 # Install dependencies using yarn
-RUN yarn install --frozen-lockfile --production=false
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .

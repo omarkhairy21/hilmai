@@ -36,7 +36,11 @@ const transcribe = createStep({
 
 const classificationSchema = z.object({ type: z.string() });
 
-const baseRouteInput = z.object({ text: z.string(), chatId: z.number(), userInfo: inputSchema.shape.userInfo });
+const baseRouteInput = z.object({
+  text: z.string(),
+  chatId: z.number(),
+  userInfo: inputSchema.shape.userInfo,
+});
 
 const classifyAndRoute = createStep({
   id: 'classifyAndRoute',
@@ -46,7 +50,10 @@ const classifyAndRoute = createStep({
     const baseInput = baseRouteInput.parse(inputData);
     const { text, chatId, userInfo } = baseInput;
     if (!text || !text.trim()) {
-      return { responseText: '❌ Could not transcribe the voice note. Please try again or type your message.' };
+      return {
+        responseText:
+          '❌ Could not transcribe the voice note. Please try again or type your message.',
+      };
     }
 
     const classifier = mastra.getAgent('messageClassifier');
@@ -58,7 +65,9 @@ const classifyAndRoute = createStep({
 
     if (classification.type === 'query') {
       const agent = mastra.getAgent('financeInsights');
-      const result = await agent.generate(`User Question: ${text}`, { resourceId: chatId.toString() });
+      const result = await agent.generate(`User Question: ${text}`, {
+        resourceId: chatId.toString(),
+      });
       return { responseText: result.text };
     }
 
@@ -88,5 +97,3 @@ export const telegramVoiceWorkflow = createWorkflow({
   .then(transcribe)
   .then(classifyAndRoute)
   .commit();
-
-

@@ -9,12 +9,10 @@ import { financeInsightsAgent } from './agents/finance-insights-agent';
 import { messageClassifierAgent } from './agents/message-classifier-agent';
 import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow';
 import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow';
-//import { LangfuseExporter } from '@mastra/langfuse';
-import { createBot } from '../bot';
-import type TelegramBot from 'node-telegram-bot-api';
+import type { Bot } from 'grammy';
 
-// Bot will be initialized after mastra is created
-let bot: TelegramBot;
+// Bot instance (will be initialized lazily in webhook handler)
+let bot: Bot | null = null;
 
 export const mastra = new Mastra({
   agents: {
@@ -67,17 +65,14 @@ export const mastra = new Mastra({
   server: {
     port: 4111,
     experimental_auth: defineAuth({
-      public: [
-        '/health',
-        ['/telegram/webhook', ['POST']]
-      ],
+      public: ['/health', ['/telegram/webhook', ['POST']]],
       authenticateToken: async (token) => {
         if (token && token === process.env.MASTRA_DASHBOARD_TOKEN) {
           return { role: 'admin' };
         }
         throw new Error('invalid token');
       },
-      authorize: async () => true
+      authorize: async () => true,
     }),
     apiRoutes: [
       registerApiRoute('/health', {
@@ -128,15 +123,50 @@ export const mastra = new Mastra({
             updateId: update?.update_id,
           });
 
-          // Process update through bot (bot is created after mastra initialization)
-          //bot.processUpdate(update);
-          logger?.debug('telegram:webhook:processed');
+          // Initialize bot lazily to prevent circular dependency
+          if (!bot) {
+            const { createBot } = await import('../bot.js');
+            bot = createBot(mastra);
+            logger?.debug('telegram:webhook:bot_initialized');
+          }
+
+          // Process update through Grammy bot
+          try {
+            await bot.handleUpdate(update);
+            logger?.debug('telegram:webhook:processed');
+          } catch (error) {
+            logger?.error('telegram:webhook:error', { error });
+            return new Response('error processing update', { status: 500 });
+          }
+
           return c.json({ ok: true });
         },
       }),
     ],
-  }
+  },
 });
 
-// Initialize bot instance with mastra (kept internal to this module)
-bot = createBot(mastra);
+// Function to start bot in polling mode (for local development)
+export async function startPollingBot() {
+  const usePolling =
+    process.env.TELEGRAM_POLLING === 'true' || process.env.NODE_ENV !== 'production';
+
+  if (usePolling && !bot) {
+    const { createBot } = await import('../bot.js');
+    bot = createBot(mastra);
+    await bot.start();
+    console.log('🤖 Bot started in polling mode');
+  }
+}
+
+// Export function to get bot instance (for testing/debugging)
+export function getBotInstance() {
+  return bot;
+}
+
+// Auto-start polling bot in development mode
+// This runs when the module is loaded by Mastra server
+// Note: The condition is checked inside startPollingBot to prevent tree-shaking
+startPollingBot().catch((error) => {
+  console.error('Failed to start polling bot:', error);
+});

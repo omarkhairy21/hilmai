@@ -60,7 +60,9 @@ const route = createStep({
 
     if (classification.type === 'query') {
       const agent = mastra.getAgent('financeInsights');
-      const result = await agent.generate(`User Question: ${text}`, { resourceId: chatId.toString() });
+      const result = await agent.generate(`User Question: ${text}`, {
+        resourceId: chatId.toString(),
+      });
       return { responseText: result.text };
     }
 
@@ -91,4 +93,3 @@ export const telegramRoutingWorkflow = createWorkflow({
   .then(classify)
   .then(route)
   .commit();
-
