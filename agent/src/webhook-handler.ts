@@ -1,6 +1,6 @@
 import { Update } from 'node-telegram-bot-api';
-import { bot } from './bot.js';
 
 export async function handleWebhookUpdate(update: Update) {
+  const { bot } = await import('./bot.js');
   await bot.processUpdate(update);
 }
