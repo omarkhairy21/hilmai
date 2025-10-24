@@ -1,12 +1,12 @@
-FROM node:20
+FROM node:20.9.0
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package*.json package-lock.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies (with clean install to avoid version conflicts)
+RUN npm ci
 
 # Copy source code
 COPY . .
