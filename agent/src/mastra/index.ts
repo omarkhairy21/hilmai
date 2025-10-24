@@ -4,13 +4,25 @@ import { LibSQLStore } from '@mastra/libsql';
 import { defineAuth, registerApiRoute } from '@mastra/core/server';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { transactionExtractorAgent } from './agents/transaction-extractor-agent.js';
-import { financeInsightsAgent } from './agents/finance-insights-agent.js';
-import { messageClassifierAgent } from './agents/message-classifier-agent.js';
-import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow.js';
-import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow.js';
+import { transactionExtractorAgent } from './agents/transaction-extractor-agent';
+import { financeInsightsAgent } from './agents/finance-insights-agent';
+import { messageClassifierAgent } from './agents/message-classifier-agent';
+import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow';
+import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow';
 import { LangfuseExporter } from '@mastra/langfuse';
-import { handleWebhookUpdate } from '../webhook-handler.js';
+import { createBot } from '../bot';
+
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+console.log('isProduction', isProduction);
+console.log('NODE_ENV', process.env.NODE_ENV);
+console.log('OTEL_SERVICE_NAME', process.env.OTEL_SERVICE_NAME);
+console.log('OTEL_EXPORTER_OTLP_ENDPOINT', process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
+console.log('LANGFUSE_PUBLIC_KEY', process.env.LANGFUSE_PUBLIC_KEY);
+console.log('LANGFUSE_SECRET_KEY', process.env.LANGFUSE_SECRET_KEY);
+console.log('LANGFUSE_BASE_URL', process.env.LANGFUSE_BASE_URL);
+console.log('MASTRA_DASHBOARD_TOKEN', process.env.MASTRA_DASHBOARD_TOKEN);
 
 export const mastra = new Mastra({
   agents: {
@@ -35,7 +47,7 @@ export const mastra = new Mastra({
 
   telemetry: {
     serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
-    enabled: process.env.NODE_ENV === 'production',
+    enabled: process.env.NODE_ENV !== 'development',
     export: {
       type: 'otlp',
       endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -124,7 +136,8 @@ export const mastra = new Mastra({
             updateId: update?.update_id,
           });
 
-          await handleWebhookUpdate(update);
+          // Process update through bot (bot is created after mastra initialization)
+          bot.processUpdate(update);
           logger?.debug('telegram:webhook:processed');
           return c.json({ ok: true });
         },
@@ -132,3 +145,6 @@ export const mastra = new Mastra({
     ],
   }
 });
+
+// Create bot instance with mastra
+const bot = createBot(mastra);
