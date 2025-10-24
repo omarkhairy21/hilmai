@@ -2,11 +2,14 @@ FROM node:20.9.0
 
 WORKDIR /app
 
+# Set environment
+ENV NODE_ENV=production
+
 # Copy package files
 COPY package*.json package-lock.json ./
 
 # Install dependencies (with clean install to avoid version conflicts)
-RUN npm ci
+RUN npm ci --omit=dev
 
 # Copy source code
 COPY . .
@@ -16,8 +19,6 @@ RUN npm run build
 
 # Expose Mastra server port
 EXPOSE 4111
-
-ENV NODE_ENV=production
 
 # Start the application
 CMD ["npm", "run", "start"]
