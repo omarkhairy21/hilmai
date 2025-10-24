@@ -17,5 +17,7 @@ RUN npm run build
 # Expose Mastra server port
 EXPOSE 4111
 
+ENV NODE_ENV=production
+
 # Start the application
 CMD ["npm", "run", "start"]
