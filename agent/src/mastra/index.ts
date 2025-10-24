@@ -127,6 +127,7 @@ export const mastra = new Mastra({
           if (!bot) {
             const { createBot } = await import('../bot.js');
             bot = createBot(mastra);
+            // Don't call bot.start() for webhook mode - just init the bot instance
             logger?.debug('telegram:webhook:bot_initialized');
           }
 
@@ -135,7 +136,11 @@ export const mastra = new Mastra({
             await bot.handleUpdate(update);
             logger?.debug('telegram:webhook:processed');
           } catch (error) {
-            logger?.error('telegram:webhook:error', { error });
+            logger?.error('telegram:webhook:error', {
+              error: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined,
+              errorObject: error,
+            });
             return new Response('error processing update', { status: 500 });
           }
 
@@ -148,14 +153,25 @@ export const mastra = new Mastra({
 
 // Function to start bot in polling mode (for local development)
 export async function startPollingBot() {
-  const usePolling =
-    process.env.TELEGRAM_POLLING === 'true' || process.env.NODE_ENV !== 'production';
+  const usePolling = process.env.TELEGRAM_POLLING === 'true';
+  const logger = mastra.getLogger();
+
+  logger.debug('startPollingBot:check', {
+    usePolling,
+    TELEGRAM_POLLING: process.env.TELEGRAM_POLLING,
+    NODE_ENV: process.env.NODE_ENV,
+    botExists: !!bot,
+  });
 
   if (usePolling && !bot) {
     const { createBot } = await import('../bot.js');
     bot = createBot(mastra);
     await bot.start();
-    console.log('🤖 Bot started in polling mode');
+    logger.info('🤖 Bot started in polling mode');
+  } else if (!usePolling) {
+    logger.debug('startPollingBot:skipped', {
+      reason: 'TELEGRAM_POLLING not set to true, using webhook mode',
+    });
   }
 }
 

@@ -249,10 +249,15 @@ Use the extract-receipt tool to analyze this receipt image, then save the transa
 
   // Error handler
   bot.catch((err) => {
-    console.error('Bot error:', err);
+    const error = err.error || err;
+    console.error('Bot error:', {
+      message: error.message,
+      stack: error.stack,
+      error: error,
+    });
   });
 
-  console.log('🤖 Hilm.ai Telegram bot is running...');
+  console.log('🤖 Hilm.ai Telegram bot initialized');
 
   return bot;
 }
