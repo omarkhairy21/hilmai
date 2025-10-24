@@ -44,7 +44,7 @@ export const mastra = new Mastra({
     // Enables DefaultExporter and optional custom exporters
     default: { enabled: true },
     configs: {
-      default: {
+      hilmAgent: {
         serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
         exporters: [
           process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY
