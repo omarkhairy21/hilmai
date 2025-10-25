@@ -10,6 +10,7 @@ import { messageClassifierAgent } from './agents/message-classifier-agent';
 import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow';
 import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow';
 import type { Bot } from 'grammy';
+import { LangfuseExporter } from '@mastra/langfuse'; // BROKEN: Missing .js files in @mastra/core
 
 // Bot instance (will be initialized lazily in webhook handler)
 let bot: Bot | null = null;
@@ -43,25 +44,26 @@ export const mastra = new Mastra({
       endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
     },
   },
-  // observability: {
-  //   // Enables DefaultExporter and optional custom exporters
-  //   default: { enabled: true },
-  //   configs: {
-  //     hilmAgent: {
-  //       serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
-  //       exporters: [
-  //         process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY
-  //           ? new LangfuseExporter({
-  //               publicKey: process.env.LANGFUSE_PUBLIC_KEY!,
-  //               secretKey: process.env.LANGFUSE_SECRET_KEY!,
-  //               baseUrl: process.env.LANGFUSE_BASE_URL,
-  //               options: { environment: process.env.NODE_ENV },
-  //             })
-  //           : undefined,
-  //       ].filter(Boolean) as any,
-  //     },
-  //   },
-  // },
+  // BROKEN: Langfuse integration disabled due to missing .js files in @mastra/core
+  // See: https://github.com/mastra-ai/mastra/issues/YOUR_ISSUE_NUMBER
+  observability: {
+    default: { enabled: true },
+    configs: {
+      hilmAgent: {
+        serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
+        exporters: [
+          process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY
+            ? new LangfuseExporter({
+                publicKey: process.env.LANGFUSE_PUBLIC_KEY!,
+                secretKey: process.env.LANGFUSE_SECRET_KEY!,
+                baseUrl: process.env.LANGFUSE_BASE_URL,
+                options: { environment: process.env.NODE_ENV },
+              })
+            : undefined,
+        ].filter(Boolean) as any,
+      },
+    },
+  },
   server: {
     port: 4111,
     experimental_auth: defineAuth({
