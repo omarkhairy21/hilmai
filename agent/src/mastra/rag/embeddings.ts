@@ -36,7 +36,10 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
       return embedding;
     } catch (error) {
-      span.setStatus({ code: 1, message: error instanceof Error ? error.message : 'Unknown error' });
+      span.setStatus({
+        code: 1,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
       span.recordException(error as Error);
       console.error('Error generating embedding:', error);
       throw new Error(

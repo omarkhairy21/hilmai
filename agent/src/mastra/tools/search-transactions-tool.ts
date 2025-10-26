@@ -4,6 +4,32 @@ import { supabase } from '../../lib/supabase.js';
 import { getTransactionsIndex } from '../../lib/pinecone.js';
 import { generateEmbeddingWithRetry } from '../rag/embeddings.js';
 
+const MIN_FALLBACK_SIMILARITY = 0.35;
+
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  groceries: ['grocery', 'groceries', 'supermarket', 'super market', 'market'],
+  dining: ['dining', 'restaurant', 'food', 'meal', 'coffee', 'cafe'],
+  transport: ['transport', 'uber', 'lyft', 'taxi', 'bus', 'train', 'gas'],
+  shopping: ['shopping', 'retail', 'store', 'mall', 'fashion'],
+  bills: ['bill', 'utility', 'utilities', 'electric', 'internet', 'rent'],
+  entertainment: ['entertainment', 'movie', 'cinema', 'concert', 'streaming'],
+  healthcare: ['health', 'doctor', 'pharmacy', 'medicine', 'clinic'],
+  education: ['education', 'school', 'course', 'tuition', 'class'],
+  other: ['other', 'misc', 'miscellaneous'],
+};
+
+const detectCategoryFromQuery = (query: string): string | null => {
+  const lowerQuery = query.toLowerCase();
+
+  for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (keywords.some((keyword) => lowerQuery.includes(keyword))) {
+      return category;
+    }
+  }
+
+  return null;
+};
+
 // Type-safe wrapper for Supabase operations
 const db = supabase.schema('public');
 
@@ -42,6 +68,12 @@ export const searchTransactionsTool = createTool({
     const { userId, query, topK, minSimilarity } = context;
 
     try {
+      const resolvedTopK = topK || 10;
+      const normalizedQuery = query.toLowerCase();
+      const detectedCategory = detectCategoryFromQuery(normalizedQuery);
+      const initialThreshold =
+        typeof minSimilarity === 'number' && !Number.isNaN(minSimilarity) ? minSimilarity : 0.7;
+
       // Generate embedding for the search query
       const queryEmbedding = await generateEmbeddingWithRetry(query);
 
@@ -49,7 +81,7 @@ export const searchTransactionsTool = createTool({
       const index = getTransactionsIndex();
       const queryResponse = await index.query({
         vector: queryEmbedding,
-        topK: topK || 10,
+        topK: resolvedTopK,
         filter: {
           userId: { $eq: userId },
         },
@@ -68,19 +100,78 @@ export const searchTransactionsTool = createTool({
       }
 
       // Filter by minimum similarity and get transaction IDs
-      const matches = queryResponse.matches
-        .filter((match) => (match.score || 0) >= (minSimilarity || 0.7))
-        .map((match) => ({
+      const rawMatches = queryResponse.matches || [];
+      const mapMatch = (matchList: typeof rawMatches) =>
+        matchList.map((match) => ({
           id: match.id,
           similarity: match.score || 0,
         }));
 
+      const primaryMatches = rawMatches.filter((match) => (match.score || 0) >= initialThreshold);
+      let matches = mapMatch(primaryMatches);
+      let appliedThreshold = initialThreshold;
+
+      // Fallback: relax the similarity threshold if we received matches but all are below target
+      if (
+        matches.length === 0 &&
+        rawMatches.length > 0 &&
+        initialThreshold > MIN_FALLBACK_SIMILARITY
+      ) {
+        const fallbackMatches = rawMatches.filter(
+          (match) => (match.score || 0) >= MIN_FALLBACK_SIMILARITY
+        );
+        if (fallbackMatches.length > 0) {
+          matches = mapMatch(fallbackMatches);
+          appliedThreshold = MIN_FALLBACK_SIMILARITY;
+          console.log(
+            `ℹ️ Similarity fallback applied for query "${query}": ${initialThreshold} → ${appliedThreshold}`
+          );
+        }
+      }
+
       if (matches.length === 0) {
+        // Structured fallback: if we can infer a category from the query, hit Supabase directly
+        if (detectedCategory) {
+          const { data: categoryTransactions, error: categoryError } = await db
+            .from('transactions')
+            .select('id, amount, currency, merchant, category, transaction_date, description')
+            .eq('user_id', userId)
+            .ilike('category', detectedCategory)
+            .order('transaction_date', { ascending: false })
+            .limit(resolvedTopK);
+
+          if (categoryError) {
+            throw new Error(`Failed to fetch category transactions: ${categoryError.message}`);
+          }
+
+          if (categoryTransactions && categoryTransactions.length > 0) {
+            const results = categoryTransactions.map((transaction) => ({
+              id: transaction.id,
+              amount: transaction.amount,
+              currency: transaction.currency,
+              merchant: transaction.merchant,
+              category: transaction.category,
+              date: transaction.transaction_date,
+              description: transaction.description,
+              similarity: MIN_FALLBACK_SIMILARITY,
+            }));
+
+            return {
+              success: true,
+              results,
+              count: results.length,
+              message: `Found ${results.length} transaction${
+                results.length === 1 ? '' : 's'
+              } by category match "${detectedCategory}".`,
+            };
+          }
+        }
+
         return {
           success: true,
           results: [],
           count: 0,
-          message: `No transactions found with similarity >= ${minSimilarity}`,
+          message: `No transactions found with similarity >= ${initialThreshold}`,
         };
       }
 
@@ -126,7 +217,9 @@ export const searchTransactionsTool = createTool({
         success: true,
         results,
         count: results.length,
-        message: `Found ${results.length} matching transaction${results.length === 1 ? '' : 's'}.`,
+        message: `Found ${results.length} matching transaction${
+          results.length === 1 ? '' : 's'
+        } (similarity ≥ ${appliedThreshold.toFixed(2)}).`,
       };
     } catch (error) {
       console.error('Error searching transactions:', error);
