@@ -1,4 +1,5 @@
 import { Bot, type Context } from 'grammy';
+import { Menu } from '@grammyjs/menu';
 import { z } from 'zod';
 import { downloadFile, deleteFile, getTempFilePath } from './lib/file-utils.js';
 import type { Mastra } from '@mastra/core/mastra';
@@ -12,6 +13,86 @@ if (!token) {
 export function createBot(mastra: Mastra): Bot {
   const bot = new Bot(token!);
 
+  // Create financial menu
+  const financialMenu = new Menu('financial-menu')
+    .text('💰 Set Budget', async (ctx) => {
+      await ctx.reply(
+        'Please enter your monthly budget amount.\n\nExample: 1000\n\n(Just send the number in your next message)'
+      );
+    })
+    .row()
+    .text('📊 List 10 Latest Transactions', async (ctx) => {
+      try {
+        await ctx.editMessageText('Fetching your latest transactions...');
+
+        // TODO: Replace with actual database query
+        // const transactions = await getLatestTransactions(ctx.from?.id, 10);
+
+        // Mock data for now
+        const mockTransactions = [
+          { merchant: 'Starbucks', amount: 5.5, date: '2025-10-24' },
+          { merchant: 'Walmart', amount: 45.0, date: '2025-10-23' },
+          { merchant: 'Uber', amount: 12.3, date: '2025-10-22' },
+        ];
+
+        const message =
+          '📊 *Latest Transactions:*\n\n' +
+          mockTransactions
+            .map((tx, i) => `${i + 1}. ${tx.merchant} - $${tx.amount} (${tx.date})`)
+            .join('\n');
+
+        await ctx.editMessageText(message, { parse_mode: 'Markdown' });
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+        await ctx.reply('❌ Failed to fetch transactions. Please try again.');
+      }
+    })
+    .row()
+    .text('📈 Budget Overview', async (ctx) => {
+      try {
+        await ctx.editMessageText('Loading your budget status...');
+
+        // TODO: Replace with actual budget calculation
+        // const budgetData = await getBudgetOverview(ctx.from?.id);
+
+        // Mock data for now
+        const mockBudget = {
+          total: 1000,
+          spent: 342.8,
+          remaining: 657.2,
+          percentageUsed: 34,
+        };
+
+        const message =
+          '📈 *Budget Overview:*\n\n' +
+          `💰 Monthly Budget: $${mockBudget.total}\n` +
+          `💸 Spent: $${mockBudget.spent}\n` +
+          `✅ Remaining: $${mockBudget.remaining}\n\n` +
+          `Progress: ${mockBudget.percentageUsed}% used`;
+
+        await ctx.editMessageText(message, { parse_mode: 'Markdown' });
+      } catch (error) {
+        console.error('Error fetching budget:', error);
+        await ctx.reply('❌ Failed to fetch budget overview. Please try again.');
+      }
+    })
+    .row()
+    .text('➕ Add Transaction', async (ctx) => {
+      await ctx.reply(
+        '➕ *Add a new transaction:*\n\n' +
+          'You can:\n' +
+          '• Type it: "Spent $15 on coffee"\n' +
+          '• Send a photo of your receipt 📷\n' +
+          '• Send a voice message 🎤',
+        { parse_mode: 'Markdown' }
+      );
+    })
+    .row()
+    .text('❌ Close', (ctx) => ctx.deleteMessage());
+
+  // Register the menu with the bot
+  bot.use(financialMenu);
+
   // Handle /start command
   bot.command('start', async (ctx) => {
     await ctx.reply(
@@ -19,8 +100,16 @@ export function createBot(mastra: Mastra): Bot {
         `💰 Track expenses\n` +
         `📊 Analyze spending patterns\n` +
         `💡 Get financial insights\n\n` +
-        `Try sending me a transaction like: "Spent $50 on groceries at Walmart"`
+        `Use /menu to see all available actions.`,
+      { reply_markup: financialMenu }
     );
+  });
+
+  // Handle /menu command
+  bot.command('menu', async (ctx) => {
+    await ctx.reply('Choose an action:', {
+      reply_markup: financialMenu,
+    });
   });
 
   // Handle /help command
@@ -251,8 +340,8 @@ Use the extract-receipt tool to analyze this receipt image, then save the transa
   bot.catch((err) => {
     const error = err.error || err;
     console.error('Bot error:', {
-      message: error.message,
-      stack: error.stack,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
       error: error,
     });
   });

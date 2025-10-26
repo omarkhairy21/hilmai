@@ -12,7 +12,7 @@ export const searchTransactionsTool = createTool({
   description:
     'Search transactions using semantic search. Finds transactions based on natural language queries like "coffee purchases", "groceries last week", or "expensive meals".',
   inputSchema: z.object({
-    userId: z.string().describe('User ID to filter transactions'),
+    userId: z.string().describe('Internal user UUID (from users.id table)'),
     query: z.string().describe('Natural language search query'),
     topK: z.number().optional().default(10).describe('Number of results to return (default: 10)'),
     minSimilarity: z
@@ -45,16 +45,18 @@ export const searchTransactionsTool = createTool({
       // Generate embedding for the search query
       const queryEmbedding = await generateEmbeddingWithRetry(query);
 
-      // Search in Pinecone
+      // Search in Pinecone using the user UUID
       const index = getTransactionsIndex();
       const queryResponse = await index.query({
         vector: queryEmbedding,
         topK: topK || 10,
         filter: {
-          user_id: { $eq: userId },
+          userId: { $eq: userId },
         },
         includeMetadata: true,
       });
+
+      console.log('queryResponse', queryResponse, 'queryEmbedding', queryEmbedding, 'query', query);
 
       if (!queryResponse.matches || queryResponse.matches.length === 0) {
         return {

@@ -66,16 +66,19 @@ export const mastra = new Mastra({
   },
   server: {
     port: 4111,
-    experimental_auth: defineAuth({
-      public: ['/health', ['/telegram/webhook', ['POST']]],
-      authenticateToken: async (token) => {
-        if (token && token === process.env.MASTRA_DASHBOARD_TOKEN) {
-          return { role: 'admin' };
-        }
-        throw new Error('invalid token');
-      },
-      authorize: async () => true,
-    }),
+    experimental_auth:
+      process.env.NODE_ENV === 'development'
+        ? undefined // Disable auth in development
+        : defineAuth({
+            public: ['/health', ['/telegram/webhook', ['POST']]],
+            authenticateToken: async (token) => {
+              if (token && token === process.env.MASTRA_DASHBOARD_TOKEN) {
+                return { role: 'admin' };
+              }
+              throw new Error('invalid token');
+            },
+            authorize: async () => true,
+          }),
     apiRoutes: [
       registerApiRoute('/health', {
         method: 'GET',

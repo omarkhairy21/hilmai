@@ -1,5 +1,6 @@
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
+import { supabase } from '../../lib/supabase.js';
 
 const inputSchema = z.object({
   text: z.string(),
@@ -59,8 +60,25 @@ const route = createStep({
     const { text, chatId, userInfo, classification } = routeInputSchema.parse(inputData);
 
     if (classification.type === 'query') {
+      // Convert Telegram chat ID to internal user UUID
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('telegram_chat_id', chatId)
+        .single();
+
+      if (userError || !userData) {
+        return {
+          responseText:
+            "I couldn't find your user profile. Please add a transaction first by saying something like 'Spent $10 on coffee' 💰",
+        };
+      }
+
+      // Extract user ID (TypeScript-safe)
+      const userId = (userData as { id: string }).id;
+
       const agent = mastra.getAgent('financeInsights');
-      const result = await agent.generate(`User Question: ${text}`, {
+      const result = await agent.generate(`User Question: ${text}\n\n[User ID: ${userId}]`, {
         resourceId: chatId.toString(),
       });
       return { responseText: result.text };
