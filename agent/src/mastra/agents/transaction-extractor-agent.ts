@@ -1,9 +1,9 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
-import { extractTransactionTool } from '../tools/extract-transaction-tool.js';
-import { saveTransactionTool } from '../tools/save-transaction-tool.js';
-import { extractReceiptTool } from '../tools/extract-receipt-tool.js';
-import { transcribeVoiceTool } from '../tools/transcribe-voice-tool.js';
+import { extractTransactionTool } from '../tools/extract-transaction-tool';
+import { saveTransactionTool } from '../tools/save-transaction-tool';
+import { extractReceiptTool } from '../tools/extract-receipt-tool';
+import { transcribeVoiceTool } from '../tools/transcribe-voice-tool';
 
 export const transactionExtractorAgent = new Agent({
   name: 'Transaction Extractor',

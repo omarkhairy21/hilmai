@@ -1,8 +1,8 @@
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
-import { supabase } from '../../lib/supabase.js';
-import { getTransactionsIndex } from '../../lib/pinecone.js';
-import { generateEmbeddingWithRetry, formatTransactionForEmbedding } from '../rag/embeddings.js';
+import { supabase } from '../../lib/supabase';
+import { getTransactionsIndex } from '../../lib/pinecone';
+import { generateEmbeddingWithRetry, formatTransactionForEmbedding } from '../rag/embeddings';
 
 // Type-safe wrapper for Supabase operations
 const db = supabase.schema('public');
@@ -88,7 +88,14 @@ export const saveTransactionTool = createTool({
       }
 
       // Generate embedding for the transaction
-      const finalTransactionDate = transactionDate || new Date().toISOString();
+      const parsedDate = transactionDate ? new Date(transactionDate) : new Date();
+      if (Number.isNaN(parsedDate.getTime())) {
+        parsedDate.setTime(Date.now());
+      }
+      const finalTransactionDate = parsedDate.toISOString();
+      const normalizedTransactionDate = parsedDate.toISOString().split('T')[0];
+      const categoryLower = category.toLowerCase();
+      const merchantLower = merchant.toLowerCase();
       const embeddingText = formatTransactionForEmbedding({
         amount,
         currency: currency || 'USD',
@@ -118,6 +125,7 @@ export const saveTransactionTool = createTool({
           category,
           description: description || null,
           transaction_date: finalTransactionDate,
+          transaction_date_normalized: normalizedTransactionDate,
         })
         .select('id')
         .single();
@@ -142,6 +150,9 @@ export const saveTransactionTool = createTool({
                 merchant: merchant,
                 category: category,
                 date: finalTransactionDate,
+                merchantLower,
+                categoryLower,
+                normalizedDate: normalizedTransactionDate,
                 description: description || '',
               },
             },

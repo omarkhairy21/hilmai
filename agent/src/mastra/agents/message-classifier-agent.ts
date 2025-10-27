@@ -1,6 +1,6 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
-import { classifyMessageTool } from '../tools/classify-message-tool.js';
+import { classifyMessageTool } from '../tools/classify-message-tool';
 
 export const messageClassifierAgent = new Agent({
   name: 'Message Classifier',

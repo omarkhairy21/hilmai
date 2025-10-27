@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
-import { openai } from '../../lib/openai.js';
+import { openai } from '../../lib/openai';
 import fs from 'fs';
 
 export const transcribeVoiceTool = createTool({
