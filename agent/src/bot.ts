@@ -1,7 +1,7 @@
 import { Bot, type Context } from 'grammy';
 import { Menu } from '@grammyjs/menu';
 import { z } from 'zod';
-import { downloadFile, deleteFile, getTempFilePath } from './lib/file-utils.js';
+import { downloadFile, deleteFile, getTempFilePath } from './lib/file-utils';
 import type { Mastra } from '@mastra/core/mastra';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;

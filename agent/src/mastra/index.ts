@@ -9,17 +9,21 @@ import { financeInsightsAgent } from './agents/finance-insights-agent';
 import { messageClassifierAgent } from './agents/message-classifier-agent';
 import { telegramRoutingWorkflow } from './workflows/telegram-routing-workflow';
 import { telegramVoiceWorkflow } from './workflows/telegram-voice-workflow';
+import { insightComposerAgent } from './agents/insight-composer-agent';
 import type { Bot } from 'grammy';
 import { LangfuseExporter } from '@mastra/langfuse'; // BROKEN: Missing .js files in @mastra/core
 
 // Bot instance (will be initialized lazily in webhook handler)
 let bot: Bot | null = null;
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export const mastra = new Mastra({
   agents: {
     transactionExtractor: transactionExtractorAgent,
     financeInsights: financeInsightsAgent,
     messageClassifier: messageClassifierAgent,
+    insightComposer: insightComposerAgent,
   },
   workflows: {
     telegramRouting: telegramRoutingWorkflow,
@@ -38,7 +42,7 @@ export const mastra = new Mastra({
 
   telemetry: {
     serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
-    enabled: process.env.NODE_ENV !== 'development',
+    enabled: !isDevelopment,
     export: {
       type: 'otlp',
       endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -47,7 +51,7 @@ export const mastra = new Mastra({
   // BROKEN: Langfuse integration disabled due to missing .js files in @mastra/core
   // See: https://github.com/mastra-ai/mastra/issues/YOUR_ISSUE_NUMBER
   observability: {
-    default: { enabled: true },
+    default: { enabled: !isDevelopment },
     configs: {
       hilmAgent: {
         serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent',
@@ -130,7 +134,7 @@ export const mastra = new Mastra({
 
           // Initialize bot lazily to prevent circular dependency
           if (!bot) {
-            const { createBot } = await import('../bot.js');
+            const { createBot } = await import('../bot');
             bot = createBot(mastra);
             // Initialize bot for webhook mode - required by Grammy before handleUpdate
             await bot.init();
@@ -170,7 +174,7 @@ export async function startPollingBot() {
   });
 
   if (usePolling && !bot) {
-    const { createBot } = await import('../bot.js');
+    const { createBot } = await import('../bot');
     bot = createBot(mastra);
     await bot.start();
     logger.info('🤖 Bot started in polling mode');

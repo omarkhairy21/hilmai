@@ -1,8 +1,8 @@
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
-import { supabase } from '../../lib/supabase.js';
-import { getTransactionsIndex } from '../../lib/pinecone.js';
-import { generateEmbeddingWithRetry } from '../rag/embeddings.js';
+import { supabase } from '../../lib/supabase';
+import { getTransactionsIndex } from '../../lib/pinecone';
+import { generateEmbeddingWithRetry } from '../rag/embeddings';
 
 const MIN_FALLBACK_SIMILARITY = 0.35;
 
@@ -30,6 +30,15 @@ const detectCategoryFromQuery = (query: string): string | null => {
   return null;
 };
 
+const normalizeDateInput = (value?: string | null) => {
+  if (!value) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return undefined;
+  }
+  return parsed.toISOString();
+};
+
 // Type-safe wrapper for Supabase operations
 const db = supabase.schema('public');
 
@@ -46,6 +55,10 @@ export const searchTransactionsTool = createTool({
       .optional()
       .default(0.7)
       .describe('Minimum similarity score (0-1, default: 0.7)'),
+    startDate: z.string().optional().describe('Inclusive ISO timestamp lower bound'),
+    endDate: z.string().optional().describe('Inclusive ISO timestamp upper bound'),
+    merchant: z.string().optional().describe('Filter by merchant name'),
+    category: z.string().optional().describe('Filter by category name'),
   }),
   outputSchema: z.object({
     success: z.boolean(),
@@ -65,26 +78,41 @@ export const searchTransactionsTool = createTool({
     message: z.string(),
   }),
   execute: async ({ context }) => {
-    const { userId, query, topK, minSimilarity } = context;
+    const { userId, query, topK, minSimilarity, startDate, endDate, merchant, category } = context;
 
     try {
       const resolvedTopK = topK || 10;
       const normalizedQuery = query.toLowerCase();
       const detectedCategory = detectCategoryFromQuery(normalizedQuery);
+      const resolvedCategory = category || detectedCategory || null;
+      const normalizedCategory = resolvedCategory ? resolvedCategory.toLowerCase() : null;
+      const normalizedMerchant = merchant ? merchant.trim().toLowerCase() : null;
       const initialThreshold =
         typeof minSimilarity === 'number' && !Number.isNaN(minSimilarity) ? minSimilarity : 0.7;
+      const startDateIso = normalizeDateInput(startDate);
+      const endDateIso = normalizeDateInput(endDate);
 
       // Generate embedding for the search query
       const queryEmbedding = await generateEmbeddingWithRetry(query);
 
       // Search in Pinecone using the user UUID
       const index = getTransactionsIndex();
+      const pineconeFilter: Record<string, any> = {
+        userId: { $eq: userId },
+      };
+
+      if (normalizedCategory) {
+        pineconeFilter.categoryLower = { $eq: normalizedCategory };
+      }
+
+      if (normalizedMerchant) {
+        pineconeFilter.merchantLower = { $eq: normalizedMerchant };
+      }
+
       const queryResponse = await index.query({
         vector: queryEmbedding,
         topK: resolvedTopK,
-        filter: {
-          userId: { $eq: userId },
-        },
+        filter: pineconeFilter,
         includeMetadata: true,
       });
 
@@ -131,14 +159,22 @@ export const searchTransactionsTool = createTool({
 
       if (matches.length === 0) {
         // Structured fallback: if we can infer a category from the query, hit Supabase directly
-        if (detectedCategory) {
-          const { data: categoryTransactions, error: categoryError } = await db
+        if (resolvedCategory) {
+          let fallbackQuery = db
             .from('transactions')
             .select('id, amount, currency, merchant, category, transaction_date, description')
             .eq('user_id', userId)
-            .ilike('category', detectedCategory)
+            .ilike('category', resolvedCategory)
             .order('transaction_date', { ascending: false })
             .limit(resolvedTopK);
+
+          if (startDateIso) fallbackQuery = fallbackQuery.gte('transaction_date', startDateIso);
+          if (endDateIso) fallbackQuery = fallbackQuery.lte('transaction_date', endDateIso);
+          if (normalizedMerchant) {
+            fallbackQuery = fallbackQuery.ilike('merchant', `%${normalizedMerchant}%`);
+          }
+
+          const { data: categoryTransactions, error: categoryError } = await fallbackQuery;
 
           if (categoryError) {
             throw new Error(`Failed to fetch category transactions: ${categoryError.message}`);
@@ -178,10 +214,22 @@ export const searchTransactionsTool = createTool({
       // Fetch full transaction details from Supabase
       // Note: Pinecone has metadata, but we fetch from Supabase for complete/authoritative data
       const transactionIds = matches.map((m) => m.id);
-      const { data: transactions, error } = await db
+      let detailsQuery = db
         .from('transactions')
         .select('id, amount, currency, merchant, category, transaction_date, description')
+        .eq('user_id', userId)
         .in('id', transactionIds);
+
+      if (startDateIso) detailsQuery = detailsQuery.gte('transaction_date', startDateIso);
+      if (endDateIso) detailsQuery = detailsQuery.lte('transaction_date', endDateIso);
+      if (normalizedMerchant) {
+        detailsQuery = detailsQuery.ilike('merchant', `%${normalizedMerchant}%`);
+      }
+      if (resolvedCategory) {
+        detailsQuery = detailsQuery.ilike('category', resolvedCategory);
+      }
+
+      const { data: transactions, error } = await detailsQuery;
 
       if (error) {
         throw new Error(`Failed to fetch transactions: ${error.message}`);

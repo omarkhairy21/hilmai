@@ -1,6 +1,6 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
-import { searchTransactionsTool } from '../tools/search-transactions-tool.js';
+import { searchTransactionsTool } from '../tools/search-transactions-tool';
 import { z } from 'zod';
 
 export const financeInsightsAgent = new Agent({

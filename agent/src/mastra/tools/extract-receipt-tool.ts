@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
-import { openai } from '../../lib/openai.js';
+import { openai } from '../../lib/openai';
 
 export const extractReceiptTool = createTool({
   id: 'extract-receipt',
