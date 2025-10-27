@@ -41,6 +41,7 @@ NODE_ENV=production
 TELEGRAM_BOT_TOKEN=your_bot_token_here
 TELEGRAM_POLLING=false
 TELEGRAM_WEBHOOK_SECRET=generate_random_secret_here
+TELEGRAM_WEBHOOK_URL=https://your-domain.com/telegram/webhook
 
 # OpenAI
 OPENAI_API_KEY=sk-your_key_here
@@ -99,7 +100,9 @@ openssl rand -hex 32
 
 ### 6. Set Up Telegram Webhook
 
-After deployment, configure Telegram to send updates to your server:
+When `TELEGRAM_POLLING=false`, the `/telegram/webhook` handler will automatically call Telegram's `setWebhook` API the first time it initializes the bot. Ensure `TELEGRAM_WEBHOOK_URL` and `TELEGRAM_WEBHOOK_SECRET` are configured before exposing the endpoint.
+
+If you need to force a re-registration (for example after changing domains), you can still run the command manually:
 
 ```bash
 # Replace with your values
@@ -107,7 +110,7 @@ BOT_TOKEN="your_telegram_bot_token"
 WEBHOOK_URL="https://your-domain.com/telegram/webhook"
 WEBHOOK_SECRET="your_webhook_secret"
 
-# Set the webhook
+# Set the webhook manually
 curl -X POST "https://api.telegram.org/bot${BOT_TOKEN}/setWebhook" \
   -H "Content-Type: application/json" \
   -d "{
@@ -167,6 +170,7 @@ In Coolify:
 #### 1. Bot not responding
 - Check logs for webhook errors
 - Verify `TELEGRAM_POLLING=false` in production
+- Confirm `TELEGRAM_WEBHOOK_URL` matches the deployed domain
 - Check webhook URL is correct: `curl https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo`
 
 #### 2. Unauthorized webhook errors

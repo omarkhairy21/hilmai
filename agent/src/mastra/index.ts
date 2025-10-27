@@ -15,6 +15,7 @@ import { LangfuseExporter } from '@mastra/langfuse'; // BROKEN: Missing .js file
 
 // Bot instance (will be initialized lazily in webhook handler)
 let bot: Bot | null = null;
+let webhookConfigured = false;
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -139,6 +140,27 @@ export const mastra = new Mastra({
             // Initialize bot for webhook mode - required by Grammy before handleUpdate
             await bot.init();
             logger?.debug('telegram:webhook:bot_initialized');
+
+            if (!webhookConfigured) {
+              const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
+
+              if (!webhookUrl) {
+                logger?.warn('telegram:webhook:set_webhook_skipped:no_url_configured');
+              } else {
+                try {
+                  await bot.api.setWebhook(webhookUrl, {
+                    secret_token: expected,
+                    drop_pending_updates: true,
+                  });
+                  webhookConfigured = true;
+                  logger?.info('telegram:webhook:set_webhook_success', { webhookUrl });
+                } catch (error) {
+                  logger?.error('telegram:webhook:set_webhook_failed', {
+                    error: error instanceof Error ? error.message : String(error),
+                  });
+                }
+              }
+            }
           }
 
           // Process update through Grammy bot

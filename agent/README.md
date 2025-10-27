@@ -17,6 +17,8 @@ Edit `.env` and add your tokens:
 ```bash
 OPENAI_API_KEY=your_openai_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_WEBHOOK_SECRET=your_webhook_secret
+TELEGRAM_WEBHOOK_URL=https://your-domain.com/telegram/webhook
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
@@ -39,6 +41,8 @@ npm run bot:dev
 # Production mode
 npm run bot
 ```
+
+When `TELEGRAM_POLLING` is `false`, the webhook handler initializes the bot and automatically calls Telegram's `setWebhook` API using `TELEGRAM_WEBHOOK_URL` and `TELEGRAM_WEBHOOK_SECRET`. Make sure both values are configured before exposing `/telegram/webhook`.
 
 ## Project Structure
 
