@@ -8,6 +8,7 @@ export const extractTransactionTool = createTool({
   description: 'Extract transaction details from natural language text using LLM',
   inputSchema: z.object({
     text: z.string().describe('Natural language text describing a transaction'),
+    referenceDate: z.string().optional().describe('ISO datetime for resolving relative dates'),
   }),
   outputSchema: z.object({
     amount: z.number().describe('Transaction amount'),
@@ -18,9 +19,19 @@ export const extractTransactionTool = createTool({
     description: z.string().optional().describe('Additional transaction details'),
   }),
   execute: async ({ context }) => {
-    const { text } = context;
+    const { text, referenceDate } = context;
+
+    // Use provided reference date or current date
+    const refDate = referenceDate ? new Date(referenceDate) : new Date();
+    const today = refDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const yesterday = new Date(refDate);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
 
     const prompt = `You are a financial transaction extraction expert. Extract the following details from this text:
+
+REFERENCE DATE (TODAY): ${today}
+YESTERDAY DATE: ${yesterdayStr}
 
 Text: "${text}"
 
@@ -30,16 +41,20 @@ Extract:
 3. merchant (the store/vendor name)
 4. category (one of: groceries, dining, transport, shopping, bills, entertainment, healthcare, education, other)
 5. description (brief summary of what was purchased)
-6. date (if mentioned, format as YYYY-MM-DD. If "today" or not mentioned, use today's date)
+6. date (format as YYYY-MM-DD):
+   - If "today" → use ${today}
+   - If "yesterday" → use ${yesterdayStr}
+   - If specific date mentioned → parse it
+   - If NOT mentioned → use ${today}
 
-Respond with ONLY a JSON object in this exact format:
+Respond with ONLY a JSON object in this exact format (no markdown, no code blocks):
 {
   "amount": 50.00,
   "currency": "USD",
   "merchant": "Store Name",
   "category": "dining",
   "description": "brief description",
-  "date": "2025-10-19"
+  "date": "${today}"
 }`;
 
     try {

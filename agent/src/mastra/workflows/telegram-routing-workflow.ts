@@ -1,10 +1,11 @@
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { RuntimeContext } from '@mastra/core/runtime-context';
 import { z } from 'zod';
-import { parseQueryIntent } from '../../lib/query-intent';
 import { supabase } from '../../lib/supabase';
 import { searchTransactionsTool } from '../tools/search-transactions-tool';
 import { aggregationTool } from '../tools/aggregation-tool';
+import { parseIntentTool } from '../tools/parse-intent-tool';
+import { validateIntentTool } from '../tools/validate-intent-tool';
 import { getCachedContext, setCachedContext } from '../../lib/context-cache';
 
 const db = supabase.schema('public');
@@ -103,9 +104,48 @@ const intentStep = createStep({
     intent: intentSchema,
     diagnostics: diagnosticsSchema,
   }),
-  execute: async ({ inputData }) => {
-    const { intent, diagnostics } = await parseQueryIntent(inputData.text);
-    return { ...inputData, intent, diagnostics };
+  execute: async ({ inputData, mastra }) => {
+    // Use Mastra tool to parse intent
+    const runtimeContext = new RuntimeContext();
+    const parseResult = await parseIntentTool.execute?.({
+      context: {
+        text: inputData.text,
+        referenceDate: new Date().toISOString(),
+      },
+      mastra,
+      runtimeContext,
+    });
+
+    if (!parseResult) {
+      throw new Error('Parse intent tool returned no result');
+    }
+
+    // Validate and enhance the intent
+    const validateResult = await validateIntentTool.execute?.({
+      context: {
+        intent: parseResult.intent,
+        originalText: inputData.text,
+        referenceDate: new Date().toISOString(),
+      },
+      mastra,
+      runtimeContext,
+    });
+
+    if (!validateResult) {
+      throw new Error('Validate intent tool returned no result');
+    }
+
+    const diagnostics = {
+      rulesFired: validateResult.enhancements,
+      usedLLM: parseResult.diagnostics.usedLLM,
+      cacheHit: parseResult.diagnostics.cacheHit,
+    };
+
+    return {
+      ...inputData,
+      intent: validateResult.intent,
+      diagnostics,
+    };
   },
 });
 
@@ -136,16 +176,59 @@ const routeStep = createStep({
     const { intent, chatId, text, userInfo } = inputData;
 
     if (intent.kind === 'transaction') {
-      const agent = mastra.getAgent('transactionExtractor');
-      const result = await agent.generate(
-        `${text}\n\n[User Info: Chat ID: ${chatId}, Username: @${userInfo.username || 'unknown'}, Name: ${userInfo.firstName || ''} ${userInfo.lastName || ''}]`,
-        { resourceId: chatId.toString() }
-      );
+      // Use the parsed intent directly to save the transaction
+      // This avoids re-extraction and ensures consistent date handling
+      const runtimeContext = new RuntimeContext();
+      const { saveTransactionTool } = await import('../tools/save-transaction-tool.js');
+
+      const entities = intent.entities;
+      const saveResult = await saveTransactionTool.execute?.({
+        context: {
+          amount: entities.amount || 0,
+          currency: entities.currency || 'USD',
+          merchant: entities.merchant || 'Unknown',
+          category: entities.category || 'other',
+          description: entities.description || text,
+          transactionDate: entities.transactionDate,
+          telegramChatId: chatId,
+          telegramUsername: userInfo.username,
+          firstName: userInfo.firstName,
+          lastName: userInfo.lastName,
+        },
+        mastra,
+        runtimeContext,
+      });
+
+      if (!saveResult || !saveResult.success) {
+        return {
+          ...inputData,
+          route: 'transaction' as const,
+          responseText: `❌ Failed to save transaction: ${saveResult?.message || 'Unknown error'}`,
+          userProfile: null,
+        };
+      }
+
+      // Format response
+      const formattedDate = entities.transactionDate
+        ? new Date(entities.transactionDate).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : 'Today';
+
+      const responseText = `✅ Transaction recorded!
+
+**Amount:** ${entities.amount} ${entities.currency || 'USD'}
+**Merchant:** ${entities.merchant || 'Unknown'}
+**Category:** ${entities.category || 'Other'}
+**Date:** ${formattedDate}
+**Status:** Saved ✓`;
 
       return {
         ...inputData,
         route: 'transaction' as const,
-        responseText: `✅ Transaction recorded!\n\n${result.text}`,
+        responseText,
         userProfile: null,
       };
     }
