@@ -32,7 +32,16 @@ export const extractReceiptTool = createTool({
   execute: async ({ context }) => {
     const { imageUrl, telegramChatId, telegramUsername, firstName, lastName } = context;
 
+    console.log('🔍 extract-receipt-tool called:', {
+      imageUrlLength: imageUrl?.length || 0,
+      imageUrlPrefix: imageUrl?.substring(0, 50) || 'none',
+      hasTelegramChatId: !!telegramChatId,
+      telegramUsername,
+    });
+
     try {
+      console.log('📡 Calling GPT-4o Vision API...');
+
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
@@ -100,24 +109,60 @@ Return ONLY valid JSON matching this schema:
 
       const result = JSON.parse(completion.choices[0].message.content || '{}');
 
+      console.log('✅ Vision API response received:', {
+        amount: result.amount,
+        merchant: result.merchant,
+        category: result.category,
+        confidence: result.confidence,
+        hasItems: !!result.items,
+      });
+
       // Validate required fields
       if (!result.amount || !result.merchant || !result.category) {
-        return {
-          amount: 0,
-          currency: 'USD',
-          merchant: 'Unknown',
-          category: 'Other',
-          date: new Date().toISOString(),
-          confidence: 0.3,
-        };
+        console.error('❌ Missing required fields in vision response:', {
+          hasAmount: !!result.amount,
+          hasMerchant: !!result.merchant,
+          hasCategory: !!result.category,
+          fullResponse: result,
+        });
+
+        throw new Error(
+          `Vision API returned incomplete data. Missing: ${!result.amount ? 'amount ' : ''}${!result.merchant ? 'merchant ' : ''}${!result.category ? 'category' : ''}`
+        );
+      }
+
+      // Check confidence threshold
+      const finalConfidence = Math.max(0, Math.min(1, result.confidence || 0.5));
+      if (finalConfidence < 0.6) {
+        console.warn('⚠️ Low confidence score:', {
+          confidence: finalConfidence,
+          amount: result.amount,
+          merchant: result.merchant,
+        });
+
+        throw new Error(
+          `Receipt image quality is too low (confidence: ${(finalConfidence * 100).toFixed(0)}%). Please provide a clearer image with better lighting.`
+        );
       }
 
       // Ensure confidence is between 0 and 1
       result.confidence = Math.max(0, Math.min(1, result.confidence || 0.5));
 
+      console.log('✅ Receipt extraction successful:', {
+        amount: result.amount,
+        currency: result.currency,
+        merchant: result.merchant,
+        confidence: result.confidence,
+      });
+
       return result;
     } catch (error) {
-      console.error('Error extracting receipt:', error);
+      console.error('❌ Error extracting receipt:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        imageUrlPrefix: imageUrl?.substring(0, 50),
+      });
+
       throw new Error(
         `Failed to extract receipt: ${error instanceof Error ? error.message : 'Unknown error'}`
       );

@@ -11,9 +11,9 @@ import { getCachedContext, setCachedContext } from '../../lib/context-cache';
 const db = supabase.schema('public');
 
 const userInfoSchema = z.object({
-  username: z.string().optional(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  username: z.string().nullable().optional(),
+  firstName: z.string().nullable().optional(),
+  lastName: z.string().nullable().optional(),
 });
 
 const transactionResultSchema = z.object({
@@ -32,14 +32,14 @@ const transactionIntentSchema = z.object({
   action: z.enum(['log', 'amend']),
   confidence: z.enum(['high', 'medium', 'low']),
   entities: z.object({
-    amount: z.number().optional(),
-    currency: z.string().optional(),
-    merchant: z.string().optional(),
-    category: z.string().optional(),
-    description: z.string().optional(),
-    transactionDate: z.string().optional(),
+    amount: z.number().nullable().optional(),
+    currency: z.string().nullable().optional(),
+    merchant: z.string().nullable().optional(),
+    category: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    transactionDate: z.string().nullable().optional(),
   }),
-  reason: z.string().optional(),
+  reason: z.string().nullable().optional(),
 });
 
 const insightIntentSchema = z.object({
@@ -47,10 +47,10 @@ const insightIntentSchema = z.object({
   confidence: z.enum(['high', 'medium', 'low']),
   queryType: z.enum(['sum', 'average', 'count', 'trend', 'comparison', 'list']),
   filters: z.object({
-    merchant: z.string().optional(),
-    category: z.string().optional(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    merchant: z.string().nullable().optional(),
+    category: z.string().nullable().optional(),
+    startDate: z.string().nullable().optional(),
+    endDate: z.string().nullable().optional(),
     timeframe: z
       .object({
         text: z.string(),
@@ -58,16 +58,18 @@ const insightIntentSchema = z.object({
         end: z.string(),
         grain: z.enum(['day', 'week', 'month', 'quarter', 'year', 'custom']),
       })
+      .nullable()
       .optional(),
     compareTo: z
       .object({
         startDate: z.string(),
         endDate: z.string(),
-        label: z.string().optional(),
+        label: z.string().nullable().optional(),
       })
+      .nullable()
       .optional(),
   }),
-  question: z.string().optional(),
+  question: z.string().nullable().optional(),
 });
 
 const otherIntentSchema = z.object({
@@ -168,8 +170,8 @@ const routeStep = createStep({
     intent: intentSchema,
     diagnostics: diagnosticsSchema,
     route: z.enum(['transaction', 'insight', 'other', 'blocked']),
-    responseText: z.string().optional(),
-    userId: z.string().optional(),
+    responseText: z.string().nullable().optional(),
+    userId: z.string().nullable().optional(),
     userProfile: userProfileSchema,
   }),
   execute: async ({ inputData, mastra }) => {
@@ -178,25 +180,20 @@ const routeStep = createStep({
     if (intent.kind === 'transaction') {
       // Use the parsed intent directly to save the transaction
       // This avoids re-extraction and ensures consistent date handling
-      const runtimeContext = new RuntimeContext();
-      const { saveTransactionTool } = await import('../tools/save-transaction-tool.js');
+      const { saveTransaction } = await import('../../lib/save-transaction.js');
 
       const entities = intent.entities;
-      const saveResult = await saveTransactionTool.execute?.({
-        context: {
-          amount: entities.amount || 0,
-          currency: entities.currency || 'USD',
-          merchant: entities.merchant || 'Unknown',
-          category: entities.category || 'other',
-          description: entities.description || text,
-          transactionDate: entities.transactionDate,
-          telegramChatId: chatId,
-          telegramUsername: userInfo.username,
-          firstName: userInfo.firstName,
-          lastName: userInfo.lastName,
-        },
-        mastra,
-        runtimeContext,
+      const saveResult = await saveTransaction({
+        amount: entities.amount || 0,
+        currency: entities.currency || undefined, // Will default to USD in saveTransaction
+        merchant: entities.merchant || undefined, // Will default to 'Unknown' in saveTransaction
+        category: entities.category || undefined, // Will default to 'other' in saveTransaction
+        description: entities.description || text,
+        transactionDate: entities.transactionDate || undefined,
+        telegramChatId: chatId,
+        telegramUsername: userInfo.username || undefined,
+        firstName: userInfo.firstName || undefined,
+        lastName: userInfo.lastName || undefined,
       });
 
       if (!saveResult || !saveResult.success) {
@@ -307,7 +304,7 @@ const aggregationOutputSchema = z.object({
       deltaPercent: z.number().nullable(),
     })
     .optional(),
-  message: z.string().optional(),
+  message: z.string().nullable().optional(),
 });
 
 const contextOutputSchema = z.object({
@@ -336,16 +333,17 @@ const semanticSearchStep = createStep({
     }
 
     const filters = inputData.intent.kind === 'insight' ? inputData.intent.filters : {};
-    const topK = inputData.intent.kind === 'insight' && inputData.intent.queryType === 'list' ? 30 : 12;
+    const topK =
+      inputData.intent.kind === 'insight' && inputData.intent.queryType === 'list' ? 30 : 12;
     const searchInput = {
       userId: inputData.userId,
       query: inputData.text,
       topK,
       minSimilarity: 0.7,
-      startDate: filters.startDate,
-      endDate: filters.endDate,
-      merchant: filters.merchant,
-      category: filters.category,
+      startDate: filters.startDate ?? undefined,
+      endDate: filters.endDate ?? undefined,
+      merchant: filters.merchant ?? undefined,
+      category: filters.category ?? undefined,
     };
 
     const runtimeContext = new RuntimeContext();
@@ -389,7 +387,8 @@ const aggregationStep = createStep({
       trend: 'trend',
       list: 'sum',
     };
-    const metric = metricMap[inputData.intent.kind === 'insight' ? inputData.intent.queryType : 'sum'];
+    const metric =
+      metricMap[inputData.intent.kind === 'insight' ? inputData.intent.queryType : 'sum'];
     const bucket =
       filters.timeframe?.grain && ['day', 'week', 'month'].includes(filters.timeframe.grain)
         ? (filters.timeframe.grain as 'day' | 'week' | 'month')
@@ -398,10 +397,10 @@ const aggregationStep = createStep({
     const aggInput = {
       userId: inputData.userId,
       metric,
-      startDate: filters.startDate,
-      endDate: filters.endDate,
-      category: filters.category,
-      merchant: filters.merchant,
+      startDate: filters.startDate ?? undefined,
+      endDate: filters.endDate ?? undefined,
+      category: filters.category ?? undefined,
+      merchant: filters.merchant ?? undefined,
       bucket,
       compareStartDate: filters.compareTo?.startDate,
       compareEndDate: filters.compareTo?.endDate,
@@ -458,7 +457,12 @@ const contextStep = createStep({
       lastName: inputData.userProfile?.lastName ?? null,
       lastTransactionDate: latest?.transaction_date ?? null,
       lastMerchant: latest?.merchant ?? null,
-      lastAmount: typeof latest?.amount === 'number' ? latest.amount : latest?.amount ? Number(latest.amount) : null,
+      lastAmount:
+        typeof latest?.amount === 'number'
+          ? latest.amount
+          : latest?.amount
+            ? Number(latest.amount)
+            : null,
       preferredCurrency: latest?.currency ?? null,
     };
 
@@ -522,8 +526,7 @@ const composeStep = createStep({
     } catch (error) {
       console.error('composer agent failed', error);
       return {
-        responseText:
-          `Something went wrong while creating that insight. Please try again or ask for a different timeframe.`,
+        responseText: `Something went wrong while creating that insight. Please try again or ask for a different timeframe.`,
       };
     }
   },

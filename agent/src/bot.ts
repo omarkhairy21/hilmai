@@ -225,12 +225,41 @@ Image URL: ${fileUrl}
 
 Use the extract-receipt tool to analyze this receipt image, then save the transaction using the save-transaction tool.`;
 
+      console.log('📸 Processing receipt:', {
+        fileId,
+        fileUrl: fileUrl.substring(0, 100) + '...',
+        userId: ctx.from?.id,
+        chatId: ctx.chat.id,
+      });
+
       const result = await agent.generate(prompt, {
         onStepFinish: (step: unknown) => {
-          console.log('Step finished:', step);
+          console.log('🔧 Agent step:', JSON.stringify(step, null, 2));
         },
         resourceId: ctx.chat.id.toString(),
       });
+
+      console.log('✅ Agent result:', {
+        text: result.text,
+        toolCallsCount: result.toolResults?.length || 0,
+        toolNames: result.toolResults?.map((t) => ('name' in t ? t.name : 'unknown')),
+        steps: result.steps?.length || 0,
+      });
+
+      // Check if tools were actually called
+      if (!result.toolResults || result.toolResults.length === 0) {
+        console.warn('⚠️ No tools were called by the agent!');
+      } else {
+        // Log each tool result
+        result.toolResults.forEach((toolResult, index) => {
+          if ('name' in toolResult && 'result' in toolResult) {
+            console.log(`📊 Tool ${index + 1}: ${toolResult.name}`, {
+              hasResult: !!toolResult.result,
+              result: JSON.stringify(toolResult.result).substring(0, 200),
+            });
+          }
+        });
+      }
 
       // Send response
       await ctx.reply(`✅ Receipt processed!\n\n${result.text}`, {

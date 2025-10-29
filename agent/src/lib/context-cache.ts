@@ -7,13 +7,15 @@ const DEFAULT_TTL_SECONDS = 300;
 const ensureTable = async (client: Client) => {
   if (!tableReady) {
     tableReady = client
-      .execute(`
+      .execute(
+        `
         CREATE TABLE IF NOT EXISTS context_cache (
           cache_key TEXT PRIMARY KEY,
           payload TEXT NOT NULL,
           expires_at INTEGER NOT NULL
         );
-      `)
+      `
+      )
       .then(() => undefined)
       .catch((error) => {
         tableReady = null;

@@ -8,15 +8,15 @@ const transactionIntentSchema = z.object({
   action: z.enum(['log', 'amend']),
   confidence: z.enum(['high', 'medium', 'low']),
   entities: z.object({
-    amount: z.number().optional(),
-    currency: z.string().optional(),
-    merchant: z.string().optional(),
-    category: z.string().optional(),
-    description: z.string().optional(),
-    transactionDate: z.string().optional(),
-    timezone: z.string().optional(),
+    amount: z.number().nullable().optional(),
+    currency: z.string().nullable().optional(),
+    merchant: z.string().nullable().optional(),
+    category: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    transactionDate: z.string().nullable().optional(),
+    timezone: z.string().nullable().optional(),
   }),
-  reason: z.string().optional(),
+  reason: z.string().nullable().optional(),
 });
 
 const insightIntentSchema = z.object({
@@ -24,10 +24,10 @@ const insightIntentSchema = z.object({
   confidence: z.enum(['high', 'medium', 'low']),
   queryType: z.enum(['sum', 'average', 'count', 'trend', 'comparison', 'list']),
   filters: z.object({
-    merchant: z.string().optional(),
-    category: z.string().optional(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    merchant: z.string().nullable().optional(),
+    category: z.string().nullable().optional(),
+    startDate: z.string().nullable().optional(),
+    endDate: z.string().nullable().optional(),
     timeframe: z
       .object({
         text: z.string(),
@@ -35,21 +35,23 @@ const insightIntentSchema = z.object({
         end: z.string(),
         grain: z.enum(['day', 'week', 'month', 'quarter', 'year', 'custom']),
       })
+      .nullable()
       .optional(),
     compareTo: z
       .object({
         startDate: z.string(),
         endDate: z.string(),
-        label: z.string().optional(),
+        label: z.string().nullable().optional(),
       })
+      .nullable()
       .optional(),
-    minAmount: z.number().optional(),
-    maxAmount: z.number().optional(),
-    lastN: z.number().optional(),
+    minAmount: z.number().nullable().optional(),
+    maxAmount: z.number().nullable().optional(),
+    lastN: z.number().nullable().optional(),
   }),
   followUps: z.array(z.string()).optional(),
-  question: z.string().optional(),
-  reason: z.string().optional(),
+  question: z.string().nullable().optional(),
+  reason: z.string().nullable().optional(),
 });
 
 const otherIntentSchema = z.object({
@@ -71,7 +73,7 @@ export const validateIntentTool = createTool({
   inputSchema: z.object({
     intent: intentSchema,
     originalText: z.string(),
-    referenceDate: z.string().optional(),
+    referenceDate: z.string().nullable().optional(),
   }),
   outputSchema: z.object({
     intent: intentSchema,
@@ -253,7 +255,8 @@ function extractAmountWithRegex(text: string): { amount: number; currency?: stri
   }
 
   // Keyword-based patterns
-  const keywordRegex = /([\d.,]+)\s?(usd|dollars?|eur|euros?|gbp|pounds?|aed|dirhams?|sar|riyals?)/i;
+  const keywordRegex =
+    /([\d.,]+)\s?(usd|dollars?|eur|euros?|gbp|pounds?|aed|dirhams?|sar|riyals?)/i;
   const keywordMatch = text.match(keywordRegex);
   if (keywordMatch) {
     const currencyMap: Record<string, string> = {
@@ -294,8 +297,27 @@ function extractAmountWithRegex(text: string): { amount: number; currency?: stri
 }
 
 const categoryKeywords: Record<string, string[]> = {
-  groceries: ['grocery', 'groceries', 'supermarket', 'market', 'trader joe', 'whole foods', 'safeway'],
-  dining: ['dining', 'restaurant', 'food', 'meal', 'coffee', 'cafe', 'dinner', 'lunch', 'breakfast', 'starbucks'],
+  groceries: [
+    'grocery',
+    'groceries',
+    'supermarket',
+    'market',
+    'trader joe',
+    'whole foods',
+    'safeway',
+  ],
+  dining: [
+    'dining',
+    'restaurant',
+    'food',
+    'meal',
+    'coffee',
+    'cafe',
+    'dinner',
+    'lunch',
+    'breakfast',
+    'starbucks',
+  ],
   transport: ['transport', 'uber', 'lyft', 'taxi', 'bus', 'train', 'gas', 'fuel', 'parking'],
   shopping: ['shopping', 'retail', 'store', 'mall', 'fashion', 'clothes', 'amazon', 'target'],
   bills: ['bill', 'bills', 'utility', 'utilities', 'electric', 'internet', 'rent', 'subscription'],

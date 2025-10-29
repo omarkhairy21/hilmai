@@ -12,13 +12,13 @@ export interface DateRange {
 }
 
 export interface TransactionEntities {
-  amount?: number;
-  currency?: string;
-  merchant?: string;
-  category?: string;
-  description?: string;
-  transactionDate?: string;
-  timezone?: string;
+  amount?: number | null;
+  currency?: string | null;
+  merchant?: string | null;
+  category?: string | null;
+  description?: string | null;
+  transactionDate?: string | null;
+  timezone?: string | null;
 }
 
 export interface TransactionIntent {
@@ -34,19 +34,19 @@ export type InsightQueryType = 'sum' | 'average' | 'count' | 'trend' | 'comparis
 export interface ComparisonTarget {
   startDate: string;
   endDate: string;
-  label?: string;
+  label?: string | null;
 }
 
 export interface InsightFilters {
-  merchant?: string;
-  category?: string;
-  startDate?: string;
-  endDate?: string;
-  timeframe?: DateRange;
-  compareTo?: ComparisonTarget;
-  minAmount?: number;
-  maxAmount?: number;
-  lastN?: number;
+  merchant?: string | null;
+  category?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  timeframe?: DateRange | null;
+  compareTo?: ComparisonTarget | null;
+  minAmount?: number | null;
+  maxAmount?: number | null;
+  lastN?: number | null;
 }
 
 export interface InsightIntent {
@@ -55,7 +55,8 @@ export interface InsightIntent {
   queryType: InsightQueryType;
   filters: InsightFilters;
   followUps?: string[];
-  question?: string;
+  question?: string | null;
+  reason?: string;
 }
 
 export interface UnknownIntent {

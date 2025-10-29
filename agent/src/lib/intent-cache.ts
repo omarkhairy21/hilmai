@@ -9,7 +9,8 @@ let tableReady: Promise<void> | null = null;
 const ensureTable = async (client: Client) => {
   if (!tableReady) {
     tableReady = client
-      .execute(`
+      .execute(
+        `
         CREATE TABLE IF NOT EXISTS intent_cache (
           message_hash TEXT PRIMARY KEY,
           intent_json TEXT NOT NULL,
@@ -17,7 +18,8 @@ const ensureTable = async (client: Client) => {
           created_at TEXT NOT NULL DEFAULT (datetime('now')),
           updated_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
-      `)
+      `
+      )
       .then(() => undefined)
       .catch((error) => {
         tableReady = null;

@@ -102,17 +102,19 @@ const getTrend = async (args: {
     throw new Error(`aggregate_transactions_trend failed: ${error.message}`);
   }
 
-  return (data || []).map((row: {
-    bucket_start: string;
-    bucket_end: string;
-    total_amount: number | null;
-    tx_count: number | null;
-  }) => ({
-    bucketStart: row.bucket_start,
-    bucketEnd: row.bucket_end,
-    total: Number(row.total_amount || 0),
-    count: Number(row.tx_count || 0),
-  }));
+  return (data || []).map(
+    (row: {
+      bucket_start: string;
+      bucket_end: string;
+      total_amount: number | null;
+      tx_count: number | null;
+    }) => ({
+      bucketStart: row.bucket_start,
+      bucketEnd: row.bucket_end,
+      total: Number(row.total_amount || 0),
+      count: Number(row.tx_count || 0),
+    })
+  );
 };
 
 export const aggregationTool = createTool({

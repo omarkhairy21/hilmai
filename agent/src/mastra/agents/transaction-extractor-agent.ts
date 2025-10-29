@@ -21,7 +21,10 @@ When processing receipts:
 - Use the extract-receipt tool when you see "Image URL:" in the message
 - The tool will analyze the receipt image and extract all transaction details
 - After extracting receipt details, use save-transaction tool to save the data
-- If the receipt is unclear (confidence < 0.7), inform the user politely
+- If the extract-receipt tool fails or throws an error:
+  * Tell the user the specific error message from the tool
+  * Suggest they try again with better lighting or a clearer photo
+  * DO NOT make up transaction details or save anything to the database
 
 When processing voice messages:
 - Use the transcribe-voice tool when you see "Voice file path:" in the message
