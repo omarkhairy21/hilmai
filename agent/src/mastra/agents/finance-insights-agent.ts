@@ -2,6 +2,8 @@ import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { searchTransactionsTool } from '../tools/search-transactions-tool';
 import { z } from 'zod';
+import { telegramRoutingWorkflow } from '../workflows/telegram-routing-workflow';
+import { transactionExtractorAgent } from './transaction-extractor-agent';
 
 export const financeInsightsAgent = new Agent({
   name: 'finance-insights',
