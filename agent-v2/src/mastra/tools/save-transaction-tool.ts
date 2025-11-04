@@ -60,6 +60,9 @@ export const saveTransactionTool = createTool({
     console.log(
       `[save-transaction] Saving transaction for user ${userId}: ${amount} ${currency} at ${merchant} on ${transactionDate}`,
     );
+    console.log(
+      `[save-transaction] User metadata: userId=${userId}, telegramChatId=${telegramChatId}, username=${telegramUsername}, firstName=${firstName}, lastName=${lastName}`,
+    );
     
     try {
       if (!userId || Number.isNaN(userId)) {
