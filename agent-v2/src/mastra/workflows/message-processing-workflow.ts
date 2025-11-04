@@ -547,7 +547,10 @@ const supervisorAgentStep = createStep({
     }
 
     const generation = await supervisorAgent.generate(inputData.prompt, {
-      resourceId: inputData.userId.toString(),
+      memory: {
+        thread: `user-${inputData.userId}`, // Single thread per user for all messages
+        resource: inputData.userId.toString(), // Resource ID for resource-scoped memory
+      },
     });
 
     const agentResponse = generation.text ?? 'Sorry, I encountered an issue processing that.';
