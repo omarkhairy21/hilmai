@@ -20,8 +20,8 @@ export const transcribeVoiceTool = createTool({
     language: z.string().optional().describe("Detected language"),
     duration: z.number().optional().describe("Audio duration in seconds"),
   }),
-  execute: async ({ context }) => {
-    const { audioFilePath, language } = context;
+  execute: async (input: any) => {
+    const { audioFilePath, language } = input;
 
     try {
       // Check if file exists

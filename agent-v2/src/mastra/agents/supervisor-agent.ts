@@ -92,9 +92,12 @@ export const supervisorAgent = new Agent({
 The message will include:
 - [Current Date: Today is YYYY-MM-DD, Yesterday was YYYY-MM-DD]
 - [User: FirstName (@username)]
+- [User ID: <chat id>]
+- [Message ID: <telegram message id>]
+- [User Metadata JSON: {...}] (contains structured user info including userId, username, messageId)
 - [Message Type: text/voice/photo]
 
-Use this context to help with routing and processing.
+Forward these details implicitly when you delegate—sub-agents rely on the metadata JSON to call their tools with the correct user identifiers. Do **not** drop or rewrite the headers.
 
 ## Example Flows
 

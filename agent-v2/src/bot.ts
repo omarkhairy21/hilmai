@@ -1,11 +1,6 @@
 import { Bot } from "grammy";
 import type { Mastra } from "@mastra/core/mastra";
-import { supervisor } from "./mastra";
-import {
-  normalizeInput,
-  buildContextPrompt,
-  shouldCacheResponse,
-} from "./lib/input-normalization";
+import { downloadFile, getTempFilePath } from "./lib/file-utils";
 import { AgentResponseCache } from "./lib/prompt-cache";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -69,9 +64,10 @@ export function createBot(mastra: Mastra): Bot {
     }
   });
 
-  // Main message handler - handles ALL message types
+  // Main message handler - ultra-simple using message-processing workflow
   bot.on("message", async (ctx) => {
     const userId = ctx.from?.id;
+    ctx.message.chat.id
     if (!userId) {
       logger.warn("message:no_user_id");
       await ctx.reply("❌ Unable to identify user.");
@@ -86,61 +82,78 @@ export function createBot(mastra: Mastra): Bot {
     });
 
     try {
-      // Step 1: Normalize input
-      const input = await normalizeInput(ctx);
-      logger.debug("message:normalized", {
-        userId,
-        inputType: input.metadata.inputType,
-        textPreview: input.text.substring(0, 100),
-      });
+      // Step 1: Prepare workflow input from Grammy context
+      logger.info("message:preparing_workflow_input", { userId });
 
-      // Step 2: Check cache
-      const cached = await AgentResponseCache.get(userId, input.text);
-      if (cached) {
-        logger.info("message:cache_hit", { userId });
-        await ctx.reply(cached.response, { parse_mode: "Markdown" });
-        return;
+      const workflowInput: any = {
+        userId,
+        username: ctx.from?.username,
+        firstName: ctx.from?.first_name,
+        lastName: ctx.from?.last_name,
+        messageId: ctx.message!.message_id,
+      };
+
+      // Handle text
+      if (ctx.message?.text) {
+        workflowInput.messageText = ctx.message.text;
       }
 
-      logger.info("message:cache_miss", { userId });
+      // Handle voice
+      if (ctx.message?.voice) {
+        const fileId = ctx.message.voice.file_id;
+        const file = await ctx.api.getFile(fileId);
 
-      // Step 3: Build context prompt
-      const prompt = buildContextPrompt(input);
+        if (!file.file_path) {
+          throw new Error("Failed to get voice file path");
+        }
 
-      // Step 4: Call supervisor agent with conversation memory
-      logger.info("message:calling_supervisor", { userId });
-
-      const result = await supervisor.generate(prompt, {
-        resourceId: userId.toString(),
-      });
-
-      const responseText =
-        result.text || "Sorry, I encountered an issue processing your request.";
-
-      logger.info("message:supervisor_responded", {
-        userId,
-        responseLength: responseText.length,
-      });
-
-      // Step 5: Cache response if appropriate
-      if (shouldCacheResponse(input.text)) {
-        await AgentResponseCache.set(userId, input.text, {
-          response: responseText,
-          metadata: {
-            inputType: input.metadata.inputType,
-            timestamp: new Date().toISOString(),
-          },
-        });
-        logger.debug("message:cached", { userId });
-      } else {
-        logger.debug("message:not_cached", {
-          userId,
-          reason: "transaction-related",
-        });
+        const tempFilePath = getTempFilePath("voice", "ogg");
+        await downloadFile(file.file_path, tempFilePath);
+        workflowInput.voiceFilePath = tempFilePath;
       }
 
-      // Step 6: Send response
-      await ctx.reply(responseText, { parse_mode: "Markdown" });
+      // Handle photo
+      if (ctx.message?.photo && ctx.message.photo.length > 0) {
+        const photo = ctx.message.photo[ctx.message.photo.length - 1];
+        const fileId = photo.file_id;
+        const file = await ctx.api.getFile(fileId);
+
+        if (!file.file_path) {
+          throw new Error("Failed to get photo file path");
+        }
+
+        const tempFilePath = getTempFilePath("photo", "jpg");
+        await downloadFile(file.file_path, tempFilePath);
+        workflowInput.photoFilePath = tempFilePath;
+      }
+
+      logger.debug("message:workflow_input_prepared", { userId });
+
+      // Step 2: Run message-processing workflow (handles ALL processing)
+      logger.info("message:running_workflow", { userId });
+
+      const workflow = mastra.getWorkflow("message-processing");
+      const run = await workflow.createRunAsync();
+      const workflowResult = await run.start({ inputData: workflowInput });
+
+      if (workflowResult.status === "failed") {
+        throw workflowResult.error;
+      }
+
+      if (workflowResult.status !== "success") {
+        throw new Error(`Workflow did not complete successfully: ${workflowResult.status}`);
+      }
+
+      const { response, metadata } = workflowResult.result;
+
+      logger.info("message:workflow_completed", {
+        userId,
+        inputType: metadata.inputType,
+        cached: metadata.cached,
+      });
+
+      // Step 3: Send response
+      await ctx.reply(response, { parse_mode: "Markdown" });
       logger.info("message:sent", { userId });
     } catch (error) {
       logger.error("message:error", {

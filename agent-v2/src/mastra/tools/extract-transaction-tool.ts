@@ -27,8 +27,8 @@ export const extractTransactionTool = createTool({
       .optional()
       .describe("Additional transaction details"),
   }),
-  execute: async ({ context }) => {
-    const { text, referenceDate } = context;
+  execute: async (input: any) => {
+    const { text, referenceDate } = input;
 
     // Use provided reference date or current date
     const refDate = referenceDate ? new Date(referenceDate) : new Date();

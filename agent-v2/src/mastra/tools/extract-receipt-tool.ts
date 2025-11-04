@@ -35,9 +35,9 @@ export const extractReceiptTool = createTool({
       .describe("Individual items from receipt"),
     confidence: z.number().min(0).max(1).describe("Confidence score 0-1"),
   }),
-  execute: async ({ context }) => {
+  execute: async (input: any) => {
     const { imageUrl, telegramChatId, telegramUsername, firstName, lastName } =
-      context;
+      input;
 
     console.log("🔍 extract-receipt-tool called:", {
       imageUrlLength: imageUrl?.length || 0,

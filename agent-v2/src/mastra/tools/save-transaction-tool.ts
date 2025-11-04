@@ -56,11 +56,58 @@ export const saveTransactionTool = createTool({
       firstName,
       lastName,
     } = context;
-
+    
+    console.log(
+      `[save-transaction] Saving transaction for user ${userId}: ${amount} ${currency} at ${merchant} on ${transactionDate}`,
+    );
+    
     try {
-      console.log(
-        `[save-transaction] Saving transaction for user ${userId}: ${amount} ${currency} at ${merchant}`,
-      );
+      if (!userId || Number.isNaN(userId)) {
+        throw new Error(
+          "Invalid or missing userId when saving transaction. Ensure the caller forwards the Telegram chat id.",
+        );
+      }
+
+      if (!merchant || merchant.trim().length === 0) {
+        throw new Error("Merchant name is required to save a transaction.");
+      }
+
+      if (!transactionDate) {
+        throw new Error("Transaction date is required to save a transaction.");
+      }
+
+      // Step 0: Ensure user exists before writing the transaction
+      const userPayload: {
+        id: number;
+        telegram_chat_id: number | null;
+        telegram_username?: string | null;
+        first_name?: string | null;
+        last_name?: string | null;
+      } = {
+        id: userId,
+        telegram_chat_id: telegramChatId ?? userId,
+      };
+
+      if (telegramUsername !== undefined) {
+        userPayload.telegram_username = telegramUsername;
+      }
+      if (firstName !== undefined) {
+        userPayload.first_name = firstName;
+      }
+      if (lastName !== undefined) {
+        userPayload.last_name = lastName;
+      }
+
+      const { error: userError } = await supabase
+        .from("users")
+        .upsert(userPayload, { onConflict: "id" });
+
+      if (userError) {
+        console.error("[save-transaction] Failed to upsert user:", userError);
+        throw new Error(
+          `Failed to sync user profile before saving transaction: ${userError.message}`,
+        );
+      }
 
       // Step 1: Generate merchant embedding (with caching)
       const merchantEmbedding = await getMerchantEmbedding(merchant);
@@ -80,10 +127,6 @@ export const saveTransactionTool = createTool({
           description: description || null,
           transaction_date: transactionDate,
           merchant_embedding: merchantEmbedding,
-          telegram_chat_id: telegramChatId || userId,
-          telegram_username: telegramUsername || null,
-          first_name: firstName || null,
-          last_name: lastName || null,
         })
         .select("id")
         .single();

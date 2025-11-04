@@ -8,7 +8,7 @@
 import { Mastra } from "@mastra/core/mastra";
 import { PinoLogger } from "@mastra/loggers";
 import { LibSQLStore } from "@mastra/libsql";
-import { defineAuth, registerApiRoute } from "@mastra/core/server";
+import { registerApiRoute } from "@mastra/core/server";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -18,10 +18,10 @@ import { transactionLoggerAgent } from "./agents/transaction-logger-agent";
 import { queryExecutorAgent } from "./agents/query-executor-agent";
 import { conversationAgent } from "./agents/conversation-agent";
 
-// Import tools (for export)
-import { extractReceiptTool } from "./tools/extract-receipt-tool";
-import { transcribeVoiceTool } from "./tools/transcribe-voice-tool";
-import { extractTransactionTool } from "./tools/extract-transaction-tool";
+// Import workflows
+import { messageProcessingWorkflow } from "./workflows/message-processing-workflow";
+
+// Import tools (for export - only tools used by agents)
 import { saveTransactionTool } from "./tools/save-transaction-tool";
 import { hybridQueryTool } from "./tools/hybrid-query-tool";
 
@@ -37,6 +37,11 @@ export const mastra = new Mastra({
     transactionLogger: transactionLoggerAgent,
     queryExecutor: queryExecutorAgent,
     conversation: conversationAgent,
+  },
+
+  // Register workflows
+  workflows: {
+    "message-processing": messageProcessingWorkflow,
   },
 
   // Storage for observability and logs (shared across processes)
@@ -113,11 +118,8 @@ export const transactionLogger = mastra.getAgent("transactionLogger");
 export const queryExecutor = mastra.getAgent("queryExecutor");
 export const conversation = mastra.getAgent("conversation");
 
-// Export tools for standalone use
+// Export tools for standalone use (only agent tools)
 export const tools = {
-  extractReceipt: extractReceiptTool,
-  transcribeVoice: transcribeVoiceTool,
-  extractTransaction: extractTransactionTool,
   saveTransaction: saveTransactionTool,
   hybridQuery: hybridQueryTool,
 };

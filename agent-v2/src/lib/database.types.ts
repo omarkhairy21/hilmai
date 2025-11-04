@@ -7,10 +7,6 @@ export type Database = {
         Row: {
           id: number;
           user_id: number;
-          telegram_chat_id: number | null;
-          telegram_username: string | null;
-          first_name: string | null;
-          last_name: string | null;
           amount: number;
           currency: string;
           merchant: string;
@@ -25,10 +21,6 @@ export type Database = {
         Insert: {
           id?: number;
           user_id: number;
-          telegram_chat_id?: number | null;
-          telegram_username?: string | null;
-          first_name?: string | null;
-          last_name?: string | null;
           amount: number;
           currency?: string;
           merchant: string;
@@ -43,10 +35,6 @@ export type Database = {
         Update: {
           id?: number;
           user_id?: number;
-          telegram_chat_id?: number | null;
-          telegram_username?: string | null;
-          first_name?: string | null;
-          last_name?: string | null;
           amount?: number;
           currency?: string;
           merchant?: string;
@@ -89,29 +77,38 @@ export type Database = {
       };
       users: {
         Row: {
-          id: string;
-          telegram_chat_id: number;
+          id: number;
+          telegram_chat_id: number | null;
           telegram_username: string | null;
           first_name: string | null;
           last_name: string | null;
+          default_currency: string;
+          timezone: string | null;
+          metadata: Json | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
-          id?: string;
-          telegram_chat_id: number;
+          id: number;
+          telegram_chat_id?: number | null;
           telegram_username?: string | null;
           first_name?: string | null;
           last_name?: string | null;
+          default_currency?: string;
+          timezone?: string | null;
+          metadata?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
-          id?: string;
-          telegram_chat_id?: number;
+          id?: number;
+          telegram_chat_id?: number | null;
           telegram_username?: string | null;
           first_name?: string | null;
           last_name?: string | null;
+          default_currency?: string;
+          timezone?: string | null;
+          metadata?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -122,36 +119,6 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      aggregate_transactions: {
-        Args: {
-          p_user_id: string;
-          p_start?: string | null;
-          p_end?: string | null;
-          p_category?: string | null;
-          p_merchant?: string | null;
-        };
-        Returns: {
-          total_amount: number;
-          average_amount: number | null;
-          tx_count: number;
-        }[];
-      };
-      aggregate_transactions_trend: {
-        Args: {
-          p_user_id: string;
-          p_bucket: string;
-          p_start?: string | null;
-          p_end?: string | null;
-          p_category?: string | null;
-          p_merchant?: string | null;
-        };
-        Returns: {
-          bucket_start: string;
-          bucket_end: string;
-          total_amount: number;
-          tx_count: number;
-        }[];
-      };
       increment_merchant_cache_usage: {
         Args: {
           p_merchant_name: string;

@@ -131,7 +131,7 @@ export const hybridQueryTool = createTool({
       return {
         success: false,
         transactions: [],
-        searchMethod: "sql",
+        searchMethod: "sql" as const,
         totalResults: 0,
       };
     }

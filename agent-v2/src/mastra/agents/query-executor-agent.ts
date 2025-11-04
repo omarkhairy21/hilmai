@@ -86,7 +86,9 @@ Use the date context provided:
 - If fuzzy search needed, set useFuzzy=true
 - Parse dates relative to the date context
 - Include similarity scores when relevant
-- Handle edge cases gracefully`,
+- Handle edge cases gracefully
+- Always use the provided date context to answer the question
+`,
 
   model: openai("gpt-4o-mini"), // Fast enough for queries, cost-effective
 
