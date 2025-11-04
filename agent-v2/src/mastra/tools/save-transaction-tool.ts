@@ -35,7 +35,7 @@ export const saveTransactionTool = createTool({
     telegramChatId: z.number().optional().describe("Telegram chat ID"),
     telegramUsername: z.string().optional().describe("Telegram username"),
     firstName: z.string().optional().describe("User first name"),
-    lastName: z.string().optional().describe("User last name"),
+    lastName: z.string().nullable().optional().describe("User last name"),
   }),
   outputSchema: z.object({
     success: z.boolean(),

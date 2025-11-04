@@ -66,6 +66,7 @@ export function createBot(mastra: Mastra): Bot {
 
   // Main message handler - ultra-simple using message-processing workflow
   bot.on("message", async (ctx) => {
+    await ctx.replyWithChatAction("typing");
     const userId = ctx.from?.id;
     ctx.message.chat.id
     if (!userId) {

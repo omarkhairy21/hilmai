@@ -186,7 +186,7 @@ export const supervisorAgent = new Agent({
   name: "supervisor",
   instructions: supervisorInstructions,
 
-  model: openai("gpt-4o"), // Smart model for accurate routing
+  model: openai("gpt-4o-mini"),
 
   // Register sub-agents
   agents: {
