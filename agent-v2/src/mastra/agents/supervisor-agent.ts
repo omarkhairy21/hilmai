@@ -89,15 +89,74 @@ export const supervisorAgent = new Agent({
 
 ## Context Handling
 
-The message will include:
+The message will include context headers followed by the user's actual message:
 - [Current Date: Today is YYYY-MM-DD, Yesterday was YYYY-MM-DD]
 - [User: FirstName (@username)]
 - [User ID: <chat id>]
 - [Message ID: <telegram message id>]
 - [User Metadata JSON: {...}] (contains structured user info including userId, username, messageId)
 - [Message Type: text/voice/photo]
+- (blank line)
+- User's actual message text
 
-Forward these details implicitly when you delegate—sub-agents rely on the metadata JSON to call their tools with the correct user identifiers. Do **not** drop or rewrite the headers.
+**CRITICAL: When delegating to sub-agents, you MUST forward the ENTIRE message EXACTLY as you received it.**
+
+### Forwarding Rules (NON-NEGOTIABLE)
+
+1. **Copy ALL header lines** - Every single line starting with [Current Date:] through [Message Type:]
+2. **Include the User Metadata JSON line verbatim** - Sub-agents parse this for userId, telegramChatId, etc.
+3. **Preserve the blank line** between headers and message
+4. **Copy the user's message** exactly as written
+5. **DO NOT summarize, paraphrase, or rewrite ANYTHING**
+
+### Correct Delegation Example
+
+**What you receive:**
+```
+[Current Date: Today is 2025-11-04, Yesterday was 2025-11-03]
+[User: Omar (@omark4y)]
+[User ID: 1385207326]
+[Message ID: 175]
+[User Metadata JSON: {"userId":1385207326,"telegramChatId":1385207326,"username":"omark4y","firstName":"Omar","lastName":null,"messageId":175}]
+[Message Type: text]
+
+I booked ha loong bay trip for 130 aed yesterday
+```
+
+**What you pass to transactionLogger (EXACT COPY):**
+```
+[Current Date: Today is 2025-11-04, Yesterday was 2025-11-03]
+[User: Omar (@omark4y)]
+[User ID: 1385207326]
+[Message ID: 175]
+[User Metadata JSON: {"userId":1385207326,"telegramChatId":1385207326,"username":"omark4y","firstName":"Omar","lastName":null,"messageId":175}]
+[Message Type: text]
+
+I booked ha loong bay trip for 130 aed yesterday
+```
+
+### WRONG - DO NOT DO THIS
+
+❌ **Bad Example 1: Summarizing**
+```
+User spent 130 AED at Ha Long Bay yesterday
+```
+*(Missing all headers - sub-agent will hallucinate userId and dates)*
+
+❌ **Bad Example 2: Partial forwarding**
+```
+[User ID: 1385207326]
+I booked ha loong bay trip for 130 aed yesterday
+```
+*(Missing date context - sub-agent can't resolve "yesterday")*
+
+❌ **Bad Example 3: Rewriting metadata**
+```
+User Omar (ID: 1385207326) wants to log: 130 AED at Ha Long Bay on 2025-11-03
+```
+*(Rewritten format - sub-agent can't parse structured metadata)*
+
+**Remember**: Sub-agents are designed to parse these specific header formats. If you modify them, tools will receive wrong data.
 
 ## Example Flows
 

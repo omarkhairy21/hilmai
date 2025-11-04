@@ -426,6 +426,13 @@ const buildContextPromptStep = createStep({
       inputData.text,
     ];
 
+    console.log(
+      `[workflow:build-context] Building prompt for supervisor with date context: today=${inputData.currentDate}, yesterday=${inputData.yesterday}`,
+    );
+    console.log(
+      `[workflow:build-context] User metadata: ${JSON.stringify(userMetadata)}`,
+    );
+
     const result: BuildContextOutput = {
       prompt: contextLines.join("\n"),
       text: inputData.text,

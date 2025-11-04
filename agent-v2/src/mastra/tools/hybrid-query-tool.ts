@@ -75,6 +75,9 @@ export const hybridQueryTool = createTool({
       console.log(
         `[hybrid-query] Query for user ${userId}: fuzzy=${useFuzzy}, query="${query}", merchant="${merchant}"`,
       );
+      console.log(
+        `[hybrid-query] Date filters: dateFrom=${dateFrom}, dateTo=${dateTo}, category=${category}`,
+      );
 
       // Decision: SQL-first or fuzzy search?
       const shouldUseFuzzy = useFuzzy || (query && !merchant);
