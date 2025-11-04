@@ -11,6 +11,7 @@ import { LibSQLStore } from '@mastra/libsql';
 import { registerApiRoute } from '@mastra/core/server';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { config } from '../lib/config';
 
 // Import agents
 import { supervisorAgent } from './agents/supervisor-agent';
@@ -25,7 +26,7 @@ import { messageProcessingWorkflow } from './workflows/message-processing-workfl
 import { saveTransactionTool } from './tools/save-transaction-tool';
 import { hybridQueryTool } from './tools/hybrid-query-tool';
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = config.app.nodeEnv === 'development';
 
 /**
  * Main Mastra instance with full configuration
@@ -47,24 +48,24 @@ export const mastra = new Mastra({
   // Storage for observability and logs (shared across processes)
   storage: new LibSQLStore({
     url:
-      process.env.LIBSQL_URL ||
+      config.libsql.url ||
       `file:${path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../mastra.db')}`,
-    authToken: process.env.LIBSQL_AUTH_TOKEN,
+    authToken: config.libsql.authToken,
   }),
 
   // Logger configuration
   logger: new PinoLogger({
     name: 'HilmAI-V2',
-    level: isDevelopment ? 'debug' : 'info',
+    level: isDevelopment ? 'debug' : (config.app.logLevel as 'info' | 'debug' | 'warn' | 'error'),
   }),
 
   // Telemetry (OpenTelemetry)
   telemetry: {
-    serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent-v2',
+    serviceName: config.telemetry.serviceName,
     enabled: !isDevelopment,
     export: {
       type: 'otlp',
-      endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+      endpoint: config.telemetry.endpoint,
     },
   },
 
@@ -73,7 +74,7 @@ export const mastra = new Mastra({
     default: { enabled: !isDevelopment },
     configs: {
       hilmAgentV2: {
-        serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent-v2',
+        serviceName: config.telemetry.serviceName,
         exporters: [],
       },
     },
@@ -81,7 +82,7 @@ export const mastra = new Mastra({
 
   // Server configuration for Mastra playground and API
   server: {
-    port: 4111,
+    port: config.app.mastraPort,
     // experimental_auth: isDevelopment
     //   ? undefined // Disable auth in development for easy playground access
     //   : defineAuth({
@@ -132,18 +133,18 @@ const logger = mastra.getLogger();
 logger.info('HilmAI V2 initialized', {
   agents: ['supervisor', 'transactionLogger', 'queryExecutor', 'conversation'],
   tools: Object.keys(tools),
-  environment: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.MASTRA_PORT || '4111'),
+  environment: config.app.nodeEnv,
+  port: config.app.mastraPort,
 });
 
 // Function to start bot in polling mode (for development)
 export async function startPollingBot() {
-  const usePolling = process.env.TELEGRAM_POLLING === 'true';
+  const usePolling = config.telegram.polling;
 
   logger.debug('startPollingBot:check', {
     usePolling,
-    TELEGRAM_POLLING: process.env.TELEGRAM_POLLING,
-    NODE_ENV: process.env.NODE_ENV,
+    TELEGRAM_POLLING: config.telegram.polling,
+    NODE_ENV: config.app.nodeEnv,
     botExists: !!bot,
   });
 

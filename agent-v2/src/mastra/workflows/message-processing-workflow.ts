@@ -217,6 +217,7 @@ const extractFromPhotoStep = createStep({
       throw new Error(`Image file not found: ${imageFilePath}`);
     }
 
+    const imageBuffer = fs.readFileSync(imageFilePath);
     const mimeType = imageFilePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
     const response = await openai.chat.completions.create({
@@ -232,7 +233,7 @@ const extractFromPhotoStep = createStep({
             {
               type: 'image_url',
               image_url: {
-                url: `data:${mimeType};base64,${fs.readFileSync(imageFilePath).toString('base64')}`,
+                url: `data:${mimeType};base64,${imageBuffer.toString('base64')}`,
                 detail: 'high',
               },
             },
