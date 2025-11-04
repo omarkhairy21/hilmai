@@ -121,7 +121,12 @@ OPENAI_API_KEY=your_key
 
 # Supabase
 SUPABASE_URL=your_url
-SUPABASE_KEY=your_key
+SUPABASE_ANON_KEY=your_key
+
+# Supabase PostgreSQL (for memory)
+# Find this in Supabase Dashboard → Settings → Database → Connection string
+# Format: postgresql://postgres:[password]@[host]:[port]/postgres
+DATABASE_URL=postgresql://postgres:[password]@[host]:[port]/postgres
 
 # Turso (LibSQL)
 LIBSQL_URL=your_url
