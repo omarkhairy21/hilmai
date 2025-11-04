@@ -1,14 +1,11 @@
-import fs from "fs";
-import https from "https";
-import path from "path";
+import fs from 'fs';
+import https from 'https';
+import path from 'path';
 
 /**
  * Downloads a file from a URL to a local path
  */
-export async function downloadFile(
-  url: string,
-  destPath: string,
-): Promise<void> {
+export async function downloadFile(url: string, destPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(destPath);
 
@@ -21,17 +18,17 @@ export async function downloadFile(
 
         response.pipe(file);
 
-        file.on("finish", () => {
+        file.on('finish', () => {
           file.close();
           resolve();
         });
 
-        file.on("error", (err) => {
+        file.on('error', (err) => {
           fs.unlink(destPath, () => {}); // Clean up on error
           reject(err);
         });
       })
-      .on("error", (err) => {
+      .on('error', (err) => {
         fs.unlink(destPath, () => {}); // Clean up on error
         reject(err);
       });
@@ -44,7 +41,7 @@ export async function downloadFile(
 export async function deleteFile(filePath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     fs.unlink(filePath, (err) => {
-      if (err && err.code !== "ENOENT") {
+      if (err && err.code !== 'ENOENT') {
         // Ignore "file not found" errors
         reject(err);
       } else {
@@ -73,7 +70,7 @@ export async function ensureDir(dirPath: string): Promise<void> {
  * Gets the temp directory path for voice files
  */
 export function getTempDir(): string {
-  return process.env.TEMP_DIR || "/tmp";
+  return process.env.TEMP_DIR || '/tmp';
 }
 
 /**

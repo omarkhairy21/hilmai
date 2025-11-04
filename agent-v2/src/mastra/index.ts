@@ -5,27 +5,27 @@
  * Includes Mastra playground support for debugging
  */
 
-import { Mastra } from "@mastra/core/mastra";
-import { PinoLogger } from "@mastra/loggers";
-import { LibSQLStore } from "@mastra/libsql";
-import { registerApiRoute } from "@mastra/core/server";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { Mastra } from '@mastra/core/mastra';
+import { PinoLogger } from '@mastra/loggers';
+import { LibSQLStore } from '@mastra/libsql';
+import { registerApiRoute } from '@mastra/core/server';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Import agents
-import { supervisorAgent } from "./agents/supervisor-agent";
-import { transactionLoggerAgent } from "./agents/transaction-logger-agent";
-import { queryExecutorAgent } from "./agents/query-executor-agent";
-import { conversationAgent } from "./agents/conversation-agent";
+import { supervisorAgent } from './agents/supervisor-agent';
+import { transactionLoggerAgent } from './agents/transaction-logger-agent';
+import { queryExecutorAgent } from './agents/query-executor-agent';
+import { conversationAgent } from './agents/conversation-agent';
 
 // Import workflows
-import { messageProcessingWorkflow } from "./workflows/message-processing-workflow";
+import { messageProcessingWorkflow } from './workflows/message-processing-workflow';
 
 // Import tools (for export - only tools used by agents)
-import { saveTransactionTool } from "./tools/save-transaction-tool";
-import { hybridQueryTool } from "./tools/hybrid-query-tool";
+import { saveTransactionTool } from './tools/save-transaction-tool';
+import { hybridQueryTool } from './tools/hybrid-query-tool';
 
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
  * Main Mastra instance with full configuration
@@ -41,29 +41,29 @@ export const mastra = new Mastra({
 
   // Register workflows
   workflows: {
-    "message-processing": messageProcessingWorkflow,
+    'message-processing': messageProcessingWorkflow,
   },
 
   // Storage for observability and logs (shared across processes)
   storage: new LibSQLStore({
     url:
       process.env.LIBSQL_URL ||
-      `file:${path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../mastra.db")}`,
+      `file:${path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../mastra.db')}`,
     authToken: process.env.LIBSQL_AUTH_TOKEN,
   }),
 
   // Logger configuration
   logger: new PinoLogger({
-    name: "HilmAI-V2",
-    level: isDevelopment ? "debug" : "info",
+    name: 'HilmAI-V2',
+    level: isDevelopment ? 'debug' : 'info',
   }),
 
   // Telemetry (OpenTelemetry)
   telemetry: {
-    serviceName: process.env.OTEL_SERVICE_NAME || "hilm-agent-v2",
+    serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent-v2',
     enabled: !isDevelopment,
     export: {
-      type: "otlp",
+      type: 'otlp',
       endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
     },
   },
@@ -73,7 +73,7 @@ export const mastra = new Mastra({
     default: { enabled: !isDevelopment },
     configs: {
       hilmAgentV2: {
-        serviceName: process.env.OTEL_SERVICE_NAME || "hilm-agent-v2",
+        serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent-v2',
         exporters: [],
       },
     },
@@ -96,13 +96,13 @@ export const mastra = new Mastra({
     //     }),
     apiRoutes: [
       // Health check endpoint
-      registerApiRoute("/health", {
-        method: "GET",
+      registerApiRoute('/health', {
+        method: 'GET',
         handler: async (c: any) => {
           return c.json({
-            status: "ok",
-            service: "hilm-ai-agent-v2",
-            version: "2.0.0",
+            status: 'ok',
+            service: 'hilm-ai-agent-v2',
+            version: '2.0.0',
             timestamp: new Date().toISOString(),
             uptime: process.uptime(),
           });
@@ -113,10 +113,10 @@ export const mastra = new Mastra({
 });
 
 // Export individual agents for easy access
-export const supervisor = mastra.getAgent("supervisor");
-export const transactionLogger = mastra.getAgent("transactionLogger");
-export const queryExecutor = mastra.getAgent("queryExecutor");
-export const conversation = mastra.getAgent("conversation");
+export const supervisor = mastra.getAgent('supervisor');
+export const transactionLogger = mastra.getAgent('transactionLogger');
+export const queryExecutor = mastra.getAgent('queryExecutor');
+export const conversation = mastra.getAgent('conversation');
 
 // Export tools for standalone use (only agent tools)
 export const tools = {
@@ -129,18 +129,18 @@ let bot: any | null = null;
 
 // Health check logging
 const logger = mastra.getLogger();
-logger.info("HilmAI V2 initialized", {
-  agents: ["supervisor", "transactionLogger", "queryExecutor", "conversation"],
+logger.info('HilmAI V2 initialized', {
+  agents: ['supervisor', 'transactionLogger', 'queryExecutor', 'conversation'],
   tools: Object.keys(tools),
-  environment: process.env.NODE_ENV || "development",
-  port: parseInt(process.env.MASTRA_PORT || "4111"),
+  environment: process.env.NODE_ENV || 'development',
+  port: parseInt(process.env.MASTRA_PORT || '4111'),
 });
 
 // Function to start bot in polling mode (for development)
 export async function startPollingBot() {
-  const usePolling = process.env.TELEGRAM_POLLING === "true";
+  const usePolling = process.env.TELEGRAM_POLLING === 'true';
 
-  logger.debug("startPollingBot:check", {
+  logger.debug('startPollingBot:check', {
     usePolling,
     TELEGRAM_POLLING: process.env.TELEGRAM_POLLING,
     NODE_ENV: process.env.NODE_ENV,
@@ -148,13 +148,13 @@ export async function startPollingBot() {
   });
 
   if (usePolling && !bot) {
-    const { createBot } = await import("../bot.js");
+    const { createBot } = await import('../bot.js');
     bot = createBot(mastra);
     await bot.start();
-    logger.info("🤖 Bot started in polling mode");
+    logger.info('🤖 Bot started in polling mode');
   } else if (!usePolling) {
-    logger.debug("startPollingBot:skipped", {
-      reason: "TELEGRAM_POLLING not set to true",
+    logger.debug('startPollingBot:skipped', {
+      reason: 'TELEGRAM_POLLING not set to true',
     });
   }
 }
@@ -166,7 +166,7 @@ export function getBotInstance() {
 
 // Auto-start polling bot in development mode
 startPollingBot().catch((error) => {
-  logger.error("Failed to start polling bot", {
+  logger.error('Failed to start polling bot', {
     error: error instanceof Error ? error.message : String(error),
     stack: error instanceof Error ? error.stack : undefined,
   });

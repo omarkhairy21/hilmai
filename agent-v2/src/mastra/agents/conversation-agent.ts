@@ -5,11 +5,11 @@
  * No tools needed - pure conversational AI
  */
 
-import { Agent } from "@mastra/core/agent";
-import { openai } from "@ai-sdk/openai";
+import { Agent } from '@mastra/core/agent';
+import { openai } from '@ai-sdk/openai';
 
 export const conversationAgent = new Agent({
-  name: "conversation",
+  name: 'conversation',
 
   instructions: `You are HilmAI, a friendly personal financial assistant.
 
@@ -145,7 +145,7 @@ Try saying 'I spent 50 AED at Starbucks' or 'How much on groceries this week?'"
 **User**: "How's it going?"
 **You**: "I'm doing great, thanks for asking! Ready to help with your finances. Got any expenses to track or questions about your spending?"`,
 
-  model: openai("gpt-4o-mini"), // Fast and cost-effective for conversation
+  model: openai('gpt-4o-mini'), // Fast and cost-effective for conversation
 
   // No tools needed - pure conversation
 });
