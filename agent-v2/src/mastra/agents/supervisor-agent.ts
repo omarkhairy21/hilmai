@@ -220,16 +220,15 @@ export const supervisorAgent = new Agent({
             enabled: true,
             scope: 'resource', // Resource-scoped: persists across all threads for same user
             template: `# User Profile
+                ## Preferences
+                - Currency: [e.g., AED, USD]
+                - Communication Style: [e.g., Formal, Casual]
+                - Timezone: [e.g., Asia/Dubai]
 
-## Preferences
-- Currency: [e.g., AED, USD]
-- Communication Style: [e.g., Formal, Casual]
-- Timezone: [e.g., Asia/Dubai]
-
-## Context
-- Last Query Topic: [What the user last asked about]
-- Recent Transactions: [Brief summary of recent transaction patterns]
-`,
+                ## Context
+                - Last Query Topic: [What the user last asked about]
+                - Recent Transactions: [Brief summary of recent transaction patterns]
+                `,
           },
         },
       })
