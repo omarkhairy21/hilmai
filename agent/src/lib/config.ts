@@ -92,27 +92,43 @@ export function getDatabaseUrl(): string | undefined {
   }
 
   try {
-    // Match PostgreSQL connection string pattern: postgres://user:password@host:port/database
-    const match = config.database.url.match(
-      /^(postgres(?:\+\w+)?:\/\/)([^:]+)(:)(.+?)(@.*)$/
-    );
+    // Parse URL using native URL API
+    const urlObj = new URL(config.database.url);
 
-    if (!match) {
-      // If it doesn't match the pattern, return as-is
+    // The native URL API already handles encoding, just return the normalized string
+    // This properly encodes all special characters in the password via the pathname
+    return urlObj.toString();
+  } catch {
+    // If URL parsing fails, try manual regex approach as fallback
+    try {
+      // Match PostgreSQL connection string pattern
+      // Find the last @ symbol to handle passwords containing @
+      const lastAtIndex = config.database.url.lastIndexOf('@');
+      if (lastAtIndex === -1) {
+        return config.database.url;
+      }
+
+      const beforeAt = config.database.url.substring(0, lastAtIndex);
+      const afterAt = config.database.url.substring(lastAtIndex + 1);
+
+      // Extract protocol, user, password from the part before @
+      const match = beforeAt.match(/^(postgres(?:\+\w+)?:\/\/)([^:]+):(.*)$/);
+      if (!match) {
+        return config.database.url;
+      }
+
+      const [, protocol, username, password] = match;
+
+      // Percent-encode the password to handle special characters
+      const encodedPassword = encodeURIComponent(password);
+
+      // Reconstruct the URL with encoded password
+      const encodedUrl = `${protocol}${username}:${encodedPassword}@${afterAt}`;
+
+      return encodedUrl;
+    } catch {
+      // If all else fails, return the original URL
       return config.database.url;
     }
-
-    const [, protocol, username, colon, password, hostPart] = match;
-
-    // Percent-encode the password to handle special characters
-    const encodedPassword = encodeURIComponent(password);
-
-    // Reconstruct the URL with encoded password
-    const encodedUrl = `${protocol}${username}${colon}${encodedPassword}${hostPart}`;
-
-    return encodedUrl;
-  } catch {
-    // If anything fails, return the original URL
-    return config.database.url;
   }
 }
