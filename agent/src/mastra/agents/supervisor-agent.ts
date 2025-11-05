@@ -18,6 +18,18 @@ import { transactionManagerAgent } from './transaction-manager-agent';
 // Get PostgreSQL connection string from config
 const databaseUrl = getDatabaseUrl();
 
+// Debug logging for database URL encoding
+if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_DB_URL === 'true') {
+  console.log('[supervisor-agent] Database URL configured:', !!databaseUrl);
+  if (databaseUrl) {
+    // Log partial URL for security (hide full password)
+    const match = databaseUrl.match(/^(postgres[^:]*:\/\/[^:]+:)(.{0,5}).*(@.*)$/);
+    if (match) {
+      console.log(`[supervisor-agent] DB URL format: ${match[1]}***${match[3]}`);
+    }
+  }
+}
+
 const supervisorInstructions = [
   "You are HilmAI's supervisor agent. Your job is to analyze user messages and delegate to the right specialist agent.",
 

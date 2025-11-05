@@ -92,6 +92,9 @@ export function getDatabaseUrl(): string | undefined {
   }
 
   try {
+
+    console.log('config.database.url', config.database.url);
+
     // Find the last @ symbol to handle passwords containing @
     const lastAtIndex = config.database.url.lastIndexOf('@');
     if (lastAtIndex === -1) {
@@ -99,11 +102,14 @@ export function getDatabaseUrl(): string | undefined {
       return new URL(config.database.url).toString();
     }
 
+    console.log('lastAtIndex', lastAtIndex);
+
     const beforeAt = config.database.url.substring(0, lastAtIndex);
     const afterAt = config.database.url.substring(lastAtIndex + 1);
 
     // Extract protocol, user, password from the part before @
     const match = beforeAt.match(/^(postgres(?:\+\w+)?:\/\/)([^:]+):(.*)$/);
+    console.log('match', match);
     if (!match) {
       // Doesn't match expected format, return original
       return config.database.url;
