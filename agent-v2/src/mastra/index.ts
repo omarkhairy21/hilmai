@@ -18,6 +18,7 @@ import { supervisorAgent } from './agents/supervisor-agent';
 import { transactionLoggerAgent } from './agents/transaction-logger-agent';
 import { queryExecutorAgent } from './agents/query-executor-agent';
 import { conversationAgent } from './agents/conversation-agent';
+import { transactionManagerAgent } from './agents/transaction-manager-agent';
 
 // Import workflows
 import { messageProcessingWorkflow } from './workflows/message-processing-workflow';
@@ -38,6 +39,7 @@ export const mastra = new Mastra({
     transactionLogger: transactionLoggerAgent,
     queryExecutor: queryExecutorAgent,
     conversation: conversationAgent,
+    transactionManager: transactionManagerAgent,
   },
 
   // Register workflows

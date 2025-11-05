@@ -49,6 +49,18 @@ const workflowOutputSchema = z.object({
     cached: z.boolean(),
     intent: z.string().optional(),
   }),
+  telegramMarkup: z
+    .object({
+      inline_keyboard: z.array(
+        z.array(
+          z.object({
+            text: z.string(),
+            callback_data: z.string(),
+          })
+        )
+      ),
+    })
+    .optional(),
 });
 
 const workflowStateSchema = z.object({});
@@ -514,6 +526,18 @@ const supervisorAgentOutputSchema = z.object({
   messageId: z.number(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string().optional(),
+  telegramMarkup: z
+    .object({
+      inline_keyboard: z.array(
+        z.array(
+          z.object({
+            text: z.string(),
+            callback_data: z.string(),
+          })
+        )
+      ),
+    })
+    .optional(),
 });
 
 type SupervisorAgentOutput = z.infer<typeof supervisorAgentOutputSchema>;
@@ -554,7 +578,57 @@ const supervisorAgentStep = createStep({
       },
     });
 
-    const agentResponse = generation.text ?? 'Sorry, I encountered an issue processing that.';
+    const rawResponse = generation.text ?? 'Sorry, I encountered an issue processing that.';
+
+    // Parse JSON response if it contains markup (from query executor agent)
+    let agentResponse: string = rawResponse;
+    let telegramMarkup: SupervisorAgentOutput['telegramMarkup'] = undefined;
+
+    try {
+      // Try to parse as JSON (agent may return JSON with text and markup)
+      const parsed = JSON.parse(rawResponse.trim());
+      if (parsed.text && parsed.markup) {
+        agentResponse = parsed.text;
+        telegramMarkup = parsed.markup;
+        console.log('[workflow:supervisor-agent] Parsed JSON response with markup');
+      }
+    } catch {
+      // Not JSON - try to extract transaction IDs from response and generate markup
+      // Look for patterns like [ID: 123] in the text
+      const transactionIdPattern = /\[ID:\s*(\d+)\]/gi;
+      const matches = Array.from(rawResponse.matchAll(transactionIdPattern));
+      
+      // Also check if response contains transaction lists (has multiple transactions)
+      // Look for patterns that suggest transaction listing (e.g., numbered lists, dates, amounts)
+      const hasTransactionList = 
+        /\d+\.\s+.*-.*\d+.*\(.*\d{4}-\d{2}-\d{2}\)/i.test(rawResponse) ||
+        (rawResponse.match(/\d{4}-\d{2}-\d{2}/g)?.length ?? 0) > 1 ||
+        matches.length > 0;
+      
+      if (hasTransactionList && matches.length > 0) {
+        // Extract transaction IDs from matches
+        const transactionIds: number[] = [];
+        for (const match of matches) {
+          const id = parseInt(match[1], 10);
+          if (!isNaN(id) && !transactionIds.includes(id)) {
+            transactionIds.push(id);
+          }
+        }
+        
+        // If we found transaction IDs, generate markup
+        if (transactionIds.length > 0) {
+          telegramMarkup = {
+            inline_keyboard: transactionIds.map((id) => [
+              { text: 'Edit', callback_data: `edit_${id}` },
+              { text: 'Delete', callback_data: `delete_${id}` },
+            ]),
+          };
+          console.log(`[workflow:supervisor-agent] Generated markup for ${transactionIds.length} transactions: ${transactionIds.join(', ')}`);
+        }
+      }
+      
+      agentResponse = rawResponse;
+    }
 
     const result: SupervisorAgentOutput = {
       agentResponse,
@@ -568,6 +642,7 @@ const supervisorAgentStep = createStep({
       messageId: inputData.messageId,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
+      telegramMarkup,
     };
     return result;
   },
@@ -583,6 +658,18 @@ const cacheResponseOutputSchema = z.object({
   cached: z.boolean(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string().optional(),
+  telegramMarkup: z
+    .object({
+      inline_keyboard: z.array(
+        z.array(
+          z.object({
+            text: z.string(),
+            callback_data: z.string(),
+          })
+        )
+      ),
+    })
+    .optional(),
 });
 
 type CacheResponseOutput = z.infer<typeof cacheResponseOutputSchema>;
@@ -610,6 +697,7 @@ const cacheResponseStep = createStep({
         cached: true,
         voiceFilePath: inputData.voiceFilePath,
         photoFilePath: inputData.photoFilePath,
+        telegramMarkup: inputData.telegramMarkup,
       };
       return result;
     }
@@ -621,6 +709,7 @@ const cacheResponseStep = createStep({
       cached: inputData.isCached,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
+      telegramMarkup: inputData.telegramMarkup,
     };
     return result;
   },
@@ -633,6 +722,18 @@ const cleanupInputSchema = workflowInputSchema.extend({
   response: z.string(),
   inputType: z.enum(['text', 'voice', 'photo']),
   cached: z.boolean(),
+  telegramMarkup: z
+    .object({
+      inline_keyboard: z.array(
+        z.array(
+          z.object({
+            text: z.string(),
+            callback_data: z.string(),
+          })
+        )
+      ),
+    })
+    .optional(),
 });
 
 const cleanupOutputSchema = workflowOutputSchema;
@@ -674,6 +775,7 @@ const cleanupFilesStep = createStep({
         inputType: inputData.inputType,
         cached: inputData.cached,
       },
+      telegramMarkup: inputData.telegramMarkup,
     };
     return result;
   },
@@ -718,6 +820,7 @@ export const messageProcessingWorkflow = createWorkflow<
           response: inputData.response,
           inputType: inputData.inputType,
           cached: inputData.cached,
+          telegramMarkup: inputData.telegramMarkup,
         };
       },
     })

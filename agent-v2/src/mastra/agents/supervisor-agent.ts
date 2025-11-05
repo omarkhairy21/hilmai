@@ -13,6 +13,7 @@ import { getDatabaseUrl } from '../../lib/config';
 import { transactionLoggerAgent } from './transaction-logger-agent';
 import { queryExecutorAgent } from './query-executor-agent';
 import { conversationAgent } from './conversation-agent';
+import { transactionManagerAgent } from './transaction-manager-agent';
 
 // Get PostgreSQL connection string from config
 const databaseUrl = getDatabaseUrl();
@@ -47,6 +48,17 @@ const supervisorInstructions = [
   '- Help: "What can you do?", "Help me"',
   '- Chitchat: "How\'s it going?"',
   '',
+  '### 4. transactionManager',
+  '**Use when**: User wants to EDIT or DELETE a transaction',
+  '**Examples**:',
+  '- "Change amount to 45 AED" (after clicking edit button)',
+  '- "Update merchant to Carrefour"',
+  '- "Delete transaction 123"',
+  '- Natural language edit requests after clicking edit button',
+  '',
+  '**Note**: This agent is typically triggered by callback queries (button clicks),',
+  'but can also handle natural language edit/delete requests.',
+  '',
   '## Decision Process',
   '',
   '1. **Check conversation history**: Use memory to understand context',
@@ -57,6 +69,7 @@ const supervisorInstructions = [
   '   - Keywords for transactions: spent, bought, paid, purchased, cost, expense',
   '   - Keywords for queries: how much, show, total, list, spent (past tense with question)',
   '   - Keywords for conversation: hi, hello, thanks, help, what can you',
+  '   - Keywords for edit/delete: change, update, edit, delete, remove, modify',
   '',
   '3. **Delegate to appropriate agent**: Call the sub-agent with the message',
   '',
@@ -199,6 +212,7 @@ export const supervisorAgent = new Agent({
     transactionLogger: transactionLoggerAgent,
     queryExecutor: queryExecutorAgent,
     conversation: conversationAgent,
+    transactionManager: transactionManagerAgent,
   },
 
   // Memory configuration for context-aware responses
