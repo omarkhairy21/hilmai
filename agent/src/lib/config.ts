@@ -79,6 +79,7 @@ export function validateConfig(): void {
 
 /**
  * Get database URL with optional warning if not set
+ * Encodes special characters in the password component
  */
 export function getDatabaseUrl(): string | undefined {
   if (!config.database.url) {
@@ -87,6 +88,19 @@ export function getDatabaseUrl(): string | undefined {
         'Set DATABASE_URL in .env to enable memory. ' +
         'Find it in Supabase Dashboard → Settings → Database → Connection string'
     );
+    return undefined;
   }
-  return config.database.url;
+
+  try {
+    // Parse the URL to handle special characters in credentials
+    const url = new URL(config.database.url);
+
+    // The URL constructor automatically encodes special characters in credentials
+    // Just return the properly formatted URL
+    return url.toString();
+  } catch {
+    // If URL parsing fails, return the original URL
+    // This handles cases where the URL might have unusual formatting
+    return config.database.url;
+  }
 }
