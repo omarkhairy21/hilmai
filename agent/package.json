@@ -7,7 +7,7 @@
     "test:watch": "vitest watch",
     "dev": "mastra dev",
     "build": "mastra build",
-    "start": "mastra serve",
+    "start": "mastra start",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
     "docker:build": "docker build -t hilm-agent .",
