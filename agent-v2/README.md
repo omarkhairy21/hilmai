@@ -110,32 +110,63 @@ yarn install
 
 ### 3. Setup Environment
 
-Copy `.env.example` to `.env` and fill in:
+Create a `.env` file in the `agent-v2` directory with the following variables:
 
 ```bash
-# Telegram
-TELEGRAM_BOT_TOKEN=your_token
+# ============================================
+# REQUIRED ENVIRONMENT VARIABLES
+# ============================================
 
-# OpenAI
-OPENAI_API_KEY=your_key
+# Telegram Bot Configuration
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+# Optional: Set to 'true' to use polling instead of webhooks
+TELEGRAM_POLLING=false
 
-# Supabase
-SUPABASE_URL=your_url
-SUPABASE_ANON_KEY=your_key
+# OpenAI API Configuration
+OPENAI_API_KEY=your_openai_api_key_here
 
-# Supabase PostgreSQL (for memory)
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+# ============================================
+# OPTIONAL ENVIRONMENT VARIABLES
+# ============================================
+
+# Supabase PostgreSQL Connection (for memory/embeddings)
 # Find this in Supabase Dashboard → Settings → Database → Connection string
 # Format: postgresql://postgres:[password]@[host]:[port]/postgres
+# Required for memory functionality, optional otherwise
 DATABASE_URL=postgresql://postgres:[password]@[host]:[port]/postgres
 
-# Turso (LibSQL)
-LIBSQL_URL=your_url
-LIBSQL_AUTH_TOKEN=your_token
+# LibSQL Configuration (for Mastra storage/observability)
+# Used by Mastra for storing workflow logs and observability data
+# Optional: defaults to local file (mastra.db) if not set
+LIBSQL_URL=your_turso_libsql_url_here
+LIBSQL_AUTH_TOKEN=your_turso_auth_token_here
 
-# Optional
+# LibSQL Database Configuration (for prompt cache)
+# Used by prompt-cache.ts for caching agent responses
+# Optional: defaults to local file (mastra.db) if not set
+LIBSQL_DB_URL=your_turso_libsql_url_here
+LIBSQL_DB_AUTH_TOKEN=your_turso_auth_token_here
+
+# Application Configuration
 NODE_ENV=development
 LOG_LEVEL=info
+MASTRA_PORT=4111
+
+# Temporary Directory (for voice file processing)
+# Optional: defaults to /tmp
+TEMP_DIR=/tmp
+
+# OpenTelemetry Configuration (for production observability)
+# Optional: only needed if you want telemetry in production
+OTEL_SERVICE_NAME=hilm-agent-v2
+OTEL_EXPORTER_OTLP_ENDPOINT=your_otel_endpoint_here
 ```
+
+**Note:** Pinecone is no longer used in v2 (replaced by Supabase pgvector). `PUBLIC_BASE_URL` is also not used.
 
 ### 4. Setup Supabase Database
 
