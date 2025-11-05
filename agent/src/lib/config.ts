@@ -79,7 +79,7 @@ export function validateConfig(): void {
 
 /**
  * Get database URL with optional warning if not set
- * Encodes special characters in the password component
+ * Properly encodes special characters in the password component
  */
 export function getDatabaseUrl(): string | undefined {
   if (!config.database.url) {
@@ -92,15 +92,27 @@ export function getDatabaseUrl(): string | undefined {
   }
 
   try {
-    // Parse the URL to handle special characters in credentials
-    const url = new URL(config.database.url);
+    // Match PostgreSQL connection string pattern: postgres://user:password@host:port/database
+    const match = config.database.url.match(
+      /^(postgres(?:\+\w+)?:\/\/)([^:]+)(:)(.+?)(@.*)$/
+    );
 
-    // The URL constructor automatically encodes special characters in credentials
-    // Just return the properly formatted URL
-    return url.toString();
+    if (!match) {
+      // If it doesn't match the pattern, return as-is
+      return config.database.url;
+    }
+
+    const [, protocol, username, colon, password, hostPart] = match;
+
+    // Percent-encode the password to handle special characters
+    const encodedPassword = encodeURIComponent(password);
+
+    // Reconstruct the URL with encoded password
+    const encodedUrl = `${protocol}${username}${colon}${encodedPassword}${hostPart}`;
+
+    return encodedUrl;
   } catch {
-    // If URL parsing fails, return the original URL
-    // This handles cases where the URL might have unusual formatting
+    // If anything fails, return the original URL
     return config.database.url;
   }
 }
