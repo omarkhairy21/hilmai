@@ -92,43 +92,37 @@ export function getDatabaseUrl(): string | undefined {
   }
 
   try {
-    // Parse URL using native URL API
-    const urlObj = new URL(config.database.url);
+    // Find the last @ symbol to handle passwords containing @
+    const lastAtIndex = config.database.url.lastIndexOf('@');
+    if (lastAtIndex === -1) {
+      // No credentials in URL, try native parsing
+      return new URL(config.database.url).toString();
+    }
 
-    // The native URL API already handles encoding, just return the normalized string
-    // This properly encodes all special characters in the password via the pathname
-    return urlObj.toString();
-  } catch {
-    // If URL parsing fails, try manual regex approach as fallback
-    try {
-      // Match PostgreSQL connection string pattern
-      // Find the last @ symbol to handle passwords containing @
-      const lastAtIndex = config.database.url.lastIndexOf('@');
-      if (lastAtIndex === -1) {
-        return config.database.url;
-      }
+    const beforeAt = config.database.url.substring(0, lastAtIndex);
+    const afterAt = config.database.url.substring(lastAtIndex + 1);
 
-      const beforeAt = config.database.url.substring(0, lastAtIndex);
-      const afterAt = config.database.url.substring(lastAtIndex + 1);
-
-      // Extract protocol, user, password from the part before @
-      const match = beforeAt.match(/^(postgres(?:\+\w+)?:\/\/)([^:]+):(.*)$/);
-      if (!match) {
-        return config.database.url;
-      }
-
-      const [, protocol, username, password] = match;
-
-      // Percent-encode the password to handle special characters
-      const encodedPassword = encodeURIComponent(password);
-
-      // Reconstruct the URL with encoded password
-      const encodedUrl = `${protocol}${username}:${encodedPassword}@${afterAt}`;
-
-      return encodedUrl;
-    } catch {
-      // If all else fails, return the original URL
+    // Extract protocol, user, password from the part before @
+    const match = beforeAt.match(/^(postgres(?:\+\w+)?:\/\/)([^:]+):(.*)$/);
+    if (!match) {
+      // Doesn't match expected format, return original
       return config.database.url;
     }
+
+    const [, protocol, username, password] = match;
+
+    // Percent-encode the password to handle special characters
+    // Use encodeURIComponent which encodes: $, !, *, ', (, ), etc.
+    const encodedPassword = encodeURIComponent(password);
+
+    // Reconstruct the URL with encoded password
+    const encodedUrl = `${protocol}${username}:${encodedPassword}@${afterAt}`;
+
+    console.debug('[config] Database URL password encoded successfully');
+    return encodedUrl;
+  } catch (error) {
+    console.error('[config] Failed to encode database URL:', error);
+    // If all else fails, return the original URL and hope for the best
+    return config.database.url;
   }
 }
