@@ -11,9 +11,9 @@
  * - Version-based invalidation
  */
 
-import crypto from "node:crypto";
-import type { Client } from "@libsql/client";
-import { getLibsqlClient } from "./database";
+import crypto from 'node:crypto';
+import type { Client } from '@libsql/client';
+import { getLibsqlClient } from './database';
 
 /**
  * Cached response structure
@@ -27,7 +27,7 @@ export interface CachedAgentResponse {
  * Agent Response Cache manager
  */
 export class AgentResponseCache {
-  private static TABLE_NAME = "agent_response_cache";
+  private static TABLE_NAME = 'agent_response_cache';
   private static CACHE_VERSION = 1; // Increment to invalidate all cache
   private static DEFAULT_TTL = 3600; // 1 hour in seconds
 
@@ -63,7 +63,7 @@ export class AgentResponseCache {
 
       console.log(`[cache] Table ${this.TABLE_NAME} ready`);
     } catch (error) {
-      console.error("[cache] Error ensuring table:", error);
+      console.error('[cache] Error ensuring table:', error);
       throw error;
     }
   }
@@ -77,22 +77,18 @@ export class AgentResponseCache {
    * @param context - Optional context object
    * @returns Cache key (hex string)
    */
-  static generateKey(
-    userId: number,
-    message: string,
-    context?: Record<string, any>,
-  ): string {
+  static generateKey(userId: number, message: string, context?: Record<string, any>): string {
     // Normalize message: lowercase, trim whitespace
     const normalized = message.trim().toLowerCase();
 
     // Include context if provided
-    const contextStr = context ? JSON.stringify(context) : "";
+    const contextStr = context ? JSON.stringify(context) : '';
 
     // Combine for hashing
     const input = `${userId}:${normalized}:${contextStr}`;
 
     // Generate SHA256 hash
-    return crypto.createHash("sha256").update(input).digest("hex");
+    return crypto.createHash('sha256').update(input).digest('hex');
   }
 
   /**
@@ -106,11 +102,11 @@ export class AgentResponseCache {
   static async get(
     userId: number,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, any>
   ): Promise<CachedAgentResponse | null> {
     const client = getLibsqlClient();
     if (!client) {
-      console.warn("[cache] No LibSQL client available");
+      console.warn('[cache] No LibSQL client available');
       return null;
     }
 
@@ -134,16 +130,16 @@ export class AgentResponseCache {
       });
 
       if (!result.rows || result.rows.length === 0) {
-        console.log("[cache] Miss");
+        console.log('[cache] Miss');
         return null;
       }
 
       const row = result.rows[0] as Record<string, any>;
-      console.log("[cache] Hit! ⚡");
+      console.log('[cache] Hit! ⚡');
 
       return JSON.parse(row.response_json as string) as CachedAgentResponse;
     } catch (error) {
-      console.warn("[cache] Get failed:", error);
+      console.warn('[cache] Get failed:', error);
       return null; // Fail gracefully
     }
   }
@@ -162,11 +158,11 @@ export class AgentResponseCache {
     message: string,
     response: CachedAgentResponse,
     context?: Record<string, any>,
-    ttlSeconds: number = this.DEFAULT_TTL,
+    ttlSeconds: number = this.DEFAULT_TTL
   ): Promise<void> {
     const client = getLibsqlClient();
     if (!client) {
-      console.warn("[cache] No LibSQL client available");
+      console.warn('[cache] No LibSQL client available');
       return;
     }
 
@@ -186,18 +182,12 @@ export class AgentResponseCache {
             expires_at = excluded.expires_at,
             version = excluded.version
         `,
-        args: [
-          key,
-          JSON.stringify(response),
-          this.CACHE_VERSION,
-          userId,
-          expiresAt,
-        ],
+        args: [key, JSON.stringify(response), this.CACHE_VERSION, userId, expiresAt],
       });
 
-      console.log("[cache] Stored");
+      console.log('[cache] Stored');
     } catch (error) {
-      console.warn("[cache] Set failed:", error);
+      console.warn('[cache] Set failed:', error);
       // Fail gracefully - cache errors shouldn't break the app
     }
   }
@@ -211,7 +201,7 @@ export class AgentResponseCache {
   static async cleanup(): Promise<number> {
     const client = getLibsqlClient();
     if (!client) {
-      console.warn("[cache] No LibSQL client available");
+      console.warn('[cache] No LibSQL client available');
       return 0;
     }
 
@@ -230,7 +220,7 @@ export class AgentResponseCache {
 
       return deleted;
     } catch (error) {
-      console.warn("[cache] Cleanup failed:", error);
+      console.warn('[cache] Cleanup failed:', error);
       return 0;
     }
   }
@@ -245,7 +235,7 @@ export class AgentResponseCache {
   static async clearUser(userId: number): Promise<number> {
     const client = getLibsqlClient();
     if (!client) {
-      console.warn("[cache] No LibSQL client available");
+      console.warn('[cache] No LibSQL client available');
       return 0;
     }
 
@@ -262,7 +252,7 @@ export class AgentResponseCache {
 
       return deleted;
     } catch (error) {
-      console.warn("[cache] Clear user failed:", error);
+      console.warn('[cache] Clear user failed:', error);
       return 0;
     }
   }
@@ -276,7 +266,7 @@ export class AgentResponseCache {
   static async clearAll(): Promise<number> {
     const client = getLibsqlClient();
     if (!client) {
-      console.warn("[cache] No LibSQL client available");
+      console.warn('[cache] No LibSQL client available');
       return 0;
     }
 
@@ -293,7 +283,7 @@ export class AgentResponseCache {
 
       return deleted;
     } catch (error) {
-      console.warn("[cache] Clear all failed:", error);
+      console.warn('[cache] Clear all failed:', error);
       return 0;
     }
   }
@@ -311,7 +301,7 @@ export class AgentResponseCache {
   }> {
     const client = getLibsqlClient();
     if (!client) {
-      console.warn("[cache] No LibSQL client available");
+      console.warn('[cache] No LibSQL client available');
       return { totalEntries: 0, expiredEntries: 0, activeEntries: 0 };
     }
 
@@ -325,23 +315,21 @@ export class AgentResponseCache {
         sql: `SELECT COUNT(*) as count FROM ${this.TABLE_NAME}`,
         args: [],
       });
-      const totalEntries = (totalResult.rows[0] as Record<string, any>)
-        .count as number;
+      const totalEntries = (totalResult.rows[0] as Record<string, any>).count as number;
 
       // Expired entries
       const expiredResult = await client.execute({
         sql: `SELECT COUNT(*) as count FROM ${this.TABLE_NAME} WHERE expires_at <= ?`,
         args: [now],
       });
-      const expiredEntries = (expiredResult.rows[0] as Record<string, any>)
-        .count as number;
+      const expiredEntries = (expiredResult.rows[0] as Record<string, any>).count as number;
 
       // Active entries
       const activeEntries = totalEntries - expiredEntries;
 
       return { totalEntries, expiredEntries, activeEntries };
     } catch (error) {
-      console.warn("[cache] Get stats failed:", error);
+      console.warn('[cache] Get stats failed:', error);
       return { totalEntries: 0, expiredEntries: 0, activeEntries: 0 };
     }
   }

@@ -5,40 +5,34 @@
  * Uses SQL for exact matches, pgvector for typos and semantic search
  */
 
-import { createTool } from "@mastra/core";
-import { z } from "zod";
-import {
-  searchTransactionsSQL,
-  searchTransactionsHybrid,
-} from "../../lib/embeddings";
+import { createTool } from '@mastra/core';
+import { z } from 'zod';
+import { searchTransactionsSQL, searchTransactionsHybrid } from '../../lib/embeddings';
 
 export const hybridQueryTool = createTool({
-  id: "hybrid-query",
+  id: 'hybrid-query',
   description:
-    "Search transactions using SQL for exact matches or pgvector for fuzzy/semantic matches",
+    'Search transactions using SQL for exact matches or pgvector for fuzzy/semantic matches',
   inputSchema: z.object({
-    userId: z.number().describe("Telegram user ID"),
+    userId: z.number().describe('Telegram user ID'),
     query: z
       .string()
       .optional()
-      .describe("Search query for fuzzy matching (merchant name, description)"),
-    merchant: z
-      .string()
-      .optional()
-      .describe("Exact merchant name for SQL search"),
+      .describe('Search query for fuzzy matching (merchant name, description)'),
+    merchant: z.string().optional().describe('Exact merchant name for SQL search'),
     category: z
       .string()
       .optional()
-      .describe("Category filter (e.g., Groceries, Dining, Transport)"),
-    dateFrom: z.string().optional().describe("Start date filter (YYYY-MM-DD)"),
-    dateTo: z.string().optional().describe("End date filter (YYYY-MM-DD)"),
-    minAmount: z.number().optional().describe("Minimum amount filter"),
-    maxAmount: z.number().optional().describe("Maximum amount filter"),
-    limit: z.number().default(50).describe("Maximum number of results"),
+      .describe('Category filter (e.g., Groceries, Dining, Transport)'),
+    dateFrom: z.string().optional().describe('Start date filter (YYYY-MM-DD)'),
+    dateTo: z.string().optional().describe('End date filter (YYYY-MM-DD)'),
+    minAmount: z.number().optional().describe('Minimum amount filter'),
+    maxAmount: z.number().optional().describe('Maximum amount filter'),
+    limit: z.number().default(50).describe('Maximum number of results'),
     useFuzzy: z
       .boolean()
       .default(false)
-      .describe("Force fuzzy search (use for typos or semantic search)"),
+      .describe('Force fuzzy search (use for typos or semantic search)'),
   }),
   outputSchema: z.object({
     success: z.boolean(),
@@ -52,9 +46,9 @@ export const hybridQueryTool = createTool({
         description: z.string().nullable(),
         transaction_date: z.string(),
         similarity: z.number(),
-      }),
+      })
     ),
-    searchMethod: z.enum(["sql", "fuzzy"]),
+    searchMethod: z.enum(['sql', 'fuzzy']),
     totalResults: z.number(),
   }),
   execute: async ({ context }) => {
@@ -73,19 +67,22 @@ export const hybridQueryTool = createTool({
 
     try {
       console.log(
-        `[hybrid-query] Query for user ${userId}: fuzzy=${useFuzzy}, query="${query}", merchant="${merchant}"`,
+        `[hybrid-query] Query for user ${userId}: fuzzy=${useFuzzy}, query="${query}", merchant="${merchant}"`
+      );
+      console.log(
+        `[hybrid-query] Date filters: dateFrom=${dateFrom}, dateTo=${dateTo}, category=${category}`
       );
 
       // Decision: SQL-first or fuzzy search?
       const shouldUseFuzzy = useFuzzy || (query && !merchant);
 
       let transactions;
-      let searchMethod: "sql" | "fuzzy";
+      let searchMethod: 'sql' | 'fuzzy';
 
       if (shouldUseFuzzy && query) {
         // Use fuzzy search (pgvector)
-        console.log("[hybrid-query] Using fuzzy search");
-        searchMethod = "fuzzy";
+        console.log('[hybrid-query] Using fuzzy search');
+        searchMethod = 'fuzzy';
 
         transactions = await searchTransactionsHybrid({
           query,
@@ -100,8 +97,8 @@ export const hybridQueryTool = createTool({
         });
       } else {
         // Use SQL search (exact or LIKE matching)
-        console.log("[hybrid-query] Using SQL search");
-        searchMethod = "sql";
+        console.log('[hybrid-query] Using SQL search');
+        searchMethod = 'sql';
 
         transactions = await searchTransactionsSQL({
           userId,
@@ -115,9 +112,7 @@ export const hybridQueryTool = createTool({
         });
       }
 
-      console.log(
-        `[hybrid-query] Found ${transactions.length} results using ${searchMethod}`,
-      );
+      console.log(`[hybrid-query] Found ${transactions.length} results using ${searchMethod}`);
 
       return {
         success: true,
@@ -126,12 +121,12 @@ export const hybridQueryTool = createTool({
         totalResults: transactions.length,
       };
     } catch (error) {
-      console.error("[hybrid-query] Error:", error);
+      console.error('[hybrid-query] Error:', error);
 
       return {
         success: false,
         transactions: [],
-        searchMethod: "sql",
+        searchMethod: 'sql' as const,
         totalResults: 0,
       };
     }

@@ -9,16 +9,33 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- ============================================================================
--- 2. Transactions table with vector embeddings
+-- 2. Users table (Telegram profile + preferences)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT PRIMARY KEY, -- Telegram user ID
+  telegram_chat_id BIGINT UNIQUE,
+  telegram_username TEXT,
+  first_name TEXT,
+  last_name TEXT,
+  default_currency TEXT NOT NULL DEFAULT 'AED',
+  timezone TEXT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================================
+-- 3. Transactions table with vector embeddings
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS transactions (
   id BIGSERIAL PRIMARY KEY,
-  user_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
   -- Transaction data
   amount DECIMAL(10, 2) NOT NULL,
-  currency TEXT NOT NULL DEFAULT 'USD',
+  currency TEXT NOT NULL DEFAULT 'AED',
   merchant TEXT NOT NULL,
   category TEXT NOT NULL,
   description TEXT,
@@ -29,19 +46,16 @@ CREATE TABLE IF NOT EXISTS transactions (
   description_embedding vector(1536), -- Optional: for description search
 
   -- Metadata
-  telegram_chat_id BIGINT,
-  telegram_username TEXT,
-  first_name TEXT,
-  last_name TEXT,
-
-  -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ============================================================================
--- 3. Indexes for performance
+-- 4. Indexes for performance
 -- ============================================================================
+
+-- Users indexes
+CREATE INDEX IF NOT EXISTS idx_users_chat_id ON users(telegram_chat_id);
 
 -- Standard indexes for frequent queries
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
@@ -61,7 +75,7 @@ USING ivfflat (description_embedding vector_cosine_ops)
 WITH (lists = 100);
 
 -- ============================================================================
--- 4. Merchant embeddings cache table
+-- 5. Merchant embeddings cache table
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS merchant_embeddings_cache (
@@ -83,7 +97,7 @@ USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 50);
 
 -- ============================================================================
--- 5. Hybrid search RPC function
+-- 6. Hybrid search RPC function
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION search_transactions_hybrid(
@@ -165,6 +179,11 @@ CREATE TRIGGER update_transactions_updated_at
 
 CREATE TRIGGER update_merchant_cache_updated_at
     BEFORE UPDATE ON merchant_embeddings_cache
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

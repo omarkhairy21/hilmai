@@ -1,41 +1,32 @@
-import { createTool } from "@mastra/core";
-import { z } from "zod";
-import { openai } from "@ai-sdk/openai";
-import { generateText } from "ai";
+import { createTool } from '@mastra/core';
+import { z } from 'zod';
+import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
 
 export const extractTransactionTool = createTool({
-  id: "extract-transaction",
-  description:
-    "Extract transaction details from natural language text using LLM",
+  id: 'extract-transaction',
+  description: 'Extract transaction details from natural language text using LLM',
   inputSchema: z.object({
-    text: z.string().describe("Natural language text describing a transaction"),
-    referenceDate: z
-      .string()
-      .optional()
-      .describe("ISO datetime for resolving relative dates"),
+    text: z.string().describe('Natural language text describing a transaction'),
+    referenceDate: z.string().optional().describe('ISO datetime for resolving relative dates'),
   }),
   outputSchema: z.object({
-    amount: z.number().describe("Transaction amount"),
-    currency: z.string().describe("Currency code (e.g., USD, AED, EUR)"),
-    merchant: z.string().describe("Merchant or vendor name"),
-    category: z
-      .string()
-      .describe("Spending category (e.g., groceries, dining, transport)"),
-    date: z.string().optional().describe("Transaction date if mentioned"),
-    description: z
-      .string()
-      .optional()
-      .describe("Additional transaction details"),
+    amount: z.number().describe('Transaction amount'),
+    currency: z.string().describe('Currency code (e.g., USD, AED, EUR)'),
+    merchant: z.string().describe('Merchant or vendor name'),
+    category: z.string().describe('Spending category (e.g., groceries, dining, transport)'),
+    date: z.string().optional().describe('Transaction date if mentioned'),
+    description: z.string().optional().describe('Additional transaction details'),
   }),
-  execute: async ({ context }) => {
-    const { text, referenceDate } = context;
+  execute: async (input: any) => {
+    const { text, referenceDate } = input;
 
     // Use provided reference date or current date
     const refDate = referenceDate ? new Date(referenceDate) : new Date();
-    const today = refDate.toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = refDate.toISOString().split('T')[0]; // YYYY-MM-DD
     const yesterday = new Date(refDate);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split("T")[0];
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
 
     const prompt = `You are a financial transaction extraction expert. Extract the following details from this text:
 
@@ -68,10 +59,10 @@ Respond with ONLY a JSON object in this exact format (no markdown, no code block
 
     try {
       const { text: response } = await generateText({
-        model: openai("gpt-4o-mini"),
+        model: openai('gpt-4o-mini'),
         messages: [
           {
-            role: "user",
+            role: 'user',
             content: prompt,
           },
         ],
@@ -81,26 +72,26 @@ Respond with ONLY a JSON object in this exact format (no markdown, no code block
       // Parse JSON response
       const cleanResponse = response
         .trim()
-        .replace(/```json\n?/g, "")
-        .replace(/```\n?/g, "");
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '');
       const extracted = JSON.parse(cleanResponse);
 
       return {
         amount: extracted.amount || 0,
-        currency: extracted.currency || "USD",
-        merchant: extracted.merchant || "Unknown",
-        category: extracted.category || "other",
+        currency: extracted.currency || 'USD',
+        merchant: extracted.merchant || 'Unknown',
+        category: extracted.category || 'other',
         description: extracted.description || text,
         date: extracted.date,
       };
     } catch (error) {
-      console.error("Error extracting transaction:", error);
+      console.error('Error extracting transaction:', error);
       // Return defaults if extraction fails
       return {
         amount: 0,
-        currency: "USD",
-        merchant: "Unknown",
-        category: "other",
+        currency: 'USD',
+        merchant: 'Unknown',
+        category: 'other',
         description: text,
       };
     }

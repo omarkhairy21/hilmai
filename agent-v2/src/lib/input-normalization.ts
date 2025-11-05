@@ -12,10 +12,10 @@
  * - User metadata
  */
 
-import type { Context } from "grammy";
-import { openai } from "./openai";
-import { downloadFile, getTempFilePath, deleteFile } from "./file-utils";
-import fs from "fs";
+import type { Context } from 'grammy';
+import { openai } from './openai';
+import { downloadFile, getTempFilePath, deleteFile } from './file-utils';
+import fs from 'fs';
 
 /**
  * Normalized input structure
@@ -27,7 +27,7 @@ export interface NormalizedInput {
   /** Input metadata */
   metadata: {
     /** Input type */
-    inputType: "text" | "voice" | "photo";
+    inputType: 'text' | 'voice' | 'photo';
 
     /** Current date (ISO format) */
     currentDate: string;
@@ -62,13 +62,13 @@ function getDateContext() {
   const now = new Date();
 
   // Current date and time
-  const currentDate = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
   const currentTime = now.toISOString(); // Full ISO timestamp
 
   // Yesterday
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
 
   return {
     currentDate,
@@ -103,16 +103,16 @@ async function transcribeVoice(audioFilePath: string): Promise<string> {
 
     const transcription = await openai.audio.transcriptions.create({
       file: audioStream,
-      model: "whisper-1",
-      response_format: "text", // Simple text response
+      model: 'whisper-1',
+      response_format: 'text', // Simple text response
       temperature: 0.0, // Deterministic
     });
 
     return transcription;
   } catch (error) {
-    console.error("[input-normalization] Transcription error:", error);
+    console.error('[input-normalization] Transcription error:', error);
     throw new Error(
-      `Failed to transcribe voice: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to transcribe voice: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -128,27 +128,25 @@ async function extractFromPhoto(imageFilePath: string): Promise<string> {
 
     // Read image as base64
     const imageBuffer = fs.readFileSync(imageFilePath);
-    const base64Image = imageBuffer.toString("base64");
-    const mimeType = imageFilePath.endsWith(".png")
-      ? "image/png"
-      : "image/jpeg";
+    const base64Image = imageBuffer.toString('base64');
+    const mimeType = imageFilePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
     // Call Vision API
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: 'gpt-4o',
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: [
             {
-              type: "text",
+              type: 'text',
               text: "Extract ALL text from this image. If it's a receipt, extract: merchant name, total amount, currency, date, and items. If it's a screenshot or other text, extract all visible text. Return the information clearly.",
             },
             {
-              type: "image_url",
+              type: 'image_url',
               image_url: {
                 url: `data:${mimeType};base64,${base64Image}`,
-                detail: "high",
+                detail: 'high',
               },
             },
           ],
@@ -158,17 +156,17 @@ async function extractFromPhoto(imageFilePath: string): Promise<string> {
       temperature: 0.0, // Deterministic
     });
 
-    const extractedText = response.choices[0]?.message?.content || "";
+    const extractedText = response.choices[0]?.message?.content || '';
 
     if (!extractedText) {
-      throw new Error("No text extracted from image");
+      throw new Error('No text extracted from image');
     }
 
     return extractedText;
   } catch (error) {
-    console.error("[input-normalization] Photo extraction error:", error);
+    console.error('[input-normalization] Photo extraction error:', error);
     throw new Error(
-      `Failed to extract from photo: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to extract from photo: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -188,12 +186,12 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
   try {
     // Case 1: Text message
     if (ctx.message?.text) {
-      console.log("[input-normalization] Processing text message");
+      console.log('[input-normalization] Processing text message');
 
       return {
         text: ctx.message.text,
         metadata: {
-          inputType: "text",
+          inputType: 'text',
           ...dateContext,
           ...userMetadata,
         },
@@ -202,28 +200,28 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
 
     // Case 2: Voice message
     if (ctx.message?.voice) {
-      console.log("[input-normalization] Processing voice message");
+      console.log('[input-normalization] Processing voice message');
 
       const fileId = ctx.message.voice.file_id;
       const file = await ctx.api.getFile(fileId);
 
       if (!file.file_path) {
-        throw new Error("Failed to get voice file path");
+        throw new Error('Failed to get voice file path');
       }
 
       // Download voice file
-      const tempFilePath = getTempFilePath("voice", "ogg");
+      const tempFilePath = getTempFilePath('voice', 'ogg');
       await downloadFile(file.file_path, tempFilePath);
 
       try {
         // Transcribe
         const transcribedText = await transcribeVoice(tempFilePath);
-        console.log("[input-normalization] Transcribed:", transcribedText);
+        console.log('[input-normalization] Transcribed:', transcribedText);
 
         return {
           text: transcribedText,
           metadata: {
-            inputType: "voice",
+            inputType: 'voice',
             ...dateContext,
             ...userMetadata,
           },
@@ -236,7 +234,7 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
 
     // Case 3: Photo message
     if (ctx.message?.photo && ctx.message.photo.length > 0) {
-      console.log("[input-normalization] Processing photo message");
+      console.log('[input-normalization] Processing photo message');
 
       // Get highest resolution photo (last in array)
       const photo = ctx.message.photo[ctx.message.photo.length - 1];
@@ -244,22 +242,22 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
       const file = await ctx.api.getFile(fileId);
 
       if (!file.file_path) {
-        throw new Error("Failed to get photo file path");
+        throw new Error('Failed to get photo file path');
       }
 
       // Download photo
-      const tempFilePath = getTempFilePath("photo", "jpg");
+      const tempFilePath = getTempFilePath('photo', 'jpg');
       await downloadFile(file.file_path, tempFilePath);
 
       try {
         // Extract text from photo
         const extractedText = await extractFromPhoto(tempFilePath);
-        console.log("[input-normalization] Extracted:", extractedText);
+        console.log('[input-normalization] Extracted:', extractedText);
 
         return {
           text: extractedText,
           metadata: {
-            inputType: "photo",
+            inputType: 'photo',
             ...dateContext,
             ...userMetadata,
           },
@@ -271,11 +269,9 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
     }
 
     // Unsupported message type
-    throw new Error(
-      "Unsupported message type. Please send text, voice, or photo.",
-    );
+    throw new Error('Unsupported message type. Please send text, voice, or photo.');
   } catch (error) {
-    console.error("[input-normalization] Error:", error);
+    console.error('[input-normalization] Error:', error);
     throw error;
   }
 }
@@ -294,13 +290,75 @@ export function buildContextPrompt(input: NormalizedInput): string {
   // Build context header
   const contextLines = [
     `[Current Date: Today is ${metadata.currentDate}, Yesterday was ${metadata.yesterday}]`,
-    `[User: ${metadata.firstName || "Unknown"} (@${metadata.username || "unknown"})]`,
+    `[User: ${metadata.firstName || 'Unknown'} (@${metadata.username || 'unknown'})]`,
     `[Message Type: ${metadata.inputType}]`,
-    "",
+    '',
     text,
   ];
 
-  return contextLines.join("\n");
+  return contextLines.join('\n');
+}
+
+/**
+ * Image content for Vision API requests
+ */
+export interface ImageContent {
+  type: 'image_url';
+  image_url: {
+    url: string;
+    detail?: 'low' | 'high';
+  };
+}
+
+/**
+ * Get image content with proper typing for Vision API
+ *
+ * Handles both local file paths and URLs (HTTP/HTTPS/data URIs)
+ *
+ * @param imageUrl - Image URL, file path, or data URI
+ * @returns Strongly-typed ImageContent object for Vision API
+ * @throws Error if file path doesn't exist or URL is invalid
+ */
+export function getImageContent(imageUrl: string): ImageContent {
+  // Handle HTTPS URLs - use directly
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return {
+      type: 'image_url',
+      image_url: {
+        url: imageUrl,
+      },
+    };
+  }
+
+  // Handle local file paths - convert to base64
+  if (fs.existsSync(imageUrl)) {
+    const imageBuffer = fs.readFileSync(imageUrl);
+    const mimeType = imageUrl.endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+    return {
+      type: 'image_url',
+      image_url: {
+        url: `data:${mimeType};base64,${imageBuffer.toString('base64')}`,
+        detail: 'high',
+      },
+    };
+  }
+
+  // Handle data URIs and other formats - pass through
+  if (imageUrl.startsWith('data:')) {
+    return {
+      type: 'image_url',
+      image_url: {
+        url: imageUrl,
+        detail: 'high',
+      },
+    };
+  }
+
+  // Invalid input
+  throw new Error(
+    `Invalid image source: must be an HTTP(S) URL, file path, or data URI. Received: ${imageUrl.substring(0, 50)}`
+  );
 }
 
 /**
@@ -317,14 +375,14 @@ export function shouldCacheResponse(text: string): boolean {
 
   // Don't cache transaction-related keywords
   const transactionKeywords = [
-    "spent",
-    "bought",
-    "paid",
-    "purchased",
-    "cost",
-    "expense",
-    "receipt",
-    "transaction",
+    'spent',
+    'bought',
+    'paid',
+    'purchased',
+    'cost',
+    'expense',
+    'receipt',
+    'transaction',
   ];
 
   for (const keyword of transactionKeywords) {
