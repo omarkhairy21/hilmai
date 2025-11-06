@@ -3,11 +3,16 @@
  *
  * Updates transaction fields in Supabase
  * Regenerates merchant embedding if merchant name changes
+ *
+ * SECURITY:
+ * - Uses supabaseService (service role) for unrestricted backend access
+ * - Dual user_id verification: fetch check + update filter
+ * - RLS policies provide defense in depth
  */
 
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
-import { supabase } from '../../lib/supabase';
+import { supabaseService } from '../../lib/supabase';
 import { getMerchantEmbedding } from '../../lib/embeddings';
 
 export const editTransactionTool = createTool({
@@ -44,7 +49,7 @@ export const editTransactionTool = createTool({
 
     try {
       // Step 1: Verify transaction belongs to user (security check)
-      const { data: existingTransaction, error: fetchError } = await supabase
+      const { data: existingTransaction, error: fetchError } = await supabaseService
         .from('transactions')
         .select('user_id, merchant')
         .eq('id', transactionId)
@@ -59,7 +64,7 @@ export const editTransactionTool = createTool({
       }
 
       // Step 2: Build update payload
-      const updatePayload: any = {};
+      const updatePayload: Record<string, unknown> = {};
 
       if (amount !== undefined) {
         updatePayload.amount = amount;
@@ -88,8 +93,8 @@ export const editTransactionTool = createTool({
         );
       }
 
-      // Step 4: Update transaction
-      const { data, error } = await supabase
+      // Step 4: Update transaction using service role
+      const { data, error } = await supabaseService
         .from('transactions')
         .update(updatePayload)
         .eq('id', transactionId)

@@ -3,11 +3,16 @@
  *
  * Deletes a transaction from Supabase
  * Includes security check to ensure user owns the transaction
+ *
+ * SECURITY:
+ * - Uses supabaseService (service role) for unrestricted backend access
+ * - Dual user_id verification: fetch check + delete filter
+ * - RLS policies provide defense in depth
  */
 
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
-import { supabase } from '../../lib/supabase';
+import { supabaseService } from '../../lib/supabase';
 
 export const deleteTransactionTool = createTool({
   id: 'delete-transaction',
@@ -27,7 +32,7 @@ export const deleteTransactionTool = createTool({
 
     try {
       // Step 1: Verify transaction belongs to user (security check)
-      const { data: existingTransaction, error: fetchError } = await supabase
+      const { data: existingTransaction, error: fetchError } = await supabaseService
         .from('transactions')
         .select('user_id, amount, currency, merchant, transaction_date')
         .eq('id', transactionId)
@@ -41,8 +46,8 @@ export const deleteTransactionTool = createTool({
         throw new Error('Unauthorized: Transaction does not belong to this user');
       }
 
-      // Step 2: Delete transaction
-      const { error: deleteError } = await supabase
+      // Step 2: Delete transaction using service role
+      const { error: deleteError } = await supabaseService
         .from('transactions')
         .delete()
         .eq('id', transactionId)

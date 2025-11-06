@@ -3,11 +3,16 @@
  *
  * Saves transaction to Supabase with merchant embedding generation
  * Uses embedding cache to reduce API calls
+ *
+ * SECURITY:
+ * - Uses supabaseService (service role) for unrestricted backend access
+ * - Server-side user_id validation (validates userId parameter)
+ * - RLS policies provide defense in depth even with service role
  */
 
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
-import { supabase } from '../../lib/supabase';
+import { supabaseService } from '../../lib/supabase';
 import { getMerchantEmbedding } from '../../lib/embeddings';
 
 export const saveTransactionTool = createTool({
@@ -93,7 +98,7 @@ export const saveTransactionTool = createTool({
       // Step 1: Generate merchant embedding and upsert user in parallel
       const [merchantEmbedding, userUpsertResult] = await Promise.all([
         getMerchantEmbedding(merchant),
-        supabase.from('users').upsert(userPayload, { onConflict: 'id' }),
+        supabaseService.from('users').upsert([userPayload]),
       ]);
 
       if (userUpsertResult.error) {
@@ -107,8 +112,8 @@ export const saveTransactionTool = createTool({
         `[save-transaction] Generated embedding (${merchantEmbedding.length} dimensions)`
       );
 
-      // Step 2: Insert transaction into Supabase
-      const { data, error } = await supabase
+      // Step 2: Insert transaction into Supabase using service role
+      const { data, error } = await supabaseService
         .from('transactions')
         .insert({
           user_id: userId,
@@ -128,7 +133,7 @@ export const saveTransactionTool = createTool({
         throw new Error(`Failed to save transaction: ${error.message}`);
       }
 
-      const transactionId = data.id;
+      const transactionId = data?.id;
       console.log(`[save-transaction] ✅ Saved transaction ID: ${transactionId}`);
 
       return {

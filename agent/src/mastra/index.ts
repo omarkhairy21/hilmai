@@ -3,6 +3,12 @@
  *
  * Central configuration for all agents, tools, logger, storage, and server
  * Includes Mastra playground support for debugging
+ *
+ * SECURITY NOTES:
+ * - Uses Supabase service role key for backend operations
+ * - Service role bypasses RLS policies (necessary for system operations)
+ * - All user data access is validated server-side with user_id checks
+ * - Mastra system tables (mastra_*) have no RLS (framework tables, not user data)
  */
 
 import { Mastra } from '@mastra/core/mastra';

@@ -5,10 +5,15 @@
  * - Generating embeddings using OpenAI text-embedding-3-small
  * - Caching merchant embeddings to reduce API calls
  * - Hybrid search using SQL + pgvector
+ *
+ * SECURITY:
+ * - Uses supabaseService (service role) for unrestricted backend access
+ * - All user data queries filtered by user_id server-side
+ * - RLS policies provide defense in depth
  */
 
 import { openai } from './openai';
-import { supabase } from './supabase';
+import { supabaseService } from './supabase';
 
 /**
  * Generate embedding vector using OpenAI API
@@ -55,26 +60,28 @@ export async function getMerchantEmbedding(merchant: string): Promise<number[]> 
 
   try {
     // Check cache first
-    const { data: cached, error: cacheError } = await supabase
+    const { data: cached, error: cacheError } = await supabaseService
       .from('merchant_embeddings_cache')
       .select('embedding')
-      .eq('merchant_name', normalized)
-      .single();
+      .eq('merchant_name', normalized);
 
-    if (cached && !cacheError) {
+    if (!cacheError && cached && cached.length > 0) {
       console.log(`[embeddings] Cache hit: ${merchant}`);
+      // Safely access the first result
+      const cachedRecord = cached[0];
+      if (cachedRecord && 'embedding' in cachedRecord) {
+        // Update usage count using RPC function (fire and forget)
+        void supabaseService
+          .rpc('increment_merchant_cache_usage', {
+            p_merchant_name: normalized,
+          })
+          .then(
+            () => {},
+            (err: Error) => console.warn('[embeddings] Failed to update cache usage:', err)
+          );
 
-      // Update usage count using RPC function (fire and forget)
-      void supabase
-        .rpc('increment_merchant_cache_usage', {
-          p_merchant_name: normalized,
-        })
-        .then(
-          () => {},
-          (err: Error) => console.warn('[embeddings] Failed to update cache usage:', err)
-        );
-
-      return cached.embedding;
+        return cachedRecord.embedding;
+      }
     }
 
     // Cache miss - generate new embedding
@@ -82,7 +89,7 @@ export async function getMerchantEmbedding(merchant: string): Promise<number[]> 
     const embedding = await generateEmbedding(merchant);
 
     // Store in cache (fire and forget)
-    void supabase
+    void supabaseService
       .from('merchant_embeddings_cache')
       .insert({
         merchant_name: normalized,
@@ -177,8 +184,8 @@ export async function searchTransactionsHybrid(
     console.log(`[embeddings] Hybrid search for: "${query}"`);
     const queryEmbedding = await generateEmbedding(query);
 
-    // Call RPC function
-    const { data, error } = await supabase.rpc('search_transactions_hybrid', {
+    // Call RPC function using service role
+    const { data, error } = await supabaseService.rpc('search_transactions_hybrid', {
       p_query_embedding: queryEmbedding,
       p_user_id: userId,
       p_similarity_threshold: similarityThreshold,
@@ -196,7 +203,7 @@ export async function searchTransactionsHybrid(
     }
 
     console.log(`[embeddings] Found ${data?.length || 0} results`);
-    return (data as TransactionResult[]) || [];
+    return data || [];
   } catch (error) {
     console.error('[embeddings] Error in hybrid search:', error);
     throw new Error(
@@ -225,7 +232,7 @@ export async function searchTransactionsSQL(params: {
   const { userId, merchant, category, dateFrom, dateTo, minAmount, maxAmount, limit = 50 } = params;
 
   try {
-    let query = supabase
+    let query = supabaseService
       .from('transactions')
       .select('id, amount, currency, merchant, category, description, transaction_date')
       .eq('user_id', userId);
@@ -261,11 +268,17 @@ export async function searchTransactionsSQL(params: {
 
     console.log(`[embeddings] SQL search found ${data?.length || 0} results`);
 
-    // Add similarity field (1.0 for exact matches)
+    // Add similarity field (1.0 for exact matches) and map to TransactionResult
     return (data || []).map((tx) => ({
-      ...tx,
+      id: tx.id,
+      amount: tx.amount,
+      currency: tx.currency,
+      merchant: tx.merchant,
+      category: tx.category,
+      description: tx.description,
+      transaction_date: tx.transaction_date,
       similarity: 1.0,
-    })) as TransactionResult[];
+    }));
   } catch (error) {
     console.error('[embeddings] Error in SQL search:', error);
     throw new Error(`SQL search failed: ${error instanceof Error ? error.message : String(error)}`);

@@ -188,5 +188,108 @@ CREATE TRIGGER update_users_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
--- Done! Schema is ready for agent-v2
+-- 8. Row Level Security (RLS) Setup for Telegram Bot
+-- ============================================================================
+
+-- Enable RLS on application tables only (user data isolation)
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE merchant_embeddings_cache ENABLE ROW LEVEL SECURITY;
+
+-- NOTE: Mastra system tables (mastra_*, etc.) intentionally have NO RLS
+-- They are framework system tables, not user data
+-- Mastra backend (service role) needs unrestricted access
+
+-- ============================================================================
+-- Helper function: Get current user ID from JWT claims
+-- ============================================================================
+-- NOTE: This function is for future client-side RLS enforcement.
+-- When using service_role key (backend operations), this function returns NULL
+-- because service_role bypasses RLS and doesn't use JWT claims.
+-- Backend operations should validate user_id in application code instead.
+--
+-- This function will be useful if you implement:
+-- - Client-side API access with JWT tokens
+-- - Direct anon key access with user authentication
+-- - Web dashboard with Supabase Auth integration
+
+CREATE OR REPLACE FUNCTION get_current_user_id()
+RETURNS BIGINT AS $$
+BEGIN
+  RETURN (auth.jwt() ->> 'user_id')::BIGINT;
+EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- ============================================================================
+-- Users Table - RLS Policies
+-- ============================================================================
+
+CREATE POLICY "Users can view own profile"
+ON users FOR SELECT
+USING (id = get_current_user_id());
+
+CREATE POLICY "Users can update own profile"
+ON users FOR UPDATE
+USING (id = get_current_user_id())
+WITH CHECK (id = get_current_user_id());
+
+CREATE POLICY "Backend service can insert users"
+ON users FOR INSERT
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "Backend service can delete users"
+ON users FOR DELETE
+USING (auth.role() = 'service_role');
+
+-- ============================================================================
+-- Transactions Table - RLS Policies
+-- ============================================================================
+
+CREATE POLICY "Users can view own transactions"
+ON transactions FOR SELECT
+USING (user_id = get_current_user_id());
+
+CREATE POLICY "Users can insert own transactions"
+ON transactions FOR INSERT
+WITH CHECK (user_id = get_current_user_id());
+
+CREATE POLICY "Users can update own transactions"
+ON transactions FOR UPDATE
+USING (user_id = get_current_user_id())
+WITH CHECK (user_id = get_current_user_id());
+
+CREATE POLICY "Users can delete own transactions"
+ON transactions FOR DELETE
+USING (user_id = get_current_user_id());
+
+CREATE POLICY "Backend service can access all transactions"
+ON transactions FOR ALL
+USING (auth.role() = 'service_role');
+
+-- ============================================================================
+-- Merchant Embeddings Cache - RLS Policies
+-- ============================================================================
+
+-- Public read access (cache is shared reference data)
+CREATE POLICY "Anyone can read merchant cache"
+ON merchant_embeddings_cache FOR SELECT
+USING (true);
+
+-- Backend-only write access
+CREATE POLICY "Backend service can insert merchant cache"
+ON merchant_embeddings_cache FOR INSERT
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "Backend service can update merchant cache"
+ON merchant_embeddings_cache FOR UPDATE
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "Backend service can delete merchant cache"
+ON merchant_embeddings_cache FOR DELETE
+USING (auth.role() = 'service_role');
+
+-- ============================================================================
+-- Done! Schema is ready for agent-v2 with RLS security
 -- ============================================================================
