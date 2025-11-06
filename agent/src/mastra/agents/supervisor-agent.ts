@@ -18,18 +18,6 @@ import { transactionManagerAgent } from './transaction-manager-agent';
 // Get PostgreSQL connection string from config
 const databaseUrl = getDatabaseUrl();
 
-// Debug logging for database URL encoding
-if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_DB_URL === 'true') {
-  console.log('[supervisor-agent] Database URL configured:', !!databaseUrl);
-  if (databaseUrl) {
-    // Log partial URL for security (hide full password)
-    const match = databaseUrl.match(/^(postgres[^:]*:\/\/[^:]+:)(.{0,5}).*(@.*)$/);
-    if (match) {
-      console.log(`[supervisor-agent] DB URL format: ${match[1]}***${match[3]}`);
-    }
-  }
-}
-
 const supervisorInstructions = [
   "You are HilmAI's supervisor agent. Your job is to analyze user messages and delegate to the right specialist agent.",
 
@@ -237,11 +225,11 @@ export const supervisorAgent = new Agent({
           connectionString: databaseUrl,
         }),
         options: {
-          // Conversation history: last 20 messages for context
-          lastMessages: 20,
+          // Conversation history: reduced from 20 to 10 for faster memory retrieval
+          lastMessages: 10,
           // Semantic recall disabled for MVP (keeps latency low)
           semanticRecall: false,
-          // Working memory enabled for user preferences
+          // Working memory enabled for user preferences (can be disabled if latency is still high)
           workingMemory: {
             enabled: true,
             scope: 'resource', // Resource-scoped: persists across all threads for same user

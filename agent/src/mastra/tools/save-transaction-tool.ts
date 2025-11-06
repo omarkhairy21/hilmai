@@ -90,19 +90,19 @@ export const saveTransactionTool = createTool({
         userPayload.last_name = lastName;
       }
 
-      const { error: userError } = await supabase
-        .from('users')
-        .upsert(userPayload, { onConflict: 'id' });
+      // Step 1: Generate merchant embedding and upsert user in parallel
+      const [merchantEmbedding, userUpsertResult] = await Promise.all([
+        getMerchantEmbedding(merchant),
+        supabase.from('users').upsert(userPayload, { onConflict: 'id' }),
+      ]);
 
-      if (userError) {
-        console.error('[save-transaction] Failed to upsert user:', userError);
+      if (userUpsertResult.error) {
+        console.error('[save-transaction] Failed to upsert user:', userUpsertResult.error);
         throw new Error(
-          `Failed to sync user profile before saving transaction: ${userError.message}`
+          `Failed to sync user profile before saving transaction: ${userUpsertResult.error.message}`
         );
       }
 
-      // Step 1: Generate merchant embedding (with caching)
-      const merchantEmbedding = await getMerchantEmbedding(merchant);
       console.log(
         `[save-transaction] Generated embedding (${merchantEmbedding.length} dimensions)`
       );

@@ -214,6 +214,8 @@ export function createBot(mastra: Mastra): Bot {
       hasPhoto: Boolean(ctx.message?.photo),
     });
 
+    let processingMessageId: number | undefined;
+
     try {
       // Step 1: Prepare workflow input from Grammy context
       logger.info('message:preparing_workflow_input', { userId });
@@ -264,7 +266,13 @@ export function createBot(mastra: Mastra): Bot {
 
       logger.debug('message:workflow_input_prepared', { userId });
 
-      // Step 2: Run message-processing workflow (handles ALL processing)
+      // Step 2: Send "Processing..." message for better perceived latency
+      const processingMessage = await ctx.reply('⏳ Processing...', {
+        parse_mode: 'Markdown',
+      });
+      processingMessageId = processingMessage.message_id;
+
+      // Step 3: Run message-processing workflow (handles ALL processing)
       logger.info('message:running_workflow', { userId });
 
       const workflow = mastra.getWorkflow('message-processing');
@@ -272,10 +280,18 @@ export function createBot(mastra: Mastra): Bot {
       const workflowResult = await run.start({ inputData: workflowInput });
 
       if (workflowResult.status === 'failed') {
+        // Delete processing message and send error
+        await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
+          // Ignore errors if message already deleted or not found
+        });
         throw workflowResult.error;
       }
 
       if (workflowResult.status !== 'success') {
+        // Delete processing message and send error
+        await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
+          // Ignore errors if message already deleted or not found
+        });
         throw new Error(`Workflow did not complete successfully: ${workflowResult.status}`);
       }
 
@@ -288,19 +304,46 @@ export function createBot(mastra: Mastra): Bot {
         hasMarkup: Boolean(telegramMarkup),
       });
 
-      // Step 3: Send response with optional inline keyboard markup
+      // Step 4: Update processing message with final response
       const replyOptions: any = { parse_mode: 'Markdown' };
       if (telegramMarkup) {
         replyOptions.reply_markup = telegramMarkup;
       }
-      await ctx.reply(response, replyOptions);
-      logger.info('message:sent', { userId });
+
+      try {
+        // Try to edit the processing message with the final response
+        await ctx.api.editMessageText(ctx.chat.id, processingMessageId, response, replyOptions);
+
+        logger.info('message:updated', { userId, messageId: processingMessageId });
+      } catch (editError) {
+        // If editing fails (e.g., message too long or format issue), send new message
+        logger.warn('message:edit_failed', {
+          userId,
+          error: editError instanceof Error ? editError.message : String(editError),
+        });
+        
+        // Delete processing message
+        await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
+          // Ignore errors
+        });
+        
+        // Send final response as new message
+        await ctx.reply(response, replyOptions);
+        logger.info('message:sent_new', { userId });
+      }
     } catch (error) {
       logger.error('message:error', {
         userId,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
+
+      // Clean up processing message if it exists
+      if (processingMessageId !== undefined) {
+        await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
+          // Ignore errors if message already deleted or not found
+        });
+      }
 
       // User-friendly error message
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

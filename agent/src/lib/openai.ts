@@ -6,4 +6,6 @@ if (!process.env.OPENAI_API_KEY) {
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  timeout: 30000, // 30 seconds max per request
+  maxRetries: 2, // Retry up to 2 times with exponential backoff
 });

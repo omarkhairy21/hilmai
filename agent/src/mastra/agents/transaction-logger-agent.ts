@@ -146,7 +146,7 @@ const transactionLoggerInstructions = [
 export const transactionLoggerAgent = new Agent({
   name: 'transactionLogger',
   instructions: transactionLoggerInstructions,
-  model: openai('gpt-4o'),
+  model: openai('gpt-4o-mini'), // Optimized: Faster and cheaper while maintaining quality
   tools: {
     saveTransaction: saveTransactionTool,
   },

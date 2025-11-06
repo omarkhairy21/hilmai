@@ -130,12 +130,12 @@ export class AgentResponseCache {
       });
 
       if (!result.rows || result.rows.length === 0) {
-        console.log('[cache] Miss');
+        console.log(`[cache] Miss for user ${userId}`);
         return null;
       }
 
       const row = result.rows[0] as Record<string, any>;
-      console.log('[cache] Hit! ⚡');
+      console.log(`[cache] Hit! ⚡ (user ${userId}, key: ${key.substring(0, 8)}...)`);
 
       return JSON.parse(row.response_json as string) as CachedAgentResponse;
     } catch (error) {
