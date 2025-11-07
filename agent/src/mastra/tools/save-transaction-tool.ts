@@ -36,7 +36,10 @@ export const saveTransactionTool = createTool({
     transactionId: z.number().optional(),
     message: z.string(),
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context, mastra }) => {
+    const logger = mastra?.getLogger();
+    const toolStartTime = Date.now();
+    
     const {
       userId,
       amount,
@@ -51,12 +54,15 @@ export const saveTransactionTool = createTool({
       lastName,
     } = context;
 
-    console.log(
-      `[save-transaction] Saving transaction for user ${userId}: ${amount} ${currency} at ${merchant} on ${transactionDate}`
-    );
-    console.log(
-      `[save-transaction] User metadata: userId=${userId}, telegramChatId=${telegramChatId}, username=${telegramUsername}, firstName=${firstName}, lastName=${lastName}`
-    );
+    logger?.info('[tool:save-transaction]', {
+      event: 'start',
+      userId,
+      amount,
+      currency,
+      merchant,
+      category,
+      transactionDate,
+    });
 
     try {
       if (!userId || Number.isNaN(userId)) {
@@ -96,23 +102,39 @@ export const saveTransactionTool = createTool({
       }
 
       // Step 1: Generate merchant embedding and upsert user in parallel
+      const embeddingStart = Date.now();
       const [merchantEmbedding, userUpsertResult] = await Promise.all([
         getMerchantEmbedding(merchant),
         supabaseService.from('users').upsert([userPayload]),
       ]);
+      
+      const embeddingDuration = Date.now() - embeddingStart;
+      logger?.info('[tool:performance]', {
+        operation: 'embedding_and_user_upsert',
+        duration: embeddingDuration,
+        userId,
+        merchant,
+      });
 
       if (userUpsertResult.error) {
-        console.error('[save-transaction] Failed to upsert user:', userUpsertResult.error);
+        logger?.error('[tool:save-transaction]', {
+          event: 'user_upsert_failed',
+          error: userUpsertResult.error.message,
+          userId,
+        });
         throw new Error(
           `Failed to sync user profile before saving transaction: ${userUpsertResult.error.message}`
         );
       }
 
-      console.log(
-        `[save-transaction] Generated embedding (${merchantEmbedding.length} dimensions)`
-      );
+      logger?.debug('[tool:save-transaction]', {
+        event: 'embedding_generated',
+        dimensions: merchantEmbedding.length,
+        userId,
+      });
 
       // Step 2: Insert transaction into Supabase using service role
+      const dbInsertStart = Date.now();
       const { data, error } = await supabaseService
         .from('transactions')
         .insert({
@@ -128,13 +150,37 @@ export const saveTransactionTool = createTool({
         .select('id')
         .single();
 
+      const dbInsertDuration = Date.now() - dbInsertStart;
+      logger?.info('[tool:performance]', {
+        operation: 'database_insert',
+        duration: dbInsertDuration,
+        userId,
+      });
+
       if (error) {
-        console.error('[save-transaction] Database error:', error);
+        logger?.error('[tool:save-transaction]', {
+          event: 'database_error',
+          error: error.message,
+          userId,
+        });
         throw new Error(`Failed to save transaction: ${error.message}`);
       }
 
       const transactionId = data?.id;
-      console.log(`[save-transaction] ✅ Saved transaction ID: ${transactionId}`);
+      
+      const totalDuration = Date.now() - toolStartTime;
+      logger?.info('[tool:performance]', {
+        operation: 'save_transaction_complete',
+        duration: totalDuration,
+        userId,
+        transactionId,
+      });
+
+      logger?.info('[tool:save-transaction]', {
+        event: 'success',
+        transactionId,
+        userId,
+      });
 
       return {
         success: true,
@@ -142,7 +188,13 @@ export const saveTransactionTool = createTool({
         message: `Transaction saved successfully (ID: ${transactionId})`,
       };
     } catch (error) {
-      console.error('[save-transaction] Error:', error);
+      const errorDuration = Date.now() - toolStartTime;
+      logger?.error('[tool:save-transaction]', {
+        event: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration: errorDuration,
+        userId,
+      });
 
       return {
         success: false,

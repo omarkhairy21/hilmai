@@ -157,7 +157,10 @@ const transcribeVoiceStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: determineInputTypeOutputSchema,
   outputSchema: transcribeVoiceOutputSchema,
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    const transcriptionStart = Date.now();
+    
     const audioFilePath = inputData.voiceFilePath;
     if (!audioFilePath) {
       throw new Error('Voice file path missing for transcription');
@@ -167,12 +170,26 @@ const transcribeVoiceStep = createStep({
       throw new Error(`Audio file not found: ${audioFilePath}`);
     }
 
+    logger.info('[workflow:transcribe]', {
+      event: 'start',
+      userId: inputData.userId,
+      filePath: audioFilePath,
+    });
+
     const audioStream = fs.createReadStream(audioFilePath);
     const transcription = await openai.audio.transcriptions.create({
       file: audioStream,
       model: 'whisper-1',
       response_format: 'text',
       temperature: 0.0,
+    });
+
+    const transcriptionDuration = Date.now() - transcriptionStart;
+    logger.info('[workflow:performance]', {
+      operation: 'voice_transcription',
+      duration: transcriptionDuration,
+      userId: inputData.userId,
+      textLength: transcription.length,
     });
 
     const result: TranscribeVoiceOutput = {
@@ -219,7 +236,10 @@ const extractFromPhotoStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: determineInputTypeOutputSchema,
   outputSchema: extractFromPhotoOutputSchema,
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    const extractionStart = Date.now();
+    
     const imageFilePath = inputData.photoFilePath;
     if (!imageFilePath) {
       throw new Error('Photo file path missing for extraction');
@@ -228,6 +248,12 @@ const extractFromPhotoStep = createStep({
     if (!fs.existsSync(imageFilePath)) {
       throw new Error(`Image file not found: ${imageFilePath}`);
     }
+
+    logger.info('[workflow:photo-extract]', {
+      event: 'start',
+      userId: inputData.userId,
+      filePath: imageFilePath,
+    });
 
     const imageBuffer = fs.readFileSync(imageFilePath);
     const mimeType = imageFilePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
@@ -260,6 +286,15 @@ const extractFromPhotoStep = createStep({
     if (!extractedText) {
       throw new Error('No text extracted from the provided image');
     }
+
+    const extractionDuration = Date.now() - extractionStart;
+    logger.info('[workflow:performance]', {
+      operation: 'photo_extraction',
+      duration: extractionDuration,
+      userId: inputData.userId,
+      textLength: extractedText.length,
+      imageSize: imageBuffer.length,
+    });
 
     const result: ExtractFromPhotoOutput = {
       text: extractedText,
@@ -405,7 +440,9 @@ const buildContextPromptStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: processedInputSchema,
   outputSchema: buildContextPromptOutputSchema,
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    
     const userMetadata = {
       userId: inputData.userId,
       telegramChatId: inputData.userId,
@@ -426,10 +463,13 @@ const buildContextPromptStep = createStep({
       inputData.text,
     ];
 
-    console.log(
-      `[workflow:build-context] Building prompt for supervisor with date context: today=${inputData.currentDate}, yesterday=${inputData.yesterday}`
-    );
-    console.log(`[workflow:build-context] User metadata: ${JSON.stringify(userMetadata)}`);
+    logger.debug('[workflow:build-context]', {
+      event: 'building_prompt',
+      today: inputData.currentDate,
+      yesterday: inputData.yesterday,
+      userMetadata,
+      inputType: inputData.inputType,
+    });
 
     const result: BuildContextOutput = {
       prompt: contextLines.join('\n'),
@@ -473,10 +513,27 @@ const checkCacheStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: buildContextPromptOutputSchema,
   outputSchema: checkCacheOutputSchema,
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    const cacheCheckStart = Date.now();
+    
     const cached = await AgentResponseCache.get(inputData.userId, inputData.text);
+    
+    const cacheCheckDuration = Date.now() - cacheCheckStart;
+    logger.info('[workflow:performance]', {
+      operation: 'cache_check',
+      duration: cacheCheckDuration,
+      userId: inputData.userId,
+      hit: !!cached,
+    });
 
     if (cached) {
+      logger.info('[workflow:cache]', {
+        event: 'cache_hit',
+        userId: inputData.userId,
+        inputType: inputData.inputType,
+      });
+
       const result: CheckCacheOutput = {
         prompt: inputData.prompt,
         text: inputData.text,
@@ -493,6 +550,12 @@ const checkCacheStep = createStep({
       };
       return result;
     }
+
+    logger.info('[workflow:cache]', {
+      event: 'cache_miss',
+      userId: inputData.userId,
+      inputType: inputData.inputType,
+    });
 
     const result: CheckCacheOutput = {
       prompt: inputData.prompt,
@@ -549,7 +612,16 @@ const supervisorAgentStep = createStep({
   inputSchema: checkCacheOutputSchema,
   outputSchema: supervisorAgentOutputSchema,
   execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    const stepStartTime = Date.now();
+
     if (inputData.isCached && inputData.cachedResponse) {
+      logger.info('[workflow:supervisor-agent]', {
+        event: 'cache_hit',
+        userId: inputData.userId,
+        inputType: inputData.inputType,
+      });
+
       const result: SupervisorAgentOutput = {
         agentResponse: inputData.cachedResponse,
         text: inputData.text,
@@ -571,14 +643,35 @@ const supervisorAgentStep = createStep({
       throw new Error('Supervisor agent is not registered in Mastra');
     }
 
-    const generation = await supervisorAgent.generate(inputData.prompt, {
+    // Use streaming for better perceived performance
+    const streamStart = Date.now();
+    logger.info('[workflow:supervisor-agent]', {
+      event: 'stream_start',
+      userId: inputData.userId,
+      inputType: inputData.inputType,
+    });
+
+    const streamResult = await supervisorAgent.stream(inputData.prompt, {
       memory: {
         thread: `user-${inputData.userId}`, // Single thread per user for all messages
         resource: inputData.userId.toString(), // Resource ID for resource-scoped memory
       },
     });
 
-    const rawResponse = generation.text ?? 'Sorry, I encountered an issue processing that.';
+    // Get the full output from the stream
+    // This still benefits from streaming internally but gives us the complete result
+    const fullOutput = await streamResult.getFullOutput();
+    
+    const streamDuration = Date.now() - streamStart;
+    logger.info('[workflow:performance]', {
+      operation: 'stream_complete',
+      totalDuration: streamDuration,
+      userId: inputData.userId,
+      inputType: inputData.inputType,
+      responseLength: fullOutput.text?.length || 0,
+    });
+
+    const rawResponse = fullOutput.text ?? 'Sorry, I encountered an issue processing that.';
 
     // Parse JSON response if it contains markup (from query executor agent)
     let agentResponse: string = rawResponse;
@@ -590,7 +683,10 @@ const supervisorAgentStep = createStep({
       if (parsed.text && parsed.markup) {
         agentResponse = parsed.text;
         telegramMarkup = parsed.markup;
-        console.log('[workflow:supervisor-agent] Parsed JSON response with markup');
+        logger.info('[workflow:supervisor-agent]', {
+          event: 'parsed_json_markup',
+          userId: inputData.userId,
+        });
       }
     } catch {
       // Not JSON - try to extract transaction IDs from response and generate markup
@@ -623,12 +719,25 @@ const supervisorAgentStep = createStep({
               { text: 'Delete', callback_data: `delete_${id}` },
             ]),
           };
-          console.log(`[workflow:supervisor-agent] Generated markup for ${transactionIds.length} transactions: ${transactionIds.join(', ')}`);
+          logger.info('[workflow:supervisor-agent]', {
+            event: 'generated_markup',
+            transactionCount: transactionIds.length,
+            transactionIds: transactionIds.join(', '),
+            userId: inputData.userId,
+          });
         }
       }
       
       agentResponse = rawResponse;
     }
+
+    const totalStepDuration = Date.now() - stepStartTime;
+    logger.info('[workflow:performance]', {
+      operation: 'supervisor_step_complete',
+      duration: totalStepDuration,
+      userId: inputData.userId,
+      cached: false,
+    });
 
     const result: SupervisorAgentOutput = {
       agentResponse,
@@ -680,14 +789,31 @@ const cacheResponseStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: supervisorAgentOutputSchema,
   outputSchema: cacheResponseOutputSchema,
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    
     if (!inputData.isCached && shouldCacheResponse(inputData.text)) {
+      const cacheSetStart = Date.now();
+      
       await AgentResponseCache.set(inputData.userId, inputData.text, {
         response: inputData.agentResponse,
         metadata: {
           inputType: inputData.inputType,
           cachedAt: new Date().toISOString(),
         },
+      });
+
+      const cacheSetDuration = Date.now() - cacheSetStart;
+      logger.info('[workflow:performance]', {
+        operation: 'cache_set',
+        duration: cacheSetDuration,
+        userId: inputData.userId,
+      });
+
+      logger.info('[workflow:cache]', {
+        event: 'response_cached',
+        userId: inputData.userId,
+        inputType: inputData.inputType,
       });
 
       const result: CacheResponseOutput = {
@@ -701,6 +827,12 @@ const cacheResponseStep = createStep({
       };
       return result;
     }
+
+    logger.debug('[workflow:cache]', {
+      event: 'skip_caching',
+      userId: inputData.userId,
+      reason: inputData.isCached ? 'already_cached' : 'not_cacheable',
+    });
 
     const result: CacheResponseOutput = {
       response: inputData.agentResponse,
@@ -744,14 +876,18 @@ const cleanupFilesStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: cleanupInputSchema,
   outputSchema: cleanupOutputSchema,
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
     const deletions: Promise<void>[] = [];
 
     if (inputData.voiceFilePath) {
       deletions.push(
         deleteFile(inputData.voiceFilePath).catch((error) => {
-          console.warn('[workflow:message-processing] Voice cleanup failed', {
-            error,
+          logger.warn('[workflow:cleanup]', {
+            event: 'voice_cleanup_failed',
+            error: error instanceof Error ? error.message : String(error),
+            filePath: inputData.voiceFilePath,
+            userId: inputData.userId,
           });
         })
       );
@@ -760,8 +896,11 @@ const cleanupFilesStep = createStep({
     if (inputData.photoFilePath) {
       deletions.push(
         deleteFile(inputData.photoFilePath).catch((error) => {
-          console.warn('[workflow:message-processing] Photo cleanup failed', {
-            error,
+          logger.warn('[workflow:cleanup]', {
+            event: 'photo_cleanup_failed',
+            error: error instanceof Error ? error.message : String(error),
+            filePath: inputData.photoFilePath,
+            userId: inputData.userId,
           });
         })
       );
