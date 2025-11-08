@@ -671,6 +671,7 @@ const supervisorAgentStep = createStep({
         thread: `user-${inputData.userId}`, // Single thread per user for all messages
         resource: inputData.userId.toString(), // Resource ID for resource-scoped memory
       },
+      maxSteps: 2,
     });
 
     // Get the full output from the stream

@@ -21,10 +21,57 @@
  * See test-multi-user-memory.md for detailed explanation and verification
  */
 
+import type { MemoryConfig } from '@mastra/core/memory';
 import { Memory } from '@mastra/memory';
 import { PostgresStore, PgVector } from '@mastra/pg';
 import { UpstashStore } from '@mastra/upstash';
 import { getDatabaseUrl, getUpstashConfig } from './config';
+
+const OPENAI_EMBEDDER_MODEL_ID = 'openai/text-embedding-3-small';
+
+const PG_CONNECTION_POOL = {
+  max: 5,
+  idleTimeoutMillis: 30_000,
+} as const;
+
+const DEFAULT_SEMANTIC_RECALL = {
+  topK: 3,
+  messageRange: {
+    before: 2,
+    after: 1,
+  },
+  scope: 'resource' as const,
+  indexConfig: {
+    type: 'hnsw' as const,
+    metric: 'cosine' as const,
+    hnsw: {
+      m: 32,
+      efConstruction: 128,
+    },
+  },
+} as const;
+
+function buildPostgresMemoryOptions(lastMessages: number): MemoryConfig {
+  return {
+    lastMessages,
+    semanticRecall: {
+      topK: DEFAULT_SEMANTIC_RECALL.topK,
+      messageRange: {
+        ...DEFAULT_SEMANTIC_RECALL.messageRange,
+      },
+      scope: DEFAULT_SEMANTIC_RECALL.scope,
+      indexConfig: {
+        ...DEFAULT_SEMANTIC_RECALL.indexConfig,
+        hnsw: {
+          ...DEFAULT_SEMANTIC_RECALL.indexConfig.hnsw,
+        },
+      },
+    },
+    workingMemory: {
+      enabled: false,
+    },
+  };
+}
 
 /**
  * Shared memory instance to avoid re-initialization on every agent invocation
@@ -49,9 +96,9 @@ let sharedMemoryInstance: Memory | null = null;
  * 
  * Performance optimizations applied:
  * - Singleton pattern: Reuses same Memory instance
- * - Minimal lastMessages (3): Faster queries, sufficient for most context
- * - Working memory disabled: Eliminates 10-12 second initialization
- * - Semantic recall disabled: Keeps latency low
+ * - Balanced lastMessages window (6) for fast lookups without losing context
+ * - Resource-scoped semantic recall (topK 3) backed by pgvector
+ * - Working memory disabled: Supabase user_profiles holds persistent data
  * 
  * @returns Memory instance or undefined if DATABASE_URL not set
  */
@@ -66,23 +113,15 @@ export function getSharedMemory(): Memory | undefined {
     sharedMemoryInstance = new Memory({
       storage: new PostgresStore({
         connectionString: databaseUrl,
+        ...PG_CONNECTION_POOL,
       }),
       vector: new PgVector({
         connectionString: databaseUrl,
+        ...PG_CONNECTION_POOL,
       }),
-      options: {
-        // Minimal conversation history for best performance
-        // 3 messages is usually enough for context-aware routing
-        lastMessages: 3,
-        
-        // Semantic recall disabled - not needed for simple routing
-        semanticRecall: false,
-        
-        // Working memory disabled - use Supabase user_profiles instead
-        workingMemory: {
-          enabled: false,
-        },
-      },
+      embedder: OPENAI_EMBEDDER_MODEL_ID,
+      // Keep token usage low while still recalling recent context and resource-level history
+      options: buildPostgresMemoryOptions(6),
     });
   }
 
@@ -106,22 +145,22 @@ export function getExtendedMemory(lastMessages: number = 10): Memory | undefined
     return undefined;
   }
 
+  const effectiveLastMessages = Math.max(lastMessages, 6);
+
   // Create a new instance each time for extended memory
   // This is intentional - extended memory should be used sparingly
   return new Memory({
     storage: new PostgresStore({
       connectionString: databaseUrl,
+      ...PG_CONNECTION_POOL,
     }),
     vector: new PgVector({
       connectionString: databaseUrl,
+      ...PG_CONNECTION_POOL,
     }),
-    options: {
-      lastMessages,
-      semanticRecall: false,
-      workingMemory: {
-        enabled: false,
-      },
-    },
+    embedder: OPENAI_EMBEDDER_MODEL_ID,
+    // Allow callers to request more context while keeping semantic recall tuned the same way
+    options: buildPostgresMemoryOptions(effectiveLastMessages),
   });
 }
 
@@ -189,10 +228,9 @@ export function getUpstashMemory(): Memory | undefined {
       }),
       options: {
         // Minimal conversation history for best performance
-        lastMessages: 3,
+        lastMessages: 10,
         
-        // Semantic recall disabled - Redis doesn't support vector search
-        // Use PostgreSQL with PgVector if you need semantic search
+        // Semantic recall disabled until an Upstash Vector instance and embedder are configured
         semanticRecall: false,
         
         // Working memory disabled for performance
