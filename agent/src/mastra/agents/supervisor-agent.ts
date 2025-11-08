@@ -6,17 +6,12 @@
  */
 
 import { Agent } from '@mastra/core/agent';
-import { Memory } from '@mastra/memory';
 import { openai } from '@ai-sdk/openai';
-import { PostgresStore, PgVector } from '@mastra/pg';
-import { getDatabaseUrl } from '../../lib/config';
+import { getSharedMemory, getUpstashMemory } from '../../lib/memory-factory';
 import { transactionLoggerAgent } from './transaction-logger-agent';
 import { queryExecutorAgent } from './query-executor-agent';
 import { conversationAgent } from './conversation-agent';
 import { transactionManagerAgent } from './transaction-manager-agent';
-
-// Get PostgreSQL connection string from config
-const databaseUrl = getDatabaseUrl();
 
 const supervisorInstructions = [
   "You are HilmAI's supervisor agent. Your job is to analyze user messages and delegate to the right specialist agent.",
@@ -214,37 +209,5 @@ export const supervisorAgent = new Agent({
     conversation: conversationAgent,
     transactionManager: transactionManagerAgent,
   },
-
-  // Memory configuration for context-aware responses
-  memory: databaseUrl
-    ? new Memory({
-        storage: new PostgresStore({
-          connectionString: databaseUrl,
-        }),
-        vector: new PgVector({
-          connectionString: databaseUrl,
-        }),
-        options: {
-          // Conversation history: reduced from 20 to 10 for faster memory retrieval
-          lastMessages: 10,
-          // Semantic recall disabled for MVP (keeps latency low)
-          semanticRecall: false,
-          // Working memory enabled for user preferences (can be disabled if latency is still high)
-          workingMemory: {
-            enabled: true,
-            scope: 'resource', // Resource-scoped: persists across all threads for same user
-            template: `# User Profile
-                ## Preferences
-                - Currency: [e.g., AED, USD]
-                - Communication Style: [e.g., Formal, Casual]
-                - Timezone: [e.g., Asia/Dubai]
-
-                ## Context
-                - Last Query Topic: [What the user last asked about]
-                - Recent Transactions: [Brief summary of recent transaction patterns]
-                `,
-          },
-        },
-      })
-    : undefined, // Memory disabled if DATABASE_URL not set
+ memory: getUpstashMemory(),
 });

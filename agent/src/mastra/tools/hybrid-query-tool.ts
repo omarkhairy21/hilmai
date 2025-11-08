@@ -51,7 +51,10 @@ export const hybridQueryTool = createTool({
     searchMethod: z.enum(['sql', 'fuzzy']),
     totalResults: z.number(),
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context, mastra }) => {
+    const logger = mastra?.getLogger();
+    const toolStartTime = Date.now();
+    
     const {
       userId,
       query,
@@ -66,12 +69,19 @@ export const hybridQueryTool = createTool({
     } = context;
 
     try {
-      console.log(
-        `[hybrid-query] Query for user ${userId}: fuzzy=${useFuzzy}, query="${query}", merchant="${merchant}"`
-      );
-      console.log(
-        `[hybrid-query] Date filters: dateFrom=${dateFrom}, dateTo=${dateTo}, category=${category}`
-      );
+      logger?.info('[tool:hybrid-query]', {
+        event: 'start',
+        userId,
+        useFuzzy,
+        query,
+        merchant,
+        category,
+        dateFrom,
+        dateTo,
+        minAmount,
+        maxAmount,
+        limit,
+      });
 
       // Decision: SQL-first or fuzzy search?
       const shouldUseFuzzy = useFuzzy || (query && !merchant);
@@ -81,9 +91,14 @@ export const hybridQueryTool = createTool({
 
       if (shouldUseFuzzy && query) {
         // Use fuzzy search (pgvector)
-        console.log('[hybrid-query] Using fuzzy search');
+        logger?.debug('[tool:hybrid-query]', {
+          event: 'using_fuzzy_search',
+          query,
+          userId,
+        });
         searchMethod = 'fuzzy';
 
+        const fuzzySearchStart = Date.now();
         transactions = await searchTransactionsHybrid({
           query,
           userId,
@@ -95,11 +110,23 @@ export const hybridQueryTool = createTool({
           similarityThreshold: 0.6, // Adjust based on testing
           limit,
         });
+        
+        logger?.info('[tool:performance]', {
+          operation: 'fuzzy_search',
+          duration: Date.now() - fuzzySearchStart,
+          userId,
+          resultsCount: transactions.length,
+        });
       } else {
         // Use SQL search (exact or LIKE matching)
-        console.log('[hybrid-query] Using SQL search');
+        logger?.debug('[tool:hybrid-query]', {
+          event: 'using_sql_search',
+          merchant: merchant || query,
+          userId,
+        });
         searchMethod = 'sql';
 
+        const sqlSearchStart = Date.now();
         transactions = await searchTransactionsSQL({
           userId,
           merchant: merchant || query, // Use query as merchant if no exact merchant provided
@@ -110,9 +137,23 @@ export const hybridQueryTool = createTool({
           maxAmount,
           limit,
         });
+        
+        logger?.info('[tool:performance]', {
+          operation: 'sql_search',
+          duration: Date.now() - sqlSearchStart,
+          userId,
+          resultsCount: transactions.length,
+        });
       }
 
-      console.log(`[hybrid-query] Found ${transactions.length} results using ${searchMethod}`);
+      const totalDuration = Date.now() - toolStartTime;
+      logger?.info('[tool:hybrid-query]', {
+        event: 'success',
+        searchMethod,
+        totalResults: transactions.length,
+        duration: totalDuration,
+        userId,
+      });
 
       return {
         success: true,
@@ -121,7 +162,14 @@ export const hybridQueryTool = createTool({
         totalResults: transactions.length,
       };
     } catch (error) {
-      console.error('[hybrid-query] Error:', error);
+      const errorDuration = Date.now() - toolStartTime;
+      logger?.error('[tool:hybrid-query]', {
+        event: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        duration: errorDuration,
+        userId,
+      });
 
       return {
         success: false,

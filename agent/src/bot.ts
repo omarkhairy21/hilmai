@@ -4,6 +4,12 @@ import { downloadFile, getTempFilePath } from './lib/file-utils';
 import { AgentResponseCache } from './lib/prompt-cache';
 import { searchTransactionsSQL } from './lib/embeddings';
 import { supabase } from './lib/supabase';
+import { 
+  getUserDefaultCurrency, 
+  updateUserDefaultCurrency, 
+  isValidCurrency, 
+  normalizeCurrency 
+} from './lib/currency';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -28,6 +34,10 @@ export function createBot(mastra: Mastra): Bot {
     {
       command: 'recent',
       description: '📋 View recent transactions',
+    },
+    {
+      command: 'currency',
+      description: '💱 Set default currency',
     },
     {
       command: 'help',
@@ -193,6 +203,99 @@ export function createBot(mastra: Mastra): Bot {
       const deleted = await AgentResponseCache.clearUser(userId);
       logger.info('command:clear', { userId, deleted });
       await ctx.reply(`✅ Cleared ${deleted} cached responses.`);
+    }
+  });
+
+  // Handle /currency command (set default currency)
+  bot.command('currency', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply('❌ Unable to identify user.');
+      return;
+    }
+
+    logger.info('command:currency', { userId });
+
+    // Get command arguments
+    const args = ctx.message?.text?.split(' ').slice(1) || [];
+    const currencyArg = args[0]?.trim();
+
+    // If no argument provided, show current default currency
+    if (!currencyArg) {
+      try {
+        const currentCurrency = await getUserDefaultCurrency(userId);
+        await ctx.reply(
+          `💱 *Your Default Currency*\n\n` +
+            `Current: *${currentCurrency}*\n\n` +
+            `To change your default currency, use:\n` +
+            `/currency <code>\n\n` +
+            `Examples:\n` +
+            `• /currency AED (UAE Dirham)\n` +
+            `• /currency USD (US Dollar)\n` +
+            `• /currency EUR (Euro)\n` +
+            `• /currency EGP (Egyptian Pound)\n` +
+            `• /currency SAR (Saudi Riyal)\n` +
+            `• /currency VND (Vietnamese Dong)\n\n` +
+            `We support 50+ major currencies worldwide.\n` +
+            `All your transactions will be reported in ${currentCurrency}.`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch (error) {
+        logger.error('command:currency:fetch_error', {
+          userId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        await ctx.reply('❌ Failed to fetch your current currency. Please try again.');
+      }
+      return;
+    }
+
+    // Validate and normalize currency code
+    const normalized = normalizeCurrency(currencyArg);
+    if (!normalized || !isValidCurrency(currencyArg)) {
+      await ctx.reply(
+        `❌ Invalid currency code: *${currencyArg}*\n\n` +
+          `Please use a valid ISO currency code like:\n` +
+          `• AED (UAE Dirham)\n` +
+          `• USD (US Dollar)\n` +
+          `• EUR (Euro)\n` +
+          `• GBP (British Pound)\n` +
+          `• SAR (Saudi Riyal)\n` +
+          `• EGP (Egyptian Pound)\n` +
+          `• VND (Vietnamese Dong)\n` +
+          `• INR (Indian Rupee)\n\n` +
+          `We support 50+ currencies. Use /currency to see your current default.`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // Update user's default currency
+    try {
+      const success = await updateUserDefaultCurrency(userId, normalized);
+      
+      if (success) {
+        logger.info('command:currency:updated', { userId, currency: normalized });
+        await ctx.reply(
+          `✅ *Default Currency Updated*\n\n` +
+            `Your default currency is now: *${normalized}*\n\n` +
+            `All your transactions will be reported in ${normalized}. ` +
+            `Transactions in other currencies will be automatically converted.`,
+          { parse_mode: 'Markdown' }
+        );
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (error) {
+      logger.error('command:currency:update_error', {
+        userId,
+        currency: normalized,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply(
+        '❌ Failed to update your default currency. Please try again.',
+        { parse_mode: 'Markdown' }
+      );
     }
   });
 
