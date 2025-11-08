@@ -28,6 +28,8 @@ import { deleteFile } from '../../lib/file-utils';
 import { AgentResponseCache } from '../../lib/prompt-cache';
 import { shouldCacheResponse } from '../../lib/input-normalization';
 import { getUserDefaultCurrency } from '../../lib/currency';
+import { getUserMode, type UserMode } from '../../lib/user-mode';
+import { getLoggerMemory, getQueryMemory, getChatMemory } from '../../lib/memory-factory';
 
 /**
  * Shared schemas and types
@@ -503,13 +505,61 @@ const buildContextPromptStep = createStep({
 });
 
 /**
- * STEP 4: Response cache lookup
+ * STEP 4: Fetch user mode from database
+ */
+const fetchUserModeOutputSchema = z.object({
+  prompt: z.string(),
+  text: z.string(),
+  inputType: z.enum(['text', 'voice', 'photo']),
+  userId: z.number(),
+  userMode: z.enum(['logger', 'chat', 'query']),
+  username: z.string().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  messageId: z.number(),
+  voiceFilePath: z.string().optional(),
+  photoFilePath: z.string().optional(),
+});
+
+type FetchUserModeOutput = z.infer<typeof fetchUserModeOutputSchema>;
+
+const fetchUserModeStep = createStep({
+  id: 'fetch-user-mode',
+  description: 'Get user\'s current mode from database',
+  stateSchema: workflowStateSchema,
+  inputSchema: buildContextPromptOutputSchema,
+  outputSchema: fetchUserModeOutputSchema,
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    const fetchModeStart = Date.now();
+    
+    const mode = await getUserMode(inputData.userId);
+    
+    const fetchModeDuration = Date.now() - fetchModeStart;
+    logger.info('[workflow:performance]', {
+      operation: 'fetch_user_mode',
+      duration: fetchModeDuration,
+      userId: inputData.userId,
+      mode,
+    });
+
+    const result: FetchUserModeOutput = {
+      ...inputData,
+      userMode: mode,
+    };
+    return result;
+  },
+});
+
+/**
+ * STEP 5: Response cache lookup
  */
 const checkCacheOutputSchema = z.object({
   prompt: z.string(),
   text: z.string(),
   inputType: z.enum(['text', 'voice', 'photo']),
   userId: z.number(),
+  userMode: z.enum(['logger', 'chat', 'query']),
   cachedResponse: z.string().optional(),
   isCached: z.boolean(),
   username: z.string().optional(),
@@ -526,7 +576,7 @@ const checkCacheStep = createStep({
   id: 'check-cache',
   description: 'Check agent response cache',
   stateSchema: workflowStateSchema,
-  inputSchema: buildContextPromptOutputSchema,
+  inputSchema: fetchUserModeOutputSchema,
   outputSchema: checkCacheOutputSchema,
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
@@ -554,6 +604,7 @@ const checkCacheStep = createStep({
         text: inputData.text,
         inputType: inputData.inputType,
         userId: inputData.userId,
+        userMode: inputData.userMode,
         cachedResponse: cached.response,
         isCached: true,
         username: inputData.username,
@@ -577,6 +628,7 @@ const checkCacheStep = createStep({
       text: inputData.text,
       inputType: inputData.inputType,
       userId: inputData.userId,
+      userMode: inputData.userMode,
       isCached: false,
       username: inputData.username,
       firstName: inputData.firstName,
@@ -590,13 +642,14 @@ const checkCacheStep = createStep({
 });
 
 /**
- * STEP 5: Call supervisor agent
+ * STEP 6: Call mode-specific agent (replaces supervisor)
  */
-const supervisorAgentOutputSchema = z.object({
+const agentInvocationOutputSchema = z.object({
   agentResponse: z.string(),
   text: z.string(),
   inputType: z.enum(['text', 'voice', 'photo']),
   userId: z.number(),
+  userMode: z.enum(['logger', 'chat', 'query']),
   isCached: z.boolean(),
   username: z.string().optional(),
   firstName: z.string().optional(),
@@ -618,30 +671,52 @@ const supervisorAgentOutputSchema = z.object({
     .optional(),
 });
 
-type SupervisorAgentOutput = z.infer<typeof supervisorAgentOutputSchema>;
+type AgentInvocationOutput = z.infer<typeof agentInvocationOutputSchema>;
 
-const supervisorAgentStep = createStep({
-  id: 'supervisor-agent',
-  description: 'Invoke supervisor agent when cache misses',
+// Condition functions for mode branching
+type ModeBranchConditionFn = ConditionFunction<
+  any,
+  CheckCacheOutput,
+  unknown,
+  unknown,
+  DefaultEngineType
+>;
+
+const isLoggerMode: ModeBranchConditionFn = async ({ inputData }) => 
+  inputData.userMode === 'logger';
+
+const isQueryMode: ModeBranchConditionFn = async ({ inputData }) => 
+  inputData.userMode === 'query';
+
+const isChatMode: ModeBranchConditionFn = async ({ inputData }) => 
+  inputData.userMode === 'chat';
+
+/**
+ * Logger Mode Agent Step - No memory (fastest)
+ */
+const invokeLoggerAgentStep = createStep({
+  id: 'invoke-logger-agent',
+  description: 'Call transaction logger (no memory)',
   stateSchema: workflowStateSchema,
   inputSchema: checkCacheOutputSchema,
-  outputSchema: supervisorAgentOutputSchema,
+  outputSchema: agentInvocationOutputSchema,
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
     const stepStartTime = Date.now();
 
+    // Return cached response if available
     if (inputData.isCached && inputData.cachedResponse) {
-      logger.info('[workflow:supervisor-agent]', {
+      logger.info('[workflow:logger-agent]', {
         event: 'cache_hit',
         userId: inputData.userId,
-        inputType: inputData.inputType,
       });
 
-      const result: SupervisorAgentOutput = {
+      const result: AgentInvocationOutput = {
         agentResponse: inputData.cachedResponse,
         text: inputData.text,
         inputType: inputData.inputType,
         userId: inputData.userId,
+        userMode: inputData.userMode,
         isCached: true,
         username: inputData.username,
         firstName: inputData.firstName,
@@ -653,72 +728,137 @@ const supervisorAgentStep = createStep({
       return result;
     }
 
-    const supervisorAgent = mastra.getAgent('supervisor');
-    if (!supervisorAgent) {
-      throw new Error('Supervisor agent is not registered in Mastra');
+    const agent = mastra.getAgent('transactionLogger');
+    if (!agent) {
+      throw new Error('Transaction logger agent is not registered in Mastra');
     }
 
-    // Use streaming for better perceived performance
-    const streamStart = Date.now();
-    logger.info('[workflow:supervisor-agent]', {
-      event: 'stream_start',
+    logger.info('[workflow:logger-agent]', {
+      event: 'generate_start',
       userId: inputData.userId,
       inputType: inputData.inputType,
     });
 
-    const streamResult = await supervisorAgent.stream(inputData.prompt, {
-      memory: {
-        thread: `user-${inputData.userId}`, // Single thread per user for all messages
-        resource: inputData.userId.toString(), // Resource ID for resource-scoped memory
-      },
-      maxSteps: 2,
-    });
-
-    // Get the full output from the stream
-    // This still benefits from streaming internally but gives us the complete result
-    const fullOutput = await streamResult.getFullOutput();
+    // Logger mode: NO memory (fastest)
+    const genResult = await agent.generate(inputData.prompt);
     
-    const streamDuration = Date.now() - streamStart;
+    const duration = Date.now() - stepStartTime;
     logger.info('[workflow:performance]', {
-      operation: 'stream_complete',
-      totalDuration: streamDuration,
+      operation: 'logger_agent_complete',
+      duration,
       userId: inputData.userId,
-      inputType: inputData.inputType,
-      responseLength: fullOutput.text?.length || 0,
+      responseLength: genResult.text?.length || 0,
     });
 
-    const rawResponse = fullOutput.text ?? 'Sorry, I encountered an issue processing that.';
+    const result: AgentInvocationOutput = {
+      agentResponse: genResult.text ?? 'Transaction saved.',
+      text: inputData.text,
+      inputType: inputData.inputType,
+      userId: inputData.userId,
+      userMode: inputData.userMode,
+      isCached: false,
+      username: inputData.username,
+      firstName: inputData.firstName,
+      lastName: inputData.lastName,
+      messageId: inputData.messageId,
+      voiceFilePath: inputData.voiceFilePath,
+      photoFilePath: inputData.photoFilePath,
+    };
+    return result;
+  },
+});
+
+/**
+ * Query Mode Agent Step - Minimal memory (3 messages)
+ */
+const invokeQueryAgentStep = createStep({
+  id: 'invoke-query-agent',
+  description: 'Call query executor (minimal memory)',
+  stateSchema: workflowStateSchema,
+  inputSchema: checkCacheOutputSchema,
+  outputSchema: agentInvocationOutputSchema,
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    const stepStartTime = Date.now();
+
+    // Return cached response if available
+    if (inputData.isCached && inputData.cachedResponse) {
+      logger.info('[workflow:query-agent]', {
+        event: 'cache_hit',
+        userId: inputData.userId,
+      });
+
+      const result: AgentInvocationOutput = {
+        agentResponse: inputData.cachedResponse,
+        text: inputData.text,
+        inputType: inputData.inputType,
+        userId: inputData.userId,
+        userMode: inputData.userMode,
+        isCached: true,
+        username: inputData.username,
+        firstName: inputData.firstName,
+        lastName: inputData.lastName,
+        messageId: inputData.messageId,
+        voiceFilePath: inputData.voiceFilePath,
+        photoFilePath: inputData.photoFilePath,
+      };
+      return result;
+    }
+
+    const agent = mastra.getAgent('queryExecutor');
+    if (!agent) {
+      throw new Error('Query executor agent is not registered in Mastra');
+    }
+
+    logger.info('[workflow:query-agent]', {
+      event: 'generate_start',
+      userId: inputData.userId,
+      inputType: inputData.inputType,
+    });
+
+    // Query mode: Minimal memory (3 messages, no semantic recall)
+    const genResult = await agent.generate(inputData.prompt, {
+      memory: {
+        thread: `user-${inputData.userId}`,
+        resource: inputData.userId.toString(),
+      },
+    });
+    
+    const duration = Date.now() - stepStartTime;
+    logger.info('[workflow:performance]', {
+      operation: 'query_agent_complete',
+      duration,
+      userId: inputData.userId,
+      responseLength: genResult.text?.length || 0,
+    });
+
+    const rawResponse = genResult.text ?? 'No results found.';
 
     // Parse JSON response if it contains markup (from query executor agent)
     let agentResponse: string = rawResponse;
-    let telegramMarkup: SupervisorAgentOutput['telegramMarkup'] = undefined;
+    let telegramMarkup: AgentInvocationOutput['telegramMarkup'] = undefined;
 
     try {
-      // Try to parse as JSON (agent may return JSON with text and markup)
       const parsed = JSON.parse(rawResponse.trim());
       if (parsed.text && parsed.markup) {
         agentResponse = parsed.text;
         telegramMarkup = parsed.markup;
-        logger.info('[workflow:supervisor-agent]', {
+        logger.info('[workflow:query-agent]', {
           event: 'parsed_json_markup',
           userId: inputData.userId,
         });
       }
     } catch {
-      // Not JSON - try to extract transaction IDs from response and generate markup
-      // Look for patterns like [ID: 123] in the text
+      // Not JSON - try to extract transaction IDs from response
       const transactionIdPattern = /\[ID:\s*(\d+)\]/gi;
       const matches = Array.from(rawResponse.matchAll(transactionIdPattern));
       
-      // Also check if response contains transaction lists (has multiple transactions)
-      // Look for patterns that suggest transaction listing (e.g., numbered lists, dates, amounts)
       const hasTransactionList = 
         /\d+\.\s+.*-.*\d+.*\(.*\d{4}-\d{2}-\d{2}\)/i.test(rawResponse) ||
         (rawResponse.match(/\d{4}-\d{2}-\d{2}/g)?.length ?? 0) > 1 ||
         matches.length > 0;
       
       if (hasTransactionList && matches.length > 0) {
-        // Extract transaction IDs from matches
         const transactionIds: number[] = [];
         for (const match of matches) {
           const id = parseInt(match[1], 10);
@@ -727,7 +867,6 @@ const supervisorAgentStep = createStep({
           }
         }
         
-        // If we found transaction IDs, generate markup
         if (transactionIds.length > 0) {
           telegramMarkup = {
             inline_keyboard: transactionIds.map((id) => [
@@ -735,10 +874,9 @@ const supervisorAgentStep = createStep({
               { text: 'Delete', callback_data: `delete_${id}` },
             ]),
           };
-          logger.info('[workflow:supervisor-agent]', {
+          logger.info('[workflow:query-agent]', {
             event: 'generated_markup',
             transactionCount: transactionIds.length,
-            transactionIds: transactionIds.join(', '),
             userId: inputData.userId,
           });
         }
@@ -747,19 +885,12 @@ const supervisorAgentStep = createStep({
       agentResponse = rawResponse;
     }
 
-    const totalStepDuration = Date.now() - stepStartTime;
-    logger.info('[workflow:performance]', {
-      operation: 'supervisor_step_complete',
-      duration: totalStepDuration,
-      userId: inputData.userId,
-      cached: false,
-    });
-
-    const result: SupervisorAgentOutput = {
+    const result: AgentInvocationOutput = {
       agentResponse,
       text: inputData.text,
       inputType: inputData.inputType,
       userId: inputData.userId,
+      userMode: inputData.userMode,
       isCached: false,
       username: inputData.username,
       firstName: inputData.firstName,
@@ -774,7 +905,120 @@ const supervisorAgentStep = createStep({
 });
 
 /**
- * STEP 6: Cache reusable responses
+ * Chat Mode Agent Step - Minimal memory (3 messages)
+ */
+const invokeChatAgentStep = createStep({
+  id: 'invoke-chat-agent',
+  description: 'Call conversation agent (minimal memory)',
+  stateSchema: workflowStateSchema,
+  inputSchema: checkCacheOutputSchema,
+  outputSchema: agentInvocationOutputSchema,
+  execute: async ({ inputData, mastra }) => {
+    const logger = mastra.getLogger();
+    const stepStartTime = Date.now();
+
+    // Return cached response if available
+    if (inputData.isCached && inputData.cachedResponse) {
+      logger.info('[workflow:chat-agent]', {
+        event: 'cache_hit',
+        userId: inputData.userId,
+      });
+
+      const result: AgentInvocationOutput = {
+        agentResponse: inputData.cachedResponse,
+        text: inputData.text,
+        inputType: inputData.inputType,
+        userId: inputData.userId,
+        userMode: inputData.userMode,
+        isCached: true,
+        username: inputData.username,
+        firstName: inputData.firstName,
+        lastName: inputData.lastName,
+        messageId: inputData.messageId,
+        voiceFilePath: inputData.voiceFilePath,
+        photoFilePath: inputData.photoFilePath,
+      };
+      return result;
+    }
+
+    const agent = mastra.getAgent('conversation');
+    if (!agent) {
+      throw new Error('Conversation agent is not registered in Mastra');
+    }
+
+    logger.info('[workflow:chat-agent]', {
+      event: 'generate_start',
+      userId: inputData.userId,
+      inputType: inputData.inputType,
+    });
+
+    // Chat mode: Minimal memory (3 messages, no semantic recall)
+    const genResult = await agent.generate(inputData.prompt, {
+      memory: {
+        thread: `user-${inputData.userId}`,
+        resource: inputData.userId.toString(),
+      },
+    });
+    
+    const duration = Date.now() - stepStartTime;
+    logger.info('[workflow:performance]', {
+      operation: 'chat_agent_complete',
+      duration,
+      userId: inputData.userId,
+      responseLength: genResult.text?.length || 0,
+    });
+
+    const result: AgentInvocationOutput = {
+      agentResponse: genResult.text ?? 'How can I help?',
+      text: inputData.text,
+      inputType: inputData.inputType,
+      userId: inputData.userId,
+      userMode: inputData.userMode,
+      isCached: false,
+      username: inputData.username,
+      firstName: inputData.firstName,
+      lastName: inputData.lastName,
+      messageId: inputData.messageId,
+      voiceFilePath: inputData.voiceFilePath,
+      photoFilePath: inputData.photoFilePath,
+    };
+    return result;
+  },
+});
+
+/**
+ * Unwrap branch output (normalize the three agent step outputs)
+ */
+const agentBranchOutputSchema = z.object({
+  'invoke-logger-agent': agentInvocationOutputSchema.optional(),
+  'invoke-query-agent': agentInvocationOutputSchema.optional(),
+  'invoke-chat-agent': agentInvocationOutputSchema.optional(),
+});
+
+const unwrapAgentResponseStep = createStep({
+  id: 'unwrap-agent-response',
+  description: 'Normalize branch output from mode-specific agents',
+  stateSchema: workflowStateSchema,
+  inputSchema: agentBranchOutputSchema,
+  outputSchema: agentInvocationOutputSchema,
+  execute: async ({ inputData }) => {
+    const candidates: Array<AgentInvocationOutput | undefined> = [
+      inputData['invoke-logger-agent'],
+      inputData['invoke-query-agent'],
+      inputData['invoke-chat-agent'],
+    ];
+
+    const match = candidates.find((entry): entry is AgentInvocationOutput => !!entry);
+    if (!match) {
+      throw new Error('No agent invocation output detected. Ensure the branch step returned a value.');
+    }
+
+    return match;
+  },
+});
+
+/**
+ * STEP 7: Cache reusable responses
  */
 const cacheResponseOutputSchema = z.object({
   response: z.string(),
@@ -803,7 +1047,7 @@ const cacheResponseStep = createStep({
   id: 'cache-response',
   description: 'Cache query/help responses for faster follow-ups',
   stateSchema: workflowStateSchema,
-  inputSchema: supervisorAgentOutputSchema,
+  inputSchema: agentInvocationOutputSchema,
   outputSchema: cacheResponseOutputSchema,
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
@@ -958,8 +1202,14 @@ export const messageProcessingWorkflow = createWorkflow<
   ])
   .then(unwrapProcessedInputStep)
   .then(buildContextPromptStep)
+  .then(fetchUserModeStep)              // NEW: Fetch user's current mode
   .then(checkCacheStep)
-  .then(supervisorAgentStep)
+  .branch([                              // NEW: Branch on mode instead of supervisor
+    [isLoggerMode, invokeLoggerAgentStep],
+    [isQueryMode, invokeQueryAgentStep],
+    [isChatMode, invokeChatAgentStep],
+  ])
+  .then(unwrapAgentResponseStep)        // NEW: Normalize branch output
   .then(cacheResponseStep)
   .then(
     createStep({

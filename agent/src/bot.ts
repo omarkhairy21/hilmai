@@ -10,6 +10,15 @@ import {
   isValidCurrency, 
   normalizeCurrency 
 } from './lib/currency';
+import { 
+  getUserMode, 
+  setUserMode, 
+  getModeDescription, 
+  getModeEmoji, 
+  getModeInstructions,
+  isValidMode,
+  type UserMode 
+} from './lib/user-mode';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -30,6 +39,10 @@ export function createBot(mastra: Mastra): Bot {
     {
       command: 'start',
       description: '🚀 Start the bot',
+    },
+    {
+      command: 'mode',
+      description: '🎯 Switch mode (logger/chat/query)',
     },
     {
       command: 'recent',
@@ -55,31 +68,88 @@ export function createBot(mastra: Mastra): Bot {
 
   // Handle /start command
   bot.command('start', async (ctx) => {
-    logger.info('command:start', { userId: ctx.from?.id });
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply('❌ Unable to identify user.');
+      return;
+    }
 
-    const startMenuKeyboard = {
-      inline_keyboard: [
-        [{ text: '📋 Recent Transactions', callback_data: 'menu_recent_transactions' }],
-        [{ text: '💰 Add Transaction', callback_data: 'menu_add_transaction' }],
-        [{ text: '📊 View Reports', callback_data: 'menu_reports' }],
-      ],
-    };
+    logger.info('command:start', { userId });
 
-    await ctx.reply(
-      `Welcome to HilmAI! 🤖\n\n` +
-        `I'm your personal financial assistant. I can help you:\n\n` +
-        `💰 Track expenses (text, voice, or photo)\n` +
-        `📊 Answer questions about your spending\n` +
-        `📈 Analyze patterns and trends\n\n` +
-        `Quick access:\n` +
-        `• Use /menu to see all options\n` +
-        `• Type "I spent 50 AED at Carrefour" to log a transaction\n` +
-        `• Ask "How much on groceries?" to query your data`,
-      {
-        parse_mode: 'Markdown',
-        reply_markup: startMenuKeyboard,
+    try {
+      // Create or update user record with complete Telegram information
+      const { error: upsertError } = await supabase
+        .from('users')
+        .upsert(
+          {
+            id: userId,
+            telegram_chat_id: userId,
+            telegram_username: ctx.from?.username || null,
+            first_name: ctx.from?.first_name || null,
+            last_name: ctx.from?.last_name || null,
+            current_mode: 'chat', // Default to chat mode
+            default_currency: 'AED', // Default currency
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'id',
+            ignoreDuplicates: false, // Update existing records
+          }
+        );
+
+      if (upsertError) {
+        logger.error('command:start:user_upsert_error', {
+          userId,
+          error: upsertError.message,
+        });
+      } else {
+        logger.info('command:start:user_created', {
+          userId,
+          username: ctx.from?.username,
+          firstName: ctx.from?.first_name,
+        });
       }
-    );
+
+      const modeKeyboard = {
+        inline_keyboard: [
+          [{ text: '💰 Logger Mode', callback_data: 'set_mode_logger' }],
+          [{ text: '💬 Chat Mode (Current)', callback_data: 'set_mode_chat' }],
+          [{ text: '📊 Query Mode', callback_data: 'set_mode_query' }],
+        ],
+      };
+
+      await ctx.reply(
+        `Welcome to HilmAI! 🤖\n\n` +
+        `I'm your personal financial assistant with 3 specialized modes:\n\n` +
+        `💰 *Logger Mode* - Fast transaction logging\n` +
+        `   Best for: "I spent 50 AED at Carrefour"\n\n` +
+        `💬 *Chat Mode* - General help (default)\n` +
+        `   Best for: Questions, onboarding, help\n\n` +
+        `📊 *Query Mode* - Ask about spending\n` +
+        `   Best for: "How much on groceries?"\n\n` +
+        `💡 *Getting started:*\n` +
+        `• You're in *Chat Mode* right now\n` +
+        `• Use /mode to switch anytime\n` +
+        `• Try /mode_logger for fast logging\n` +
+        `• Use /help for detailed instructions`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: modeKeyboard,
+        }
+      );
+    } catch (error) {
+      logger.error('command:start:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      await ctx.reply(
+        `Welcome to HilmAI! 🤖\n\n` +
+        `I'm your personal financial assistant.\n\n` +
+        `Use /mode to select your mode and get started!`,
+        { parse_mode: 'Markdown' }
+      );
+    }
   });
 
   // Handle /help command
@@ -203,6 +273,150 @@ export function createBot(mastra: Mastra): Bot {
       const deleted = await AgentResponseCache.clearUser(userId);
       logger.info('command:clear', { userId, deleted });
       await ctx.reply(`✅ Cleared ${deleted} cached responses.`);
+    }
+  });
+
+  // Handle /mode command (show mode selection)
+  bot.command('mode', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply('❌ Unable to identify user.');
+      return;
+    }
+
+    logger.info('command:mode', { userId });
+
+    try {
+      const currentMode = await getUserMode(userId);
+      
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '💰 Logger Mode', callback_data: 'set_mode_logger' }],
+          [{ text: '💬 Chat Mode', callback_data: 'set_mode_chat' }],
+          [{ text: '📊 Query Mode', callback_data: 'set_mode_query' }],
+        ],
+      };
+
+      await ctx.reply(
+        `🎯 *Current Mode: ${getModeDescription(currentMode)}*\n\n` +
+        `Select a mode:\n\n` +
+        `💰 *Logger Mode*\n` +
+        `Fast transaction logging (no conversation memory)\n` +
+        `Best for: "I spent 50 AED at Carrefour"\n\n` +
+        `💬 *Chat Mode*\n` +
+        `General conversation and help (default)\n` +
+        `Best for: Questions, help, onboarding\n\n` +
+        `📊 *Query Mode*\n` +
+        `Ask about your spending (minimal memory)\n` +
+        `Best for: "How much on groceries?"\n\n` +
+        `💡 *Quick switch commands:*\n` +
+        `• /mode_logger - Switch to Logger Mode\n` +
+        `• /mode_chat - Switch to Chat Mode\n` +
+        `• /mode_query - Switch to Query Mode`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard,
+        }
+      );
+    } catch (error) {
+      logger.error('command:mode:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply('❌ Failed to fetch your current mode. Please try again.');
+    }
+  });
+
+  // Handle /mode_logger command (quick switch to logger mode)
+  bot.command('mode_logger', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply('❌ Unable to identify user.');
+      return;
+    }
+
+    logger.info('command:mode_logger', { userId });
+
+    try {
+      await setUserMode(userId, 'logger');
+      await ctx.reply(
+        '✅ *Switched to Logger Mode*\n\n' +
+        '💰 Fast transaction logging is now active.\n\n' +
+        '*How to use:*\n' +
+        '• Type: "I spent 50 AED at Carrefour"\n' +
+        '• Send a voice message\n' +
+        '• Send a receipt photo\n\n' +
+        'Use /mode to switch modes.',
+        { parse_mode: 'Markdown' }
+      );
+    } catch (error) {
+      logger.error('command:mode_logger:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply('❌ Failed to switch mode. Please try again.');
+    }
+  });
+
+  // Handle /mode_chat command (quick switch to chat mode)
+  bot.command('mode_chat', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply('❌ Unable to identify user.');
+      return;
+    }
+
+    logger.info('command:mode_chat', { userId });
+
+    try {
+      await setUserMode(userId, 'chat');
+      await ctx.reply(
+        '✅ *Switched to Chat Mode*\n\n' +
+        '💬 General conversation and help is now active.\n\n' +
+        '*I can help you:*\n' +
+        '• Learn how to use HilmAI\n' +
+        '• Answer questions\n' +
+        '• Guide you to the right mode\n\n' +
+        'Use /mode to switch modes.',
+        { parse_mode: 'Markdown' }
+      );
+    } catch (error) {
+      logger.error('command:mode_chat:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply('❌ Failed to switch mode. Please try again.');
+    }
+  });
+
+  // Handle /mode_query command (quick switch to query mode)
+  bot.command('mode_query', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply('❌ Unable to identify user.');
+      return;
+    }
+
+    logger.info('command:mode_query', { userId });
+
+    try {
+      await setUserMode(userId, 'query');
+      await ctx.reply(
+        '✅ *Switched to Query Mode*\n\n' +
+        '📊 Ask questions about your spending.\n\n' +
+        '*Examples:*\n' +
+        '• "How much on groceries?"\n' +
+        '• "Show my spending this week"\n' +
+        '• "Top 5 expenses this month"\n\n' +
+        'Use /mode to switch modes.',
+        { parse_mode: 'Markdown' }
+      );
+    } catch (error) {
+      logger.error('command:mode_query:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply('❌ Failed to switch mode. Please try again.');
     }
   });
 
@@ -464,6 +678,48 @@ export function createBot(mastra: Mastra): Bot {
       } else {
         await ctx.reply('❌ Sorry, something went wrong. Please try again in a moment.');
       }
+    }
+  });
+
+  // Handle mode switch callback queries
+  bot.callbackQuery(/^set_mode_/, async (ctx) => {
+    const userId = ctx.from?.id;
+    const callbackData = ctx.callbackQuery.data;
+
+    if (!userId) {
+      await ctx.answerCallbackQuery('❌ Unable to identify user.');
+      return;
+    }
+
+    logger.info('callback:set_mode', { userId, callbackData });
+
+    const modeStr = callbackData.replace('set_mode_', '');
+    
+    if (!isValidMode(modeStr)) {
+      await ctx.answerCallbackQuery('❌ Invalid mode.');
+      return;
+    }
+
+    const mode = modeStr as UserMode;
+
+    try {
+      await setUserMode(userId, mode);
+      
+      await ctx.answerCallbackQuery(`✅ Switched to ${getModeDescription(mode)}`);
+      
+      await ctx.editMessageText(
+        `✅ *Mode Changed*\n\n${getModeInstructions(mode)}`,
+        { parse_mode: 'Markdown' }
+      );
+
+      logger.info('callback:set_mode:success', { userId, mode });
+    } catch (error) {
+      logger.error('callback:set_mode:error', {
+        userId,
+        mode,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.answerCallbackQuery('❌ Failed to switch mode.');
     }
   });
 

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
   first_name TEXT,
   last_name TEXT,
   default_currency TEXT NOT NULL DEFAULT 'AED',
+  current_mode TEXT NOT NULL DEFAULT 'chat' CHECK (current_mode IN ('logger', 'chat', 'query')),
   timezone TEXT,
   metadata JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 -- Users indexes
 CREATE INDEX IF NOT EXISTS idx_users_chat_id ON users(telegram_chat_id);
+CREATE INDEX IF NOT EXISTS idx_users_mode ON users(current_mode);
 
 -- Standard indexes for frequent queries
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
@@ -242,13 +244,10 @@ ON users FOR UPDATE
 USING (id = get_current_user_id())
 WITH CHECK (id = get_current_user_id());
 
-CREATE POLICY "Backend service can insert users"
-ON users FOR INSERT
+CREATE POLICY "Backend service can manage all users"
+ON users FOR ALL
+USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
-
-CREATE POLICY "Backend service can delete users"
-ON users FOR DELETE
-USING (auth.role() = 'service_role');
 
 -- ============================================================================
 -- Transactions Table - RLS Policies
