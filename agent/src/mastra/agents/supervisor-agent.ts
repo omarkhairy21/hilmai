@@ -7,7 +7,7 @@
 
 import { Agent } from '@mastra/core/agent';
 import { openai } from '@ai-sdk/openai';
-import { getSharedMemory, getUpstashMemory } from '../../lib/memory-factory';
+import { getSharedMemory } from '../../lib/memory-factory';
 import { transactionLoggerAgent } from './transaction-logger-agent';
 import { queryExecutorAgent } from './query-executor-agent';
 import { conversationAgent } from './conversation-agent';
