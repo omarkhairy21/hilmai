@@ -297,27 +297,27 @@ export function createBot(mastra: Mastra): Bot {
         ],
       };
 
-      await ctx.reply(
+      const message = 
         `🎯 *Current Mode: ${getModeDescription(currentMode)}*\n\n` +
         `Select a mode:\n\n` +
         `💰 *Logger Mode*\n` +
         `Fast transaction logging (no conversation memory)\n` +
-        `Best for: "I spent 50 AED at Carrefour"\n\n` +
+        `Best for: I spent 50 AED at Carrefour\n\n` +
         `💬 *Chat Mode*\n` +
         `General conversation and help (default)\n` +
         `Best for: Questions, help, onboarding\n\n` +
         `📊 *Query Mode*\n` +
         `Ask about your spending (minimal memory)\n` +
-        `Best for: "How much on groceries?"\n\n` +
+        `Best for: How much on groceries?\n\n` +
         `💡 *Quick switch commands:*\n` +
-        `• /mode_logger - Switch to Logger Mode\n` +
-        `• /mode_chat - Switch to Chat Mode\n` +
-        `• /mode_query - Switch to Query Mode`,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: keyboard,
-        }
-      );
+        `/mode_logger - Switch to Logger Mode\n` +
+        `/mode_chat - Switch to Chat Mode\n` +
+        `/mode_query - Switch to Query Mode`;
+
+      await ctx.reply(message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
     } catch (error) {
       logger.error('command:mode:error', {
         userId,
