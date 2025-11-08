@@ -27,6 +27,7 @@ import { openai } from '../../lib/openai';
 import { deleteFile } from '../../lib/file-utils';
 import { AgentResponseCache } from '../../lib/prompt-cache';
 import { shouldCacheResponse } from '../../lib/input-normalization';
+import { getUserDefaultCurrency } from '../../lib/currency';
 
 /**
  * Shared schemas and types
@@ -442,6 +443,18 @@ const buildContextPromptStep = createStep({
   outputSchema: buildContextPromptOutputSchema,
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
+    const fetchCurrencyStart = Date.now();
+    
+    // Fetch user's default currency
+    const defaultCurrency = await getUserDefaultCurrency(inputData.userId);
+    
+    const fetchCurrencyDuration = Date.now() - fetchCurrencyStart;
+    logger.info('[workflow:performance]', {
+      operation: 'fetch_default_currency',
+      duration: fetchCurrencyDuration,
+      userId: inputData.userId,
+      currency: defaultCurrency,
+    });
     
     const userMetadata = {
       userId: inputData.userId,
@@ -457,6 +470,7 @@ const buildContextPromptStep = createStep({
       `[User: ${inputData.firstName || 'Unknown'} (@${inputData.username || 'unknown'})]`,
       `[User ID: ${inputData.userId}]`,
       `[Message ID: ${inputData.messageId}]`,
+      `[Default Currency: ${defaultCurrency}]`,
       `[User Metadata JSON: ${JSON.stringify(userMetadata)}]`,
       `[Message Type: ${inputData.inputType}]`,
       '',
@@ -469,6 +483,7 @@ const buildContextPromptStep = createStep({
       yesterday: inputData.yesterday,
       userMetadata,
       inputType: inputData.inputType,
+      defaultCurrency,
     });
 
     const result: BuildContextOutput = {

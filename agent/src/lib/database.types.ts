@@ -13,6 +13,11 @@ export type Database = {
           category: string;
           description: string | null;
           transaction_date: string;
+          original_amount: number | null;
+          original_currency: string | null;
+          converted_amount: number | null;
+          conversion_rate: number | null;
+          converted_at: string | null;
           merchant_embedding: number[] | null;
           description_embedding: number[] | null;
           created_at: string;
@@ -27,6 +32,11 @@ export type Database = {
           category: string;
           description?: string | null;
           transaction_date: string;
+          original_amount?: number | null;
+          original_currency?: string | null;
+          converted_amount?: number | null;
+          conversion_rate?: number | null;
+          converted_at?: string | null;
           merchant_embedding?: number[] | null;
           description_embedding?: number[] | null;
           created_at?: string;
@@ -41,6 +51,11 @@ export type Database = {
           category?: string;
           description?: string | null;
           transaction_date?: string;
+          original_amount?: number | null;
+          original_currency?: string | null;
+          converted_amount?: number | null;
+          conversion_rate?: number | null;
+          converted_at?: string | null;
           merchant_embedding?: number[] | null;
           description_embedding?: number[] | null;
           created_at?: string;
@@ -145,6 +160,11 @@ export type Database = {
           category: string;
           description: string | null;
           transaction_date: string;
+          original_amount: number | null;
+          original_currency: string | null;
+          converted_amount: number | null;
+          conversion_rate: number | null;
+          converted_at: string | null;
           similarity: number;
         }[];
       };

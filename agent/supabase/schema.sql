@@ -41,6 +41,13 @@ CREATE TABLE IF NOT EXISTS transactions (
   description TEXT,
   transaction_date DATE NOT NULL,
 
+  -- Currency conversion tracking (for multi-currency support)
+  original_amount DECIMAL(10, 2), -- Amount in the currency user specified
+  original_currency TEXT, -- The currency user specified (e.g., "VND", "USD")
+  converted_amount DECIMAL(10, 2), -- Amount converted to user's default currency
+  conversion_rate DECIMAL(10, 6), -- Exchange rate used for conversion
+  converted_at TIMESTAMPTZ, -- When conversion was performed
+
   -- Vector embeddings for fuzzy search
   merchant_embedding vector(1536), -- text-embedding-3-small (1536 dimensions)
   description_embedding vector(1536), -- Optional: for description search

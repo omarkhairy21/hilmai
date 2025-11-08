@@ -14,6 +14,7 @@ import { createTool } from '@mastra/core';
 import { z } from 'zod';
 import { supabaseService } from '../../lib/supabase';
 import { getMerchantEmbedding } from '../../lib/embeddings';
+import { getUserDefaultCurrency, convertCurrency, normalizeCurrency } from '../../lib/currency';
 
 export const saveTransactionTool = createTool({
   id: 'save-transaction',
@@ -133,19 +134,94 @@ export const saveTransactionTool = createTool({
         userId,
       });
 
-      // Step 2: Insert transaction into Supabase using service role
+      // Step 2: Get user's default currency and perform conversion if needed
+      const conversionStart = Date.now();
+      const userDefaultCurrency = await getUserDefaultCurrency(userId);
+      const normalizedCurrency = normalizeCurrency(currency) || currency.toUpperCase();
+      
+      let finalAmount = amount;
+      let originalAmount: number | null = null;
+      let originalCurrency: string | null = null;
+      let convertedAmount: number | null = null;
+      let conversionRate: number | null = null;
+      let convertedAt: string | null = null;
+      
+      // Perform currency conversion if transaction currency differs from user's default
+      if (normalizedCurrency !== userDefaultCurrency) {
+        logger?.info('[tool:save-transaction]', {
+          event: 'currency_conversion_needed',
+          from: normalizedCurrency,
+          to: userDefaultCurrency,
+          amount,
+          userId,
+        });
+        
+        try {
+          const conversion = await convertCurrency(amount, normalizedCurrency, userDefaultCurrency);
+          
+          // Store original values
+          originalAmount = amount;
+          originalCurrency = normalizedCurrency;
+          
+          // Store converted values
+          convertedAmount = conversion.convertedAmount;
+          conversionRate = conversion.rate;
+          convertedAt = new Date().toISOString();
+          
+          // Use converted amount as the primary amount for reporting
+          finalAmount = conversion.convertedAmount;
+          
+          const conversionDuration = Date.now() - conversionStart;
+          logger?.info('[tool:performance]', {
+            operation: 'currency_conversion',
+            duration: conversionDuration,
+            from: normalizedCurrency,
+            to: userDefaultCurrency,
+            originalAmount: amount,
+            convertedAmount: conversion.convertedAmount,
+            rate: conversion.rate,
+            userId,
+          });
+        } catch (conversionError) {
+          // Log conversion error but don't fail - use original currency
+          logger?.warn('[tool:save-transaction]', {
+            event: 'currency_conversion_failed',
+            error: conversionError instanceof Error ? conversionError.message : String(conversionError),
+            from: normalizedCurrency,
+            to: userDefaultCurrency,
+            userId,
+          });
+          
+          // Fallback: use original amount and currency without conversion
+          finalAmount = amount;
+        }
+      } else {
+        logger?.debug('[tool:save-transaction]', {
+          event: 'no_conversion_needed',
+          currency: normalizedCurrency,
+          userId,
+        });
+      }
+
+      // Step 3: Insert transaction into Supabase using service role
       const dbInsertStart = Date.now();
       const { data, error } = await supabaseService
         .from('transactions')
         .insert({
           user_id: userId,
-          amount,
-          currency,
+          amount: finalAmount, // Primary amount in user's default currency
+          currency: userDefaultCurrency, // Store user's default currency as the main currency
           merchant,
           category,
           description: description || null,
           transaction_date: transactionDate,
           merchant_embedding: merchantEmbedding,
+          // Currency conversion tracking
+          original_amount: originalAmount,
+          original_currency: originalCurrency,
+          converted_amount: convertedAmount,
+          conversion_rate: conversionRate,
+          converted_at: convertedAt,
         })
         .select('id')
         .single();
@@ -180,12 +256,21 @@ export const saveTransactionTool = createTool({
         event: 'success',
         transactionId,
         userId,
+        finalAmount,
+        finalCurrency: userDefaultCurrency,
+        wasConverted: originalAmount !== null,
       });
+
+      // Build success message with conversion info if applicable
+      let successMessage = `Transaction saved successfully (ID: ${transactionId})`;
+      if (originalAmount && originalCurrency) {
+        successMessage += `. Converted ${originalAmount} ${originalCurrency} to ${finalAmount} ${userDefaultCurrency}`;
+      }
 
       return {
         success: true,
         transactionId,
-        message: `Transaction saved successfully (ID: ${transactionId})`,
+        message: successMessage,
       };
     } catch (error) {
       const errorDuration = Date.now() - toolStartTime;
