@@ -930,14 +930,6 @@
   resolved "https://registry.yarnpkg.com/@mastra/server/-/server-0.23.2.tgz#7321c73c6b8cccf2d11b971fe67eccd74a58782c"
   integrity sha512-RqbeXTbFap/YiBMpdxBkEtx0bQ/GhzWa93eHNLf2rrouJTSaGlGLwBGnNNYXI43yr4T3HfimP2P3mLb2mfY2iw==
 
-"@mastra/upstash@^0.15.8":
-  version "0.15.8"
-  resolved "https://registry.yarnpkg.com/@mastra/upstash/-/upstash-0.15.8.tgz#98ea742bc7e3fc5135d3b952dfc5db2a34c5da13"
-  integrity sha512-RzfZwh8aHDFSWcmo10s5wiTosWyfSESPrqtT3XKJ1G8bBIquUmet7GOL98mdEgr38FRmc1cZw1X/lzKhbBDT4A==
-  dependencies:
-    "@upstash/redis" "^1.35.5"
-    "@upstash/vector" "^1.2.2"
-
 "@neon-rs/load@^0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@neon-rs/load/-/load-0.0.4.tgz#2a2a3292c6f1fef043f49886712d3c96a547532e"
@@ -2436,11 +2428,6 @@
   integrity sha512-aSEIGJgJ7XUfTYvhQcQbq835re7e/BXjs8Janq6Pvr6LlmTZnyqwT97RziZLO/8AVUL037RLXqqiQC6kCt+5pA==
   dependencies:
     uncrypto "^0.1.3"
-
-"@upstash/vector@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@upstash/vector/-/vector-1.2.2.tgz#e4e6f06749960a545c862250ff21e596d2bf1bba"
-  integrity sha512-ptQ9xnxtKqmpNK52PCcHCszlPOLxIBfjsv7ty8RoF95pkjctS9rSjTQ3Pl9bx5VFbpDj+0dMXw88WLt6swDkgQ==
 
 "@vercel/oidc@3.0.3", "@vercel/oidc@^3.0.1":
   version "3.0.3"

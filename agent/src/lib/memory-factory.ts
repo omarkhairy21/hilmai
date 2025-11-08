@@ -24,7 +24,7 @@
 import type { MemoryConfig } from '@mastra/core/memory';
 import { Memory } from '@mastra/memory';
 import { PostgresStore, PgVector } from '@mastra/pg';
-import { UpstashStore } from '@mastra/upstash';
+//import { UpstashStore } from '@mastra/upstash';
 import { getDatabaseUrl, getUpstashConfig } from './config';
 
 const OPENAI_EMBEDDER_MODEL_ID = 'openai/text-embedding-3-small';
@@ -213,80 +213,80 @@ let sharedUpstashMemoryInstance: Memory | null = null;
  * 
  * @returns Memory instance or undefined if Upstash credentials not set
  */
-export function getUpstashMemory(): Memory | undefined {
-  const upstashConfig = getUpstashConfig();
+// export function getUpstashMemory(): Memory | undefined {
+//   const upstashConfig = getUpstashConfig();
   
-  if (!upstashConfig) {
-    return undefined;
-  }
+//   if (!upstashConfig) {
+//     return undefined;
+//   }
 
-  if (!sharedUpstashMemoryInstance) {
-    sharedUpstashMemoryInstance = new Memory({
-      storage: new UpstashStore({
-        url: upstashConfig.url,
-        token: upstashConfig.token,
-      }),
-      options: {
-        // Minimal conversation history for best performance
-        lastMessages: 10,
+//   if (!sharedUpstashMemoryInstance) {
+//     sharedUpstashMemoryInstance = new Memory({
+//       storage: new UpstashStore({
+//         url: upstashConfig.url,
+//         token: upstashConfig.token,
+//       }),
+//       options: {
+//         // Minimal conversation history for best performance
+//         lastMessages: 10,
         
-        // Semantic recall disabled until an Upstash Vector instance and embedder are configured
-        semanticRecall: false,
+//         // Semantic recall disabled until an Upstash Vector instance and embedder are configured
+//         semanticRecall: false,
         
-        // Working memory disabled for performance
-        workingMemory: {
-          enabled: false,
-        },
-      },
-    });
-  }
+//         // Working memory disabled for performance
+//         workingMemory: {
+//           enabled: false,
+//         },
+//       },
+//     });
+//   }
 
-  return sharedUpstashMemoryInstance;
-}
+//   return sharedUpstashMemoryInstance;
+// }
 
-/**
- * Get an Upstash memory instance with extended conversation history
- * 
- * @param lastMessages - Number of messages to load (default: 10)
- * @returns Memory instance or undefined if Upstash credentials not set
- */
-export function getExtendedUpstashMemory(lastMessages: number = 10): Memory | undefined {
-  const upstashConfig = getUpstashConfig();
+// /**
+//  * Get an Upstash memory instance with extended conversation history
+//  * 
+//  * @param lastMessages - Number of messages to load (default: 10)
+//  * @returns Memory instance or undefined if Upstash credentials not set
+//  */
+// export function getExtendedUpstashMemory(lastMessages: number = 10): Memory | undefined {
+//   const upstashConfig = getUpstashConfig();
   
-  if (!upstashConfig) {
-    return undefined;
-  }
+//   if (!upstashConfig) {
+//     return undefined;
+//   }
 
-  // Create a new instance each time for extended memory
-  return new Memory({
-    storage: new UpstashStore({
-      url: upstashConfig.url,
-      token: upstashConfig.token,
-    }),
-    options: {
-      lastMessages,
-      semanticRecall: false,
-      workingMemory: {
-        enabled: false,
-      },
-    },
-  });
-}
+//   // Create a new instance each time for extended memory
+//   return new Memory({
+//     storage: new UpstashStore({
+//       url: upstashConfig.url,
+//       token: upstashConfig.token,
+//     }),
+//     options: {
+//       lastMessages,
+//       semanticRecall: false,
+//       workingMemory: {
+//         enabled: false,
+//       },
+//     },
+//   });
+// }
 
-/**
- * Reset the shared Upstash memory instance
- * Useful for testing or when configuration changes
- */
-export function resetUpstashMemory(): void {
-  sharedUpstashMemoryInstance = null;
-}
+// /**
+//  * Reset the shared Upstash memory instance
+//  * Useful for testing or when configuration changes
+//  */
+// export function resetUpstashMemory(): void {
+//   sharedUpstashMemoryInstance = null;
+// }
 
-/**
- * Reset all memory instances (PostgreSQL and Upstash)
- * Useful for testing or switching memory backends
- */
-export function resetAllMemoryInstances(): void {
-  sharedMemoryInstance = null;
-  sharedUpstashMemoryInstance = null;
-}
+// /**
+//  * Reset all memory instances (PostgreSQL and Upstash)
+//  * Useful for testing or switching memory backends
+//  */
+// export function resetAllMemoryInstances(): void {
+//   sharedMemoryInstance = null;
+//   sharedUpstashMemoryInstance = null;
+// }
 
