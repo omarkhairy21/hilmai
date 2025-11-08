@@ -182,6 +182,91 @@ export function getNoMemory(): undefined {
 }
 
 // ============================================================================
+// MODE-SPECIFIC MEMORY CONFIGURATIONS
+// ============================================================================
+
+/**
+ * Logger Mode Memory: No memory (fastest)
+ * For transaction logging - no conversation context needed
+ * 
+ * Performance: ~0ms overhead
+ * Use case: "I spent 50 AED at Carrefour"
+ */
+export function getLoggerMemory(): undefined {
+  return undefined;
+}
+
+/**
+ * Query Mode Memory: Minimal context (3 messages, no semantic recall)
+ * Just enough for follow-up questions
+ * 
+ * Performance: ~100-200ms overhead
+ * Use case: "How much on groceries?" → "What about last week?"
+ */
+export function getQueryMemory(): Memory | undefined {
+  const databaseUrl = getDatabaseUrl();
+  
+  if (!databaseUrl) {
+    return undefined;
+  }
+
+  // Create lightweight memory for queries
+  return new Memory({
+    storage: new PostgresStore({
+      connectionString: databaseUrl,
+      ...PG_CONNECTION_POOL,
+    }),
+    vector: new PgVector({
+      connectionString: databaseUrl,
+      ...PG_CONNECTION_POOL,
+    }),
+    embedder: OPENAI_EMBEDDER_MODEL_ID,
+    options: {
+      lastMessages: 3, // Minimal context
+      semanticRecall: false, // No embedding-based recall
+      workingMemory: {
+        enabled: false,
+      },
+    },
+  });
+}
+
+/**
+ * Chat Mode Memory: Minimal context (3 messages, no semantic recall)
+ * For general conversation and help
+ * 
+ * Performance: ~100-200ms overhead
+ * Use case: "How do I use this?" → "What about queries?"
+ */
+export function getChatMemory(): Memory | undefined {
+  const databaseUrl = getDatabaseUrl();
+  
+  if (!databaseUrl) {
+    return undefined;
+  }
+
+  // Create lightweight memory for chat
+  return new Memory({
+    storage: new PostgresStore({
+      connectionString: databaseUrl,
+      ...PG_CONNECTION_POOL,
+    }),
+    vector: new PgVector({
+      connectionString: databaseUrl,
+      ...PG_CONNECTION_POOL,
+    }),
+    embedder: OPENAI_EMBEDDER_MODEL_ID,
+    options: {
+      lastMessages: 3, // Minimal context
+      semanticRecall: false, // No embedding-based recall
+      workingMemory: {
+        enabled: false,
+      },
+    },
+  });
+}
+
+// ============================================================================
 // UPSTASH REDIS MEMORY (Alternative to PostgreSQL)
 // ============================================================================
 
