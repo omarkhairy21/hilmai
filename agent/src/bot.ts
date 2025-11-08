@@ -3,7 +3,7 @@ import type { Mastra } from '@mastra/core/mastra';
 import { downloadFile, getTempFilePath } from './lib/file-utils';
 import { AgentResponseCache } from './lib/prompt-cache';
 import { searchTransactionsSQL } from './lib/embeddings';
-import { supabase } from './lib/supabase';
+import { supabaseService } from './lib/supabase';
 import { 
   getUserDefaultCurrency, 
   updateUserDefaultCurrency, 
@@ -78,7 +78,7 @@ export function createBot(mastra: Mastra): Bot {
 
     try {
       // Create or update user record with complete Telegram information
-      const { error: upsertError } = await supabase
+      const { error: upsertError } = await supabaseService
         .from('users')
         .upsert(
           {

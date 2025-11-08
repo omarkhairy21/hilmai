@@ -5,7 +5,7 @@
  * Modes determine which agent handles messages and memory configuration
  */
 
-import { supabase } from './supabase';
+import { supabaseService } from './supabase';
 
 export type UserMode = 'logger' | 'chat' | 'query';
 
@@ -15,7 +15,7 @@ export type UserMode = 'logger' | 'chat' | 'query';
  */
 export async function getUserMode(userId: number): Promise<UserMode> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('users')
       .select('current_mode')
       .eq('id', userId)
@@ -49,7 +49,7 @@ export async function getUserMode(userId: number): Promise<UserMode> {
 export async function setUserMode(userId: number, mode: UserMode): Promise<void> {
   try {
     // First check if user exists
-    const { data: existingUser } = await supabase
+    const { data: existingUser } = await supabaseService
       .from('users')
       .select('id')
       .eq('id', userId)
@@ -57,7 +57,7 @@ export async function setUserMode(userId: number, mode: UserMode): Promise<void>
 
     if (existingUser) {
       // User exists, just update the mode
-      const { error } = await supabase
+      const { error } = await supabaseService
         .from('users')
         .update({
           current_mode: mode,
@@ -72,7 +72,7 @@ export async function setUserMode(userId: number, mode: UserMode): Promise<void>
     } else {
       // User doesn't exist, create minimal record
       // (Full record should be created by /start command)
-      const { error } = await supabase
+      const { error } = await supabaseService
         .from('users')
         .insert({
           id: userId,
