@@ -98,6 +98,7 @@ export type Database = {
           first_name: string | null;
           last_name: string | null;
           default_currency: string;
+          current_mode: 'logger' | 'chat' | 'query';
           timezone: string | null;
           metadata: Json | null;
           created_at: string;
@@ -110,6 +111,7 @@ export type Database = {
           first_name?: string | null;
           last_name?: string | null;
           default_currency?: string;
+          current_mode?: 'logger' | 'chat' | 'query';
           timezone?: string | null;
           metadata?: Json | null;
           created_at?: string;
@@ -122,6 +124,7 @@ export type Database = {
           first_name?: string | null;
           last_name?: string | null;
           default_currency?: string;
+          current_mode?: 'logger' | 'chat' | 'query';
           timezone?: string | null;
           metadata?: Json | null;
           created_at?: string;
