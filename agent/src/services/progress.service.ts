@@ -1,11 +1,15 @@
 import { type Api } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
+import type { UserMode } from '../lib/user-mode';
+import { messages } from '../lib/messages';
 
 /**
  * Progress stages for workflow execution feedback
  */
 export type ProgressStage =
   | 'start'
+  | 'transcribing'
+  | 'extracting'
   | 'categorized'
   | 'currencyConversion'
   | 'saving'
@@ -27,10 +31,28 @@ export interface ProgressController {
  */
 interface StageMessages {
   start: string;
+  transcribing: string;
+  extracting: string;
   categorized: string;
   currencyConversion: string;
   saving: string;
   finalizing: string;
+}
+
+/**
+ * Get mode-specific stage messages
+ */
+function getModeSpecificMessages(mode: UserMode): StageMessages {
+  const modeMessages = messages.processingByMode[mode];
+  return {
+    start: modeMessages.start,
+    transcribing: modeMessages.transcribing,
+    extracting: modeMessages.extracting,
+    categorized: modeMessages.categorized,
+    currencyConversion: modeMessages.currencyConversion,
+    saving: modeMessages.saving,
+    finalizing: modeMessages.finalizing,
+  };
 }
 
 /**
@@ -41,11 +63,12 @@ interface StageMessages {
  * - Stops updating once workflow completes (isCompleted flag)
  * - Skips redundant updates for same stage
  * - Non-blocking emit() for watch callbacks
+ * - Uses mode-specific progress messages
  *
  * @param api - Grammy Bot API instance
  * @param chatId - Telegram chat ID
  * @param messageId - Telegram message ID to edit
- * @param stageMessages - Mapping of stages to display messages
+ * @param mode - User's current mode (logger/chat/query)
  * @param logger - Mastra logger instance
  * @param userId - User ID for logging
  * @returns ProgressController instance
@@ -54,10 +77,11 @@ export function createProgressController(
   api: Api,
   chatId: number,
   messageId: number,
-  stageMessages: StageMessages,
+  mode: UserMode,
   logger: ReturnType<Mastra['getLogger']>,
   userId: number
 ): ProgressController {
+  const stageMessages = getModeSpecificMessages(mode);
   let currentStage: ProgressStage | null = null;
   let isCompleted = false;
   let isUpdating = false;

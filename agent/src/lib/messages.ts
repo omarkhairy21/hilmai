@@ -227,13 +227,35 @@ Select an option from the menu below:`,
       `Or say "cancel" to cancel.`,
   },
 
-  processing: {
-    start: () => '⏳ Start processing…',
-    categorized: () => '🧾 Categorized transaction…',
-    currencyConversion: () => '💱 Currency conversion…',
-    saving: () => '💾 Ai thinking…',
-    finalizing: () => '✅ Saving transaction…',
-    loading: () => '⏳ Processing...',
+  // Mode-specific progress messages
+  processingByMode: {
+    logger: {
+      start: '⏳ Logging transaction…',
+      transcribing: '🎤 Transcribing voice…',
+      extracting: '📸 Reading receipt…',
+      categorized: '🧾 Categorizing expense…',
+      currencyConversion: '💱 Converting currency…',
+      saving: '💾 Saving to database…',
+      finalizing: '✅ Transaction logged…',
+    },
+    query: {
+      start: '⏳ Analyzing query…',
+      transcribing: '🎤 Transcribing voice…',
+      extracting: '📸 Reading query image…',
+      categorized: '🔍 Searching transactions…',
+      currencyConversion: '💱 Processing data…',
+      saving: '🤖 Generating insights…',
+      finalizing: '✅ Results ready…',
+    },
+    chat: {
+      start: '⏳ Processing your message…',
+      transcribing: '🎤 Transcribing voice…',
+      extracting: '📸 Reading image…',
+      categorized: '💭 Understanding context…',
+      currencyConversion: '⚙️ Preparing response…',
+      saving: '🤖 Thinking…',
+      finalizing: '✅ Ready…',
+    },
   },
 
   success: {

@@ -470,43 +470,49 @@ export function createBot(mastra: Mastra): Bot {
 
       logger.debug('message:workflow_input_prepared', { userId });
 
-      // Step 2: Send initial "Processing..." message
-      const processingMessage = await ctx.reply(messages.processing.start(), {
+      // Step 2: Fetch user mode to show mode-specific progress
+      let userMode: UserMode = 'chat'; // default
+      try {
+        userMode = await getUserMode(userId);
+      } catch (error) {
+        logger.warn('message:user_mode_fetch_failed', {
+          userId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      // Step 3: Send initial mode-specific "Processing..." message
+      const processingMessage = await ctx.reply(messages.processingByMode[userMode].start, {
         parse_mode: 'Markdown',
       });
       processingMessageId = processingMessage.message_id;
 
-      // Step 3: Create progress controller for stage-by-stage updates
-      const stageMessages = {
-        start: messages.processing.start(),
-        categorized: messages.processing.categorized(),
-        currencyConversion: messages.processing.currencyConversion(),
-        saving: messages.processing.saving(),
-        finalizing: messages.processing.finalizing(),
-      };
-
+      // Step 4: Create progress controller with mode-specific messages
       const progress = createProgressController(
         ctx.api,
         ctx.chat.id,
         processingMessageId,
-        stageMessages,
+        userMode,
         logger,
         userId
       );
 
-      // Step 4: Set up runtime context with progress emitter
+      // Step 5: Set up runtime context with progress emitter
       const runtimeContext = new RuntimeContext<ProgressContext>();
       runtimeContext.set('progressEmitter', progress.emit);
 
-      // Step 5: Run message-processing workflow with progress tracking
-      logger.info('message:running_workflow', { userId });
+      // Step 6: Run message-processing workflow with progress tracking (with step numbers adjusted)
+      logger.info('message:running_workflow', { userId, userMode });
 
       const workflow = mastra.getWorkflow('message-processing');
       const run = await workflow.createRunAsync();
 
       /**
        * Watch for step completions and update progress message
-       * Stops automatically when workflow completes or fails
+       * Progress stages vary by mode and input type:
+       * - Logger: Processing input → [Transcribing/Reading receipt] → Categorizing → Converting currency → Saving → Logged
+       * - Query: Analyzing query → [Transcribing/Reading image] → Searching → Processing → Generating insights → Results ready
+       * - Chat: Processing message → [Transcribing/Reading image] → Understanding context → Preparing response → Thinking → Ready
        */
       run.watch((event: any) => {
         // Skip if workflow already completed
@@ -517,40 +523,55 @@ export function createBot(mastra: Mastra): Bot {
         const stepId = event?.payload?.currentStep?.id;
         if (!stepId) return;
 
-        // Map workflow step IDs to progress stages
-        switch (stepId) {
-          case 'determine-input-type':
-          case 'transcribe-voice':
-          case 'extract-from-photo':
-          case 'pass-text':
-            progress.emit('start');
-            break;
+        // Map workflow step IDs to progress stages based on user mode
+        // Input processing phase - determine type
+        if (stepId === 'determine-input-type' || stepId === 'pass-text') {
+          progress.emit('start');
+          return;
+        }
 
-          case 'unwrap-processed-input':
-          case 'build-context-prompt':
-            progress.emit('categorized');
-            break;
+        // Voice transcription phase
+        if (stepId === 'transcribe-voice') {
+          progress.emit('transcribing');
+          return;
+        }
 
-          case 'fetch-user-mode':
-          case 'check-cache':
-            // Keep current stage
-            break;
+        // Photo/receipt extraction phase
+        if (stepId === 'extract-from-photo') {
+          progress.emit('extracting');
+          return;
+        }
 
-          case 'invoke-logger-agent':
-          case 'invoke-query-agent':
-          case 'invoke-chat-agent':
-            progress.emit('saving');
-            break;
+        // Context building phase (interpretation/searching)
+        if (stepId === 'unwrap-processed-input' || stepId === 'build-context-prompt') {
+          progress.emit('categorized');
+          return;
+        }
 
-          case 'unwrap-agent-response':
-          case 'cache-response':
-          case 'cleanup-router':
-            progress.emit('finalizing');
-            break;
+        // Cache/mode check phase (silent, no update needed)
+        if (stepId === 'fetch-user-mode' || stepId === 'check-cache') {
+          return;
+        }
 
-          case 'cleanup-files':
-            progress.emit('finalizing');
-            break;
+        // Agent processing phase (main work)
+        if (
+          stepId === 'invoke-logger-agent' ||
+          stepId === 'invoke-query-agent' ||
+          stepId === 'invoke-chat-agent'
+        ) {
+          progress.emit('saving');
+          return;
+        }
+
+        // Finalization phase
+        if (
+          stepId === 'unwrap-agent-response' ||
+          stepId === 'cache-response' ||
+          stepId === 'cleanup-router' ||
+          stepId === 'cleanup-files'
+        ) {
+          progress.emit('finalizing');
+          return;
         }
       }, 'watch');
 
@@ -579,12 +600,13 @@ export function createBot(mastra: Mastra): Bot {
 
       logger.info('message:workflow_completed', {
         userId,
+        userMode,
         inputType: metadata.inputType,
         cached: metadata.cached,
         hasMarkup: Boolean(telegramMarkup),
       });
 
-      // Step 6: Update processing message with final response
+      // Step 7: Update processing message with final response
       const replyOptions: any = { parse_mode: 'Markdown' };
       if (telegramMarkup) {
         replyOptions.reply_markup = telegramMarkup;
