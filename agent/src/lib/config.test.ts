@@ -7,7 +7,8 @@ import { describe, it, expect } from 'vitest';
 describe('Database URL Encoding', () => {
   it('should encode special characters in password', () => {
     // Test the encoding logic directly
-    const url = 'postgresql://postgres.user:iO$!KYG4$UqxAK@aws-1-us-east-1.pooler.supabase.com:6543/postgres';
+    const url =
+      'postgresql://postgres.user:iO$!KYG4$UqxAK@aws-1-us-east-1.pooler.supabase.com:6543/postgres';
 
     // Extract and encode password like getDatabaseUrl does
     const lastAtIndex = url.lastIndexOf('@');

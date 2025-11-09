@@ -4,20 +4,22 @@ import { downloadFile, getTempFilePath } from './lib/file-utils';
 import { AgentResponseCache } from './lib/prompt-cache';
 import { searchTransactionsSQL } from './lib/embeddings';
 import { supabaseService } from './lib/supabase';
-import { 
-  getUserDefaultCurrency, 
-  updateUserDefaultCurrency, 
-  isValidCurrency, 
-  normalizeCurrency 
+import { createOrGetUser } from './services/user.service';
+import { fmt, b } from '@grammyjs/parse-mode';
+import {
+  getUserDefaultCurrency,
+  updateUserDefaultCurrency,
+  isValidCurrency,
+  normalizeCurrency,
 } from './lib/currency';
-import { 
-  getUserMode, 
-  setUserMode, 
-  getModeDescription, 
-  getModeEmoji, 
+import {
+  getUserMode,
+  setUserMode,
+  getModeDescription,
+  getModeEmoji,
   getModeInstructions,
   isValidMode,
-  type UserMode 
+  type UserMode,
 } from './lib/user-mode';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -31,40 +33,42 @@ export function createBot(mastra: Mastra): Bot {
   const logger = mastra.getLogger();
 
   // Set up bot commands menu (appears in toolbar)
-  bot.api.setMyCommands([
-    {
-      command: 'menu',
-      description: '📋 Show main menu',
-    },
-    {
-      command: 'start',
-      description: '🚀 Start the bot',
-    },
-    {
-      command: 'mode',
-      description: '🎯 Switch mode (logger/chat/query)',
-    },
-    {
-      command: 'recent',
-      description: '📋 View recent transactions',
-    },
-    {
-      command: 'currency',
-      description: '💱 Set default currency',
-    },
-    {
-      command: 'help',
-      description: '❓ Get help and instructions',
-    },
-    {
-      command: 'clear',
-      description: '🗑️ Clear cached responses',
-    },
-  ]).catch((error) => {
-    logger.warn('Failed to set bot commands', {
-      error: error instanceof Error ? error.message : String(error),
+  bot.api
+    .setMyCommands([
+      {
+        command: 'menu',
+        description: '📋 Show main menu',
+      },
+      {
+        command: 'start',
+        description: '🚀 Start the bot',
+      },
+      {
+        command: 'mode',
+        description: '🎯 Switch mode (logger/chat/query)',
+      },
+      {
+        command: 'recent',
+        description: '📋 View recent transactions',
+      },
+      {
+        command: 'currency',
+        description: '💱 Set default currency',
+      },
+      {
+        command: 'help',
+        description: '❓ Get help and instructions',
+      },
+      {
+        command: 'clear',
+        description: '🗑️ Clear cached responses',
+      },
+    ])
+    .catch((error) => {
+      logger.warn('Failed to set bot commands', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     });
-  });
 
   // Handle /start command
   bot.command('start', async (ctx) => {
@@ -77,33 +81,20 @@ export function createBot(mastra: Mastra): Bot {
     logger.info('command:start', { userId });
 
     try {
-      // Create or update user record with complete Telegram information
-      const { error: upsertError } = await supabaseService
-        .from('users')
-        .upsert(
-          {
-            id: userId,
-            telegram_chat_id: userId,
-            telegram_username: ctx.from?.username || null,
-            first_name: ctx.from?.first_name || null,
-            last_name: ctx.from?.last_name || null,
-            current_mode: 'chat', // Default to chat mode
-            default_currency: 'AED', // Default currency
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'id',
-            ignoreDuplicates: false, // Update existing records
-          }
-        );
+      // Create or get user record with complete Telegram information
+      const { error, created } = await createOrGetUser(userId, {
+        telegram_username: ctx.from?.username || null,
+        first_name: ctx.from?.first_name || null,
+        last_name: ctx.from?.last_name || null,
+      });
 
-      if (upsertError) {
-        logger.error('command:start:user_upsert_error', {
+      if (error) {
+        logger.error('command:start:user_error', {
           userId,
-          error: upsertError.message,
+          error: error.message,
         });
       } else {
-        logger.info('command:start:user_created', {
+        logger.info(created ? 'command:start:user_created' : 'command:start:user_updated', {
           userId,
           username: ctx.from?.username,
           firstName: ctx.from?.first_name,
@@ -118,25 +109,29 @@ export function createBot(mastra: Mastra): Bot {
         ],
       };
 
-      await ctx.reply(
-        `Welcome to HilmAI! 🤖\n\n` +
-        `I'm your personal financial assistant with 3 specialized modes:\n\n` +
-        `💰 *Logger Mode* - Fast transaction logging\n` +
-        `   Best for: "I spent 50 AED at Carrefour"\n\n` +
-        `💬 *Chat Mode* - General help (default)\n` +
-        `   Best for: Questions, onboarding, help\n\n` +
-        `📊 *Query Mode* - Ask about spending\n` +
-        `   Best for: "How much on groceries?"\n\n` +
-        `💡 *Getting started:*\n` +
-        `• You're in *Chat Mode* right now\n` +
-        `• Use /mode to switch anytime\n` +
-        `• Try /mode_logger for fast logging\n` +
-        `• Use /help for detailed instructions`,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: modeKeyboard,
-        }
-      );
+      const welcomeMessage = fmt`Welcome to HilmAI! 🤖
+
+I'm your personal financial assistant with 3 specialized modes:
+
+💰 ${b()}Logger Mode - Fast transaction logging
+   Best for: "I spent 50 AED at Carrefour"
+
+💬 ${b()}Chat Mode - General help (default)
+   Best for: Questions, onboarding, help
+
+📊 ${b()}Query Mode - Ask about spending
+   Best for: "How much on groceries?"
+
+💡 Getting started:
+• You're in Chat Mode right now
+• Use /mode to switch anytime
+• Try /mode_logger for fast logging
+• Use /help for detailed instructions`;
+
+      await ctx.reply(welcomeMessage.text, {
+        entities: welcomeMessage.entities,
+        reply_markup: modeKeyboard,
+      });
     } catch (error) {
       logger.error('command:start:error', {
         userId,
@@ -145,8 +140,8 @@ export function createBot(mastra: Mastra): Bot {
       });
       await ctx.reply(
         `Welcome to HilmAI! 🤖\n\n` +
-        `I'm your personal financial assistant.\n\n` +
-        `Use /mode to select your mode and get started!`,
+          `I'm your personal financial assistant.\n\n` +
+          `Use /mode to select your mode and get started!`,
         { parse_mode: 'Markdown' }
       );
     }
@@ -156,23 +151,28 @@ export function createBot(mastra: Mastra): Bot {
   bot.command('help', async (ctx) => {
     logger.info('command:help', { userId: ctx.from?.id });
 
-    await ctx.reply(
-      `*HilmAI Commands & Features*\n\n` +
-        `*Track Expenses:*\n` +
-        `• Type: "I spent 50 AED at Starbucks"\n` +
-        `• Voice: Send a voice message\n` +
-        `• Photo: Send a receipt photo\n\n` +
-        `*Ask Questions:*\n` +
-        `• "How much did I spend on groceries?"\n` +
-        `• "Show my Starbucks spending"\n` +
-        `• "Total expenses this month"\n\n` +
-        `*Features:*\n` +
-        `✅ Fuzzy search (handles typos)\n` +
-        `✅ Conversation memory\n` +
-        `✅ Multiple languages (English & Arabic)\n\n` +
-        `Just start chatting naturally!`,
-      { parse_mode: 'Markdown' }
-    );
+    const helpMsg = fmt`${b()}HilmAI Commands & Features
+
+${b()}Track Expenses:
+• Type: "I spent 50 AED at Starbucks"
+• Voice: Send a voice message
+• Photo: Send a receipt photo
+
+${b()}Ask Questions:
+• "How much did I spend on groceries?"
+• "Show my Starbucks spending"
+• "Total expenses this month"
+
+${b()}Features:
+✅ Fuzzy search (handles typos)
+✅ Conversation memory
+✅ Multiple languages (English & Arabic)
+
+Just start chatting naturally!`;
+
+    await ctx.reply(helpMsg.text, {
+      entities: helpMsg.entities,
+    });
   });
 
   // Handle /recent command - quick access to recent transactions
@@ -210,8 +210,7 @@ export function createBot(mastra: Mastra): Bot {
         return `${index + 1}. ${emoji} ${tx.merchant} - ${tx.amount} ${tx.currency} (${tx.transaction_date}) [ID: ${tx.id}]`;
       });
 
-      const messageText =
-        '📋 *Recent Transactions*\n\n' + transactionLines.join('\n');
+      const messageText = '📋 *Recent Transactions*\n\n' + transactionLines.join('\n');
 
       // Generate inline keyboards for each transaction
       const keyboard = {
@@ -230,10 +229,9 @@ export function createBot(mastra: Mastra): Bot {
         userId,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply(
-        '❌ Sorry, I couldn\'t fetch your recent transactions. Please try again.',
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.reply("❌ Sorry, I couldn't fetch your recent transactions. Please try again.", {
+        parse_mode: 'Markdown',
+      });
     }
   });
 
@@ -256,14 +254,14 @@ export function createBot(mastra: Mastra): Bot {
       ],
     };
 
-    await ctx.reply(
-      '📱 *HilmAI Menu*\n\n' +
-        'Select an option from the menu below:',
-      {
-        parse_mode: 'Markdown',
-        reply_markup: menuKeyboard,
-      }
-    );
+    const menuMsg = fmt`📱 ${b()}HilmAI Menu
+
+Select an option from the menu below:`;
+
+    await ctx.reply(menuMsg.text, {
+      entities: menuMsg.entities,
+      reply_markup: menuKeyboard,
+    });
   });
 
   // Handle /clear command (clear cache for user)
@@ -288,7 +286,7 @@ export function createBot(mastra: Mastra): Bot {
 
     try {
       const currentMode = await getUserMode(userId);
-      
+
       const keyboard = {
         inline_keyboard: [
           [{ text: '💰 Logger Mode', callback_data: 'set_mode_logger' }],
@@ -297,25 +295,29 @@ export function createBot(mastra: Mastra): Bot {
         ],
       };
 
-      const message = 
-        `🎯 *Current Mode: ${getModeDescription(currentMode)}*\n\n` +
-        `Select a mode:\n\n` +
-        `💰 *Logger Mode*\n` +
-        `Fast transaction logging (no conversation memory)\n` +
-        `Best for: I spent 50 AED at Carrefour\n\n` +
-        `💬 *Chat Mode*\n` +
-        `General conversation and help (default)\n` +
-        `Best for: Questions, help, onboarding\n\n` +
-        `📊 *Query Mode*\n` +
-        `Ask about your spending (minimal memory)\n` +
-        `Best for: How much on groceries?\n\n` +
-        `💡 *Quick switch commands:*\n` +
-        `/mode_logger - Switch to Logger Mode\n` +
-        `/mode_chat - Switch to Chat Mode\n` +
-        `/mode_query - Switch to Query Mode`;
+      const modeMessage = fmt`🎯 ${b()}Current Mode: ${getModeDescription(currentMode)}
 
-      await ctx.reply(message, {
-        parse_mode: 'Markdown',
+Select a mode:
+
+💰 ${b()}Logger Mode
+Fast transaction logging (no conversation memory)
+Best for: I spent 50 AED at Carrefour
+
+💬 ${b()}Chat Mode
+General conversation and help (default)
+Best for: Questions, help, onboarding
+
+📊 ${b()}Query Mode
+Ask about your spending (minimal memory)
+Best for: How much on groceries?
+
+💡 ${b()}Quick switch commands:
+/mode_logger - Switch to Logger Mode
+/mode_chat - Switch to Chat Mode
+/mode_query - Switch to Query Mode`;
+
+      await ctx.reply(modeMessage.text, {
+        entities: modeMessage.entities,
         reply_markup: keyboard,
       });
     } catch (error) {
@@ -339,16 +341,19 @@ export function createBot(mastra: Mastra): Bot {
 
     try {
       await setUserMode(userId, 'logger');
-      await ctx.reply(
-        '✅ *Switched to Logger Mode*\n\n' +
-        '💰 Fast transaction logging is now active.\n\n' +
-        '*How to use:*\n' +
-        '• Type: "I spent 50 AED at Carrefour"\n' +
-        '• Send a voice message\n' +
-        '• Send a receipt photo\n\n' +
-        'Use /mode to switch modes.',
-        { parse_mode: 'Markdown' }
-      );
+      const loggerMsg = fmt`✅ ${b()}Switched to Logger Mode
+
+💰 Fast transaction logging is now active.
+
+${b()}How to use:
+• Type: "I spent 50 AED at Carrefour"
+• Send a voice message
+• Send a receipt photo
+
+Use /mode to switch modes.`;
+      await ctx.reply(loggerMsg.text, {
+        entities: loggerMsg.entities,
+      });
     } catch (error) {
       logger.error('command:mode_logger:error', {
         userId,
@@ -370,16 +375,19 @@ export function createBot(mastra: Mastra): Bot {
 
     try {
       await setUserMode(userId, 'chat');
-      await ctx.reply(
-        '✅ *Switched to Chat Mode*\n\n' +
-        '💬 General conversation and help is now active.\n\n' +
-        '*I can help you:*\n' +
-        '• Learn how to use HilmAI\n' +
-        '• Answer questions\n' +
-        '• Guide you to the right mode\n\n' +
-        'Use /mode to switch modes.',
-        { parse_mode: 'Markdown' }
-      );
+      const chatMsg = fmt`✅ ${b()}Switched to Chat Mode
+
+💬 General conversation and help is now active.
+
+${b()}I can help you:
+• Learn how to use HilmAI
+• Answer questions
+• Guide you to the right mode
+
+Use /mode to switch modes.`;
+      await ctx.reply(chatMsg.text, {
+        entities: chatMsg.entities,
+      });
     } catch (error) {
       logger.error('command:mode_chat:error', {
         userId,
@@ -401,16 +409,19 @@ export function createBot(mastra: Mastra): Bot {
 
     try {
       await setUserMode(userId, 'query');
-      await ctx.reply(
-        '✅ *Switched to Query Mode*\n\n' +
-        '📊 Ask questions about your spending.\n\n' +
-        '*Examples:*\n' +
-        '• "How much on groceries?"\n' +
-        '• "Show my spending this week"\n' +
-        '• "Top 5 expenses this month"\n\n' +
-        'Use /mode to switch modes.',
-        { parse_mode: 'Markdown' }
-      );
+      const queryMsg = fmt`✅ ${b()}Switched to Query Mode
+
+📊 Ask questions about your spending.
+
+${b()}Examples:
+• "How much on groceries?"
+• "Show my spending this week"
+• "Top 5 expenses this month"
+
+Use /mode to switch modes.`;
+      await ctx.reply(queryMsg.text, {
+        entities: queryMsg.entities,
+      });
     } catch (error) {
       logger.error('command:mode_query:error', {
         userId,
@@ -487,7 +498,7 @@ export function createBot(mastra: Mastra): Bot {
     // Update user's default currency
     try {
       const success = await updateUserDefaultCurrency(userId, normalized);
-      
+
       if (success) {
         logger.info('command:currency:updated', { userId, currency: normalized });
         await ctx.reply(
@@ -506,10 +517,9 @@ export function createBot(mastra: Mastra): Bot {
         currency: normalized,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply(
-        '❌ Failed to update your default currency. Please try again.',
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.reply('❌ Failed to update your default currency. Please try again.', {
+        parse_mode: 'Markdown',
+      });
     }
   });
 
@@ -638,12 +648,12 @@ export function createBot(mastra: Mastra): Bot {
           userId,
           error: editError instanceof Error ? editError.message : String(editError),
         });
-        
+
         // Delete processing message
         await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
           // Ignore errors
         });
-        
+
         // Send final response as new message
         await ctx.reply(response, replyOptions);
         logger.info('message:sent_new', { userId });
@@ -694,7 +704,7 @@ export function createBot(mastra: Mastra): Bot {
     logger.info('callback:set_mode', { userId, callbackData });
 
     const modeStr = callbackData.replace('set_mode_', '');
-    
+
     if (!isValidMode(modeStr)) {
       await ctx.answerCallbackQuery('❌ Invalid mode.');
       return;
@@ -704,13 +714,12 @@ export function createBot(mastra: Mastra): Bot {
 
     try {
       await setUserMode(userId, mode);
-      
+
       await ctx.answerCallbackQuery(`✅ Switched to ${getModeDescription(mode)}`);
-      
-      await ctx.editMessageText(
-        `✅ *Mode Changed*\n\n${getModeInstructions(mode)}`,
-        { parse_mode: 'Markdown' }
-      );
+
+      await ctx.editMessageText(`✅ *Mode Changed*\n\n${getModeInstructions(mode)}`, {
+        parse_mode: 'Markdown',
+      });
 
       logger.info('callback:set_mode:success', { userId, mode });
     } catch (error) {
@@ -747,8 +756,7 @@ export function createBot(mastra: Mastra): Bot {
 
         if (transactions.length === 0) {
           await ctx.editMessageText(
-            '📋 *Recent Transactions*\n\n' +
-              'No transactions found. Start tracking your expenses!',
+            '📋 *Recent Transactions*\n\n' + 'No transactions found. Start tracking your expenses!',
             { parse_mode: 'Markdown' }
           );
           return;
@@ -760,8 +768,7 @@ export function createBot(mastra: Mastra): Bot {
           return `${index + 1}. ${emoji} ${tx.merchant} - ${tx.amount} ${tx.currency} (${tx.transaction_date}) [ID: ${tx.id}]`;
         });
 
-        const messageText =
-          '📋 *Recent Transactions*\n\n' + transactionLines.join('\n');
+        const messageText = '📋 *Recent Transactions*\n\n' + transactionLines.join('\n');
 
         // Generate inline keyboards for each transaction
         const keyboard = {
@@ -781,7 +788,7 @@ export function createBot(mastra: Mastra): Bot {
           error: error instanceof Error ? error.message : String(error),
         });
         await ctx.editMessageText(
-          '❌ Sorry, I couldn\'t fetch your recent transactions. Please try again.',
+          "❌ Sorry, I couldn't fetch your recent transactions. Please try again.",
           { parse_mode: 'Markdown' }
         );
       }
@@ -951,10 +958,9 @@ export function createBot(mastra: Mastra): Bot {
       });
 
       await ctx.answerCallbackQuery('❌ An error occurred. Please try again.');
-      await ctx.reply(
-        '❌ Sorry, something went wrong processing your request. Please try again.',
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.reply('❌ Sorry, something went wrong processing your request. Please try again.', {
+        parse_mode: 'Markdown',
+      });
     }
   });
 

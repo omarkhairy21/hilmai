@@ -54,7 +54,7 @@ export const hybridQueryTool = createTool({
   execute: async ({ context, mastra }) => {
     const logger = mastra?.getLogger();
     const toolStartTime = Date.now();
-    
+
     const {
       userId,
       query,
@@ -110,7 +110,7 @@ export const hybridQueryTool = createTool({
           similarityThreshold: 0.6, // Adjust based on testing
           limit,
         });
-        
+
         logger?.info('[tool:performance]', {
           operation: 'fuzzy_search',
           duration: Date.now() - fuzzySearchStart,
@@ -137,7 +137,7 @@ export const hybridQueryTool = createTool({
           maxAmount,
           limit,
         });
-        
+
         logger?.info('[tool:performance]', {
           operation: 'sql_search',
           duration: Date.now() - sqlSearchStart,

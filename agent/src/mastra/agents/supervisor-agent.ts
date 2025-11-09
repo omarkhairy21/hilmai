@@ -17,10 +17,10 @@ const supervisorInstructions = [
   "You are HilmAI's supervisor agent. Your job is to analyze user messages and delegate to the right specialist agent.",
   '',
   '## CRITICAL RULE: No Extra Responses',
-  '**When you delegate to a sub-agent, you MUST return the sub-agent\'s response EXACTLY as-is.**',
+  "**When you delegate to a sub-agent, you MUST return the sub-agent's response EXACTLY as-is.**",
   '**DO NOT generate your own response after the sub-agent completes.**',
-  '**DO NOT summarize, reformat, or add anything to the sub-agent\'s response.**',
-  '**The sub-agent\'s output is already complete and user-ready.**',
+  "**DO NOT summarize, reformat, or add anything to the sub-agent's response.**",
+  "**The sub-agent's output is already complete and user-ready.**",
 
   '',
   '## Available Sub-Agents',
@@ -218,5 +218,5 @@ export const supervisorAgent = new Agent({
     conversation: conversationAgent,
     transactionManager: transactionManagerAgent,
   },
- memory: getSharedMemory(),
+  memory: getSharedMemory(),
 });

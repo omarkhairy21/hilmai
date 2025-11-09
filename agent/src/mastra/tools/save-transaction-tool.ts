@@ -40,7 +40,7 @@ export const saveTransactionTool = createTool({
   execute: async ({ context, mastra }) => {
     const logger = mastra?.getLogger();
     const toolStartTime = Date.now();
-    
+
     const {
       userId,
       amount,
@@ -108,7 +108,7 @@ export const saveTransactionTool = createTool({
         getMerchantEmbedding(merchant),
         supabaseService.from('users').upsert([userPayload]),
       ]);
-      
+
       const embeddingDuration = Date.now() - embeddingStart;
       logger?.info('[tool:performance]', {
         operation: 'embedding_and_user_upsert',
@@ -138,14 +138,14 @@ export const saveTransactionTool = createTool({
       const conversionStart = Date.now();
       const userDefaultCurrency = await getUserDefaultCurrency(userId);
       const normalizedCurrency = normalizeCurrency(currency) || currency.toUpperCase();
-      
+
       let finalAmount = amount;
       let originalAmount: number | null = null;
       let originalCurrency: string | null = null;
       let convertedAmount: number | null = null;
       let conversionRate: number | null = null;
       let convertedAt: string | null = null;
-      
+
       // Perform currency conversion if transaction currency differs from user's default
       if (normalizedCurrency !== userDefaultCurrency) {
         logger?.info('[tool:save-transaction]', {
@@ -155,22 +155,22 @@ export const saveTransactionTool = createTool({
           amount,
           userId,
         });
-        
+
         try {
           const conversion = await convertCurrency(amount, normalizedCurrency, userDefaultCurrency);
-          
+
           // Store original values
           originalAmount = amount;
           originalCurrency = normalizedCurrency;
-          
+
           // Store converted values
           convertedAmount = conversion.convertedAmount;
           conversionRate = conversion.rate;
           convertedAt = new Date().toISOString();
-          
+
           // Use converted amount as the primary amount for reporting
           finalAmount = conversion.convertedAmount;
-          
+
           const conversionDuration = Date.now() - conversionStart;
           logger?.info('[tool:performance]', {
             operation: 'currency_conversion',
@@ -186,12 +186,13 @@ export const saveTransactionTool = createTool({
           // Log conversion error but don't fail - use original currency
           logger?.warn('[tool:save-transaction]', {
             event: 'currency_conversion_failed',
-            error: conversionError instanceof Error ? conversionError.message : String(conversionError),
+            error:
+              conversionError instanceof Error ? conversionError.message : String(conversionError),
             from: normalizedCurrency,
             to: userDefaultCurrency,
             userId,
           });
-          
+
           // Fallback: use original amount and currency without conversion
           finalAmount = amount;
         }
@@ -243,7 +244,7 @@ export const saveTransactionTool = createTool({
       }
 
       const transactionId = data?.id;
-      
+
       const totalDuration = Date.now() - toolStartTime;
       logger?.info('[tool:performance]', {
         operation: 'save_transaction_complete',

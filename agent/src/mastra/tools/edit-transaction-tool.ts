@@ -107,8 +107,12 @@ export const editTransactionTool = createTool({
         throw new Error(`Failed to update transaction: ${error.message}`);
       }
 
-      const updatedFields = Object.keys(updatePayload).filter((key) => key !== 'merchant_embedding');
-      console.log(`[edit-transaction] ✅ Updated transaction ${transactionId}. Fields: ${updatedFields.join(', ')}`);
+      const updatedFields = Object.keys(updatePayload).filter(
+        (key) => key !== 'merchant_embedding'
+      );
+      console.log(
+        `[edit-transaction] ✅ Updated transaction ${transactionId}. Fields: ${updatedFields.join(', ')}`
+      );
 
       return {
         success: true,
@@ -125,4 +129,3 @@ export const editTransactionTool = createTool({
     }
   },
 });
-

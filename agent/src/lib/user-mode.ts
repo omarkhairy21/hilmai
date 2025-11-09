@@ -1,6 +1,6 @@
 /**
  * User Mode Management for HilmAI
- * 
+ *
  * Manages user's current operating mode (logger/chat/query)
  * Modes determine which agent handles messages and memory configuration
  */
@@ -42,7 +42,7 @@ export async function getUserMode(userId: number): Promise<UserMode> {
 /**
  * Set user's current mode in database
  * Creates user record if it doesn't exist (upsert)
- * 
+ *
  * Note: This function only updates the mode. For creating a complete user record
  * with all Telegram information, use the /start command handler in bot.ts
  */
@@ -72,16 +72,14 @@ export async function setUserMode(userId: number, mode: UserMode): Promise<void>
     } else {
       // User doesn't exist, create minimal record
       // (Full record should be created by /start command)
-      const { error } = await supabaseService
-        .from('users')
-        .insert({
-          id: userId,
-          telegram_chat_id: userId,
-          current_mode: mode,
-          default_currency: 'AED',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await supabaseService.from('users').insert({
+        id: userId,
+        telegram_chat_id: userId,
+        current_mode: mode,
+        default_currency: 'AED',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) {
         console.error('[user-mode] Error creating user with mode:', error);
@@ -178,4 +176,3 @@ export function getModeInstructions(mode: UserMode): string {
 export function isValidMode(mode: string): mode is UserMode {
   return ['logger', 'chat', 'query'].includes(mode);
 }
-

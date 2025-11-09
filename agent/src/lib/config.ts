@@ -115,7 +115,6 @@ export function getDatabaseUrl(): string | undefined {
   }
 
   try {
-
     console.log('config.database.url', config.database.url);
 
     // Find the last @ symbol to handle passwords containing @

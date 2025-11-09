@@ -27,16 +27,12 @@ if (!supabaseServiceKey) {
  * SECURITY: This client bypasses RLS policies. All user data access must be
  * validated server-side using user_id checks in your application code.
  */
-export const supabaseService = createClient<Database>(
-  supabaseUrl,
-  supabaseServiceKey,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-);
+export const supabaseService = createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
 
 /**
  * Anon client - Use for client-side operations (if needed)

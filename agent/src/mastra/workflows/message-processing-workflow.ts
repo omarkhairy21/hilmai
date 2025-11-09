@@ -163,7 +163,7 @@ const transcribeVoiceStep = createStep({
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
     const transcriptionStart = Date.now();
-    
+
     const audioFilePath = inputData.voiceFilePath;
     if (!audioFilePath) {
       throw new Error('Voice file path missing for transcription');
@@ -242,7 +242,7 @@ const extractFromPhotoStep = createStep({
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
     const extractionStart = Date.now();
-    
+
     const imageFilePath = inputData.photoFilePath;
     if (!imageFilePath) {
       throw new Error('Photo file path missing for extraction');
@@ -446,10 +446,10 @@ const buildContextPromptStep = createStep({
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
     const fetchCurrencyStart = Date.now();
-    
+
     // Fetch user's default currency
     const defaultCurrency = await getUserDefaultCurrency(inputData.userId);
-    
+
     const fetchCurrencyDuration = Date.now() - fetchCurrencyStart;
     logger.info('[workflow:performance]', {
       operation: 'fetch_default_currency',
@@ -457,7 +457,7 @@ const buildContextPromptStep = createStep({
       userId: inputData.userId,
       currency: defaultCurrency,
     });
-    
+
     const userMetadata = {
       userId: inputData.userId,
       telegramChatId: inputData.userId,
@@ -525,16 +525,16 @@ type FetchUserModeOutput = z.infer<typeof fetchUserModeOutputSchema>;
 
 const fetchUserModeStep = createStep({
   id: 'fetch-user-mode',
-  description: 'Get user\'s current mode from database',
+  description: "Get user's current mode from database",
   stateSchema: workflowStateSchema,
   inputSchema: buildContextPromptOutputSchema,
   outputSchema: fetchUserModeOutputSchema,
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
     const fetchModeStart = Date.now();
-    
+
     const mode = await getUserMode(inputData.userId);
-    
+
     const fetchModeDuration = Date.now() - fetchModeStart;
     logger.info('[workflow:performance]', {
       operation: 'fetch_user_mode',
@@ -581,9 +581,9 @@ const checkCacheStep = createStep({
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
     const cacheCheckStart = Date.now();
-    
+
     const cached = await AgentResponseCache.get(inputData.userId, inputData.text);
-    
+
     const cacheCheckDuration = Date.now() - cacheCheckStart;
     logger.info('[workflow:performance]', {
       operation: 'cache_check',
@@ -682,14 +682,12 @@ type ModeBranchConditionFn = ConditionFunction<
   DefaultEngineType
 >;
 
-const isLoggerMode: ModeBranchConditionFn = async ({ inputData }) => 
+const isLoggerMode: ModeBranchConditionFn = async ({ inputData }) =>
   inputData.userMode === 'logger';
 
-const isQueryMode: ModeBranchConditionFn = async ({ inputData }) => 
-  inputData.userMode === 'query';
+const isQueryMode: ModeBranchConditionFn = async ({ inputData }) => inputData.userMode === 'query';
 
-const isChatMode: ModeBranchConditionFn = async ({ inputData }) => 
-  inputData.userMode === 'chat';
+const isChatMode: ModeBranchConditionFn = async ({ inputData }) => inputData.userMode === 'chat';
 
 /**
  * Logger Mode Agent Step - No memory (fastest)
@@ -741,7 +739,7 @@ const invokeLoggerAgentStep = createStep({
 
     // Logger mode: NO memory (fastest)
     const genResult = await agent.generate(inputData.prompt);
-    
+
     const duration = Date.now() - stepStartTime;
     logger.info('[workflow:performance]', {
       operation: 'logger_agent_complete',
@@ -823,7 +821,7 @@ const invokeQueryAgentStep = createStep({
         resource: inputData.userId.toString(),
       },
     });
-    
+
     const duration = Date.now() - stepStartTime;
     logger.info('[workflow:performance]', {
       operation: 'query_agent_complete',
@@ -852,12 +850,12 @@ const invokeQueryAgentStep = createStep({
       // Not JSON - try to extract transaction IDs from response
       const transactionIdPattern = /\[ID:\s*(\d+)\]/gi;
       const matches = Array.from(rawResponse.matchAll(transactionIdPattern));
-      
-      const hasTransactionList = 
+
+      const hasTransactionList =
         /\d+\.\s+.*-.*\d+.*\(.*\d{4}-\d{2}-\d{2}\)/i.test(rawResponse) ||
         (rawResponse.match(/\d{4}-\d{2}-\d{2}/g)?.length ?? 0) > 1 ||
         matches.length > 0;
-      
+
       if (hasTransactionList && matches.length > 0) {
         const transactionIds: number[] = [];
         for (const match of matches) {
@@ -866,7 +864,7 @@ const invokeQueryAgentStep = createStep({
             transactionIds.push(id);
           }
         }
-        
+
         if (transactionIds.length > 0) {
           telegramMarkup = {
             inline_keyboard: transactionIds.map((id) => [
@@ -881,7 +879,7 @@ const invokeQueryAgentStep = createStep({
           });
         }
       }
-      
+
       agentResponse = rawResponse;
     }
 
@@ -959,7 +957,7 @@ const invokeChatAgentStep = createStep({
         resource: inputData.userId.toString(),
       },
     });
-    
+
     const duration = Date.now() - stepStartTime;
     logger.info('[workflow:performance]', {
       operation: 'chat_agent_complete',
@@ -1010,7 +1008,9 @@ const unwrapAgentResponseStep = createStep({
 
     const match = candidates.find((entry): entry is AgentInvocationOutput => !!entry);
     if (!match) {
-      throw new Error('No agent invocation output detected. Ensure the branch step returned a value.');
+      throw new Error(
+        'No agent invocation output detected. Ensure the branch step returned a value.'
+      );
     }
 
     return match;
@@ -1051,10 +1051,10 @@ const cacheResponseStep = createStep({
   outputSchema: cacheResponseOutputSchema,
   execute: async ({ inputData, mastra }) => {
     const logger = mastra.getLogger();
-    
+
     if (!inputData.isCached && shouldCacheResponse(inputData.text)) {
       const cacheSetStart = Date.now();
-      
+
       await AgentResponseCache.set(inputData.userId, inputData.text, {
         response: inputData.agentResponse,
         metadata: {
@@ -1202,14 +1202,15 @@ export const messageProcessingWorkflow = createWorkflow<
   ])
   .then(unwrapProcessedInputStep)
   .then(buildContextPromptStep)
-  .then(fetchUserModeStep)              // NEW: Fetch user's current mode
+  .then(fetchUserModeStep) // NEW: Fetch user's current mode
   .then(checkCacheStep)
-  .branch([                              // NEW: Branch on mode instead of supervisor
+  .branch([
+    // NEW: Branch on mode instead of supervisor
     [isLoggerMode, invokeLoggerAgentStep],
     [isQueryMode, invokeQueryAgentStep],
     [isChatMode, invokeChatAgentStep],
   ])
-  .then(unwrapAgentResponseStep)        // NEW: Normalize branch output
+  .then(unwrapAgentResponseStep) // NEW: Normalize branch output
   .then(cacheResponseStep)
   .then(
     createStep({
