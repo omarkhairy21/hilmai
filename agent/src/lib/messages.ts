@@ -21,7 +21,8 @@ I'm your personal financial assistant with 3 specialized modes:
 • Try /mode_logger for fast logging
 • Use /help for detailed instructions`,
 
-    fallback: () => `Welcome to HilmAI! 🤖\n\n` +
+    fallback: () =>
+      `Welcome to HilmAI! 🤖\n\n` +
       `I'm your personal financial assistant.\n\n` +
       `Use /mode to select your mode and get started!`,
   },
@@ -108,7 +109,8 @@ ${instructions}`,
   },
 
   currency: {
-    current: (currency: string) => `💱 *Your Default Currency*\n\n` +
+    current: (currency: string) =>
+      `💱 *Your Default Currency*\n\n` +
       `Current: *${currency}*\n\n` +
       `To change your default currency, use:\n` +
       `/currency <code>\n\n` +
@@ -122,12 +124,14 @@ ${instructions}`,
       `We support 50+ major currencies worldwide.\n` +
       `All your transactions will be reported in ${currency}.`,
 
-    updateSuccess: (currency: string) => `✅ *Default Currency Updated*\n\n` +
+    updateSuccess: (currency: string) =>
+      `✅ *Default Currency Updated*\n\n` +
       `Your default currency is now: *${currency}*\n\n` +
       `All your transactions will be reported in ${currency}. ` +
       `Transactions in other currencies will be automatically converted.`,
 
-    invalidCode: (code: string) => `❌ Invalid currency code: *${code}*\n\n` +
+    invalidCode: (code: string) =>
+      `❌ Invalid currency code: *${code}*\n\n` +
       `Please use a valid ISO currency code like:\n` +
       `• AED (UAE Dirham)\n` +
       `• USD (US Dollar)\n` +
@@ -144,7 +148,8 @@ ${instructions}`,
   },
 
   recent: {
-    empty: () => '📋 *Recent Transactions*\n\n' +
+    empty: () =>
+      '📋 *Recent Transactions*\n\n' +
       'No transactions found. Start tracking your expenses!\n\n' +
       'Try saying: "I spent 50 AED at Carrefour"',
 
@@ -158,21 +163,24 @@ ${instructions}`,
 
 Select an option from the menu below:`,
 
-    addTransaction: () => '💰 *Add Transaction*\n\n' +
+    addTransaction: () =>
+      '💰 *Add Transaction*\n\n' +
       'You can add a transaction by:\n' +
       '• Typing: "I spent 50 AED at Carrefour"\n' +
       '• Sending a voice message\n' +
       '• Sending a receipt photo\n\n' +
       'Just send your transaction details!',
 
-    reports: () => '📊 *View Reports*\n\n' +
+    reports: () =>
+      '📊 *View Reports*\n\n' +
       'Ask me questions like:\n' +
       '• "How much did I spend this month?"\n' +
       '• "Show my spending by category"\n' +
       '• "Total expenses this week"\n\n' +
       'What would you like to know?',
 
-    help: () => '*HilmAI Help*\n\n' +
+    help: () =>
+      '*HilmAI Help*\n\n' +
       '*Track Expenses:*\n' +
       '• Type: "I spent 50 AED at Starbucks"\n' +
       '• Voice: Send a voice message\n' +
@@ -191,9 +199,12 @@ Select an option from the menu below:`,
   errors: {
     noUser: () => '❌ Unable to identify user.',
     generic: () => '❌ Sorry, something went wrong. Please try again in a moment.',
-    unsupportedType: () => '❌ Sorry, I can only process text messages, voice messages, and photos.',
-    transcribeFailed: () => '❌ Sorry, I had trouble transcribing your voice message. Please try again.',
-    extractFailed: () => "❌ Sorry, I couldn't read that image clearly. Please try a clearer photo.",
+    unsupportedType: () =>
+      '❌ Sorry, I can only process text messages, voice messages, and photos.',
+    transcribeFailed: () =>
+      '❌ Sorry, I had trouble transcribing your voice message. Please try again.',
+    extractFailed: () =>
+      "❌ Sorry, I couldn't read that image clearly. Please try a clearer photo.",
     modeSwitchFailed: () => '❌ Failed to switch mode. Please try again.',
     fetchModeFailed: () => '❌ Failed to fetch your current mode. Please try again.',
     invalidMode: () => '❌ Invalid mode.',
@@ -204,7 +215,8 @@ Select an option from the menu below:`,
     error: () => '❌ An error occurred. Please try again.',
     genericError: () => '❌ Sorry, something went wrong processing your request. Please try again.',
 
-    editPrompt: (transactionId: number) => `Editing transaction **${transactionId}**.\n\n` +
+    editPrompt: (transactionId: number) =>
+      `Editing transaction **${transactionId}**.\n\n` +
       `What would you like to change?\n\n` +
       `You can update:\n` +
       `• Amount (e.g., "Change amount to 45 AED")\n` +
@@ -219,8 +231,8 @@ Select an option from the menu below:`,
     start: () => '⏳ Start processing…',
     categorized: () => '🧾 Categorized transaction…',
     currencyConversion: () => '💱 Currency conversion…',
-    saving: () => '💾 Saving transaction…',
-    finalizing: () => '✅ Finalizing the message…',
+    saving: () => '💾 Ai thinking…',
+    finalizing: () => '✅ Saving transaction…',
     loading: () => '⏳ Processing...',
   },
 
@@ -231,4 +243,3 @@ Select an option from the menu below:`,
 
 // Type for message return values
 export type MessageResult = ReturnType<typeof fmt> | string;
-

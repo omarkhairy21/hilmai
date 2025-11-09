@@ -42,8 +42,9 @@ export const saveTransactionTool = createTool({
     const toolStartTime = Date.now();
 
     // Get progress emitter from runtime context if available
-    const progressEmitter = runtimeContext?.get('progressEmitter') as 
-      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
+    const progressEmitter = runtimeContext?.get('progressEmitter') as
+      | ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void)
+      | undefined;
 
     const {
       userId,

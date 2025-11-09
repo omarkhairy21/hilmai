@@ -703,8 +703,9 @@ const invokeLoggerAgentStep = createStep({
     const stepStartTime = Date.now();
 
     // Get progress emitter from runtime context if available
-    const progressEmitter = runtimeContext?.get('progressEmitter') as 
-      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
+    const progressEmitter = runtimeContext?.get('progressEmitter') as
+      | ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void)
+      | undefined;
 
     // Return cached response if available
     if (inputData.isCached && inputData.cachedResponse) {
@@ -784,8 +785,9 @@ const invokeQueryAgentStep = createStep({
     const stepStartTime = Date.now();
 
     // Get progress emitter from runtime context if available
-    const progressEmitter = runtimeContext?.get('progressEmitter') as 
-      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
+    const progressEmitter = runtimeContext?.get('progressEmitter') as
+      | ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void)
+      | undefined;
 
     // Return cached response if available
     if (inputData.isCached && inputData.cachedResponse) {
@@ -924,8 +926,9 @@ const invokeChatAgentStep = createStep({
     const stepStartTime = Date.now();
 
     // Get progress emitter from runtime context if available
-    const progressEmitter = runtimeContext?.get('progressEmitter') as 
-      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
+    const progressEmitter = runtimeContext?.get('progressEmitter') as
+      | ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void)
+      | undefined;
 
     // Return cached response if available
     if (inputData.isCached && inputData.cachedResponse) {
