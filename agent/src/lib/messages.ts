@@ -216,6 +216,11 @@ Select an option from the menu below:`,
   },
 
   processing: {
+    start: () => '⏳ Start processing…',
+    categorized: () => '🧾 Categorized transaction…',
+    currencyConversion: () => '💱 Currency conversion…',
+    saving: () => '💾 Saving transaction…',
+    finalizing: () => '✅ Finalizing the message…',
     loading: () => '⏳ Processing...',
   },
 

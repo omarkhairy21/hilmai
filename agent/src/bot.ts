@@ -1,5 +1,6 @@
-import { Bot } from 'grammy';
+import { Bot, type Api } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
+import { RuntimeContext } from '@mastra/core/runtime-context';
 import { downloadFile, getTempFilePath } from './lib/file-utils';
 import { AgentResponseCache } from './lib/prompt-cache';
 import { searchTransactionsSQL } from './lib/embeddings';
@@ -27,6 +28,104 @@ const token = process.env.TELEGRAM_BOT_TOKEN;
 
 if (!token) {
   throw new Error('TELEGRAM_BOT_TOKEN is required in .env');
+}
+
+/**
+ * Progress stages for workflow execution feedback
+ */
+type ProgressStage = 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing';
+
+/**
+ * Runtime context type for progress emitter
+ */
+type ProgressContext = {
+  progressEmitter: (stage: ProgressStage) => void;
+};
+
+/**
+ * Progress controller interface
+ */
+interface ProgressController {
+  update: (stage: ProgressStage) => Promise<void>;
+  complete: () => void;
+  fail: () => Promise<void>;
+  emit: (stage: ProgressStage) => void;
+}
+
+/**
+ * Creates a progress controller for managing Telegram message updates during workflow execution
+ */
+function createProgressController(
+  api: Api,
+  chatId: number,
+  messageId: number,
+  logger: ReturnType<Mastra['getLogger']>,
+  userId: number
+): ProgressController {
+  let currentStage: ProgressStage | null = null;
+  let isCompleted = false;
+
+  const stageMessages: Record<ProgressStage, string> = {
+    start: messages.processing.start(),
+    categorized: messages.processing.categorized(),
+    currencyConversion: messages.processing.currencyConversion(),
+    saving: messages.processing.saving(),
+    finalizing: messages.processing.finalizing(),
+  };
+
+  const update = async (stage: ProgressStage) => {
+    // Skip if already completed or same stage
+    if (isCompleted || currentStage === stage) {
+      return;
+    }
+
+    currentStage = stage;
+    const messageText = stageMessages[stage];
+
+    try {
+      await api.editMessageText(chatId, messageId, messageText, {
+        parse_mode: 'Markdown',
+      });
+
+      logger.info('progress:update', {
+        userId,
+        stage,
+        messageId,
+      });
+    } catch (error) {
+      // Ignore edit errors (e.g., message unchanged, rate limits)
+      logger.debug('progress:update_failed', {
+        userId,
+        stage,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
+  const complete = () => {
+    isCompleted = true;
+  };
+
+  const fail = async () => {
+    isCompleted = true;
+    try {
+      await api.deleteMessage(chatId, messageId);
+    } catch (error) {
+      // Ignore delete errors
+    }
+  };
+
+  return {
+    update,
+    complete,
+    fail,
+    emit: (stage: ProgressStage) => {
+      // Non-blocking emit for tools/steps
+      update(stage).catch(() => {
+        // Ignore errors in emit
+      });
+    },
+  };
 }
 
 export function createBot(mastra: Mastra): Bot {
@@ -464,71 +563,134 @@ export function createBot(mastra: Mastra): Bot {
 
       logger.debug('message:workflow_input_prepared', { userId });
 
-      // Step 2: Send "Processing..." message for better perceived latency
-      const processingMessage = await ctx.reply(messages.processing.loading(), {
+      // Step 2: Send initial "Processing..." message
+      const processingMessage = await ctx.reply(messages.processing.start(), {
         parse_mode: 'Markdown',
       });
       processingMessageId = processingMessage.message_id;
 
-      // Step 3: Run message-processing workflow (handles ALL processing)
+      // Step 3: Create progress controller for stage-by-stage updates
+      const progress = createProgressController(
+        ctx.api,
+        ctx.chat.id,
+        processingMessageId,
+        logger,
+        userId
+      );
+
+      // Step 4: Set up runtime context with progress emitter
+      const runtimeContext = new RuntimeContext<ProgressContext>();
+      runtimeContext.set('progressEmitter', progress.emit);
+
+      // Step 5: Run message-processing workflow with progress tracking
       logger.info('message:running_workflow', { userId });
 
       const workflow = mastra.getWorkflow('message-processing');
       const run = await workflow.createRunAsync();
-      const workflowResult = await run.start({ inputData: workflowInput });
 
-      if (workflowResult.status === 'failed') {
-        // Delete processing message and send error
-        await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
-          // Ignore errors if message already deleted or not found
+      run.watch(
+        (event: any) => {
+          const stepId = event?.payload?.currentStep?.id;
+
+          if (!stepId) return;
+
+          // Map workflow step IDs to progress stages
+          switch (stepId) {
+            case 'determine-input-type':
+            case 'transcribe-voice':
+            case 'extract-from-photo':
+            case 'pass-text':
+              progress.update('start').catch(() => {});
+              break;
+
+            case 'unwrap-processed-input':
+            case 'build-context-prompt':
+              progress.update('categorized').catch(() => {});
+              break;
+
+            case 'fetch-user-mode':
+            case 'check-cache':
+              // Keep categorized stage
+              break;
+
+            case 'invoke-logger-agent':
+            case 'invoke-query-agent':
+            case 'invoke-chat-agent':
+              progress.update('saving').catch(() => {});
+              break;
+
+            case 'unwrap-agent-response':
+            case 'cache-response':
+            case 'cleanup-router':
+              progress.update('finalizing').catch(() => {});
+              break;
+
+            case 'cleanup-files':
+              progress.update('finalizing').catch(() => {});
+              break;
+          }
+        },
+        'watch'
+      );
+
+        // Start workflow with runtime context
+        const workflowResult = await run.start({ 
+          inputData: workflowInput,
+          runtimeContext 
         });
-        throw workflowResult.error;
-      }
 
-      if (workflowResult.status !== 'success') {
-        // Delete processing message and send error
-        await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
-          // Ignore errors if message already deleted or not found
-        });
-        throw new Error(`Workflow did not complete successfully: ${workflowResult.status}`);
-      }
+        if (workflowResult.status === 'failed') {
+          // Delete processing message and send error
+          await progress.fail();
+          throw workflowResult.error;
+        }
 
-      const { response, metadata, telegramMarkup } = workflowResult.result;
+        if (workflowResult.status !== 'success') {
+          // Delete processing message and send error
+          await progress.fail();
+          throw new Error(`Workflow did not complete successfully: ${workflowResult.status}`);
+        }
 
-      logger.info('message:workflow_completed', {
-        userId,
-        inputType: metadata.inputType,
-        cached: metadata.cached,
-        hasMarkup: Boolean(telegramMarkup),
-      });
+        // Mark progress as complete immediately to prevent watcher from sending updates
+        progress.complete();
 
-      // Step 4: Update processing message with final response
-      const replyOptions: any = { parse_mode: 'Markdown' };
-      if (telegramMarkup) {
-        replyOptions.reply_markup = telegramMarkup;
-      }
+        const { response, metadata, telegramMarkup } = workflowResult.result;
 
-      try {
-        // Try to edit the processing message with the final response
-        await ctx.api.editMessageText(ctx.chat.id, processingMessageId, response, replyOptions);
-
-        logger.info('message:updated', { userId, messageId: processingMessageId });
-      } catch (editError) {
-        // If editing fails (e.g., message too long or format issue), send new message
-        logger.warn('message:edit_failed', {
+        logger.info('message:workflow_completed', {
           userId,
-          error: editError instanceof Error ? editError.message : String(editError),
+          inputType: metadata.inputType,
+          cached: metadata.cached,
+          hasMarkup: Boolean(telegramMarkup),
         });
 
-        // Delete processing message
-        await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
-          // Ignore errors
-        });
+        // Step 6: Update processing message with final response
+        const replyOptions: any = { parse_mode: 'Markdown' };
+        if (telegramMarkup) {
+          replyOptions.reply_markup = telegramMarkup;
+        }
 
-        // Send final response as new message
-        await ctx.reply(response, replyOptions);
-        logger.info('message:sent_new', { userId });
-      }
+        try {
+          // Try to edit the processing message with the final response
+          await ctx.api.editMessageText(ctx.chat.id, processingMessageId, response, replyOptions);
+
+          logger.info('message:updated', { userId, messageId: processingMessageId });
+        } catch (editError) {
+          // If editing fails (e.g., message too long or format issue), send new message
+          logger.warn('message:edit_failed', {
+            userId,
+            error: editError instanceof Error ? editError.message : String(editError),
+          });
+
+          // Delete processing message
+          await ctx.api.deleteMessage(ctx.chat.id, processingMessageId).catch(() => {
+            // Ignore errors
+          });
+
+          // Send final response as new message
+          await ctx.reply(response, replyOptions);
+          logger.info('message:sent_new', { userId });
+        }
+      
     } catch (error) {
       logger.error('message:error', {
         userId,

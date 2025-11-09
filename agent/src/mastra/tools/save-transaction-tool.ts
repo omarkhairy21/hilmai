@@ -37,9 +37,13 @@ export const saveTransactionTool = createTool({
     transactionId: z.number().optional(),
     message: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
+  execute: async ({ context, mastra, runtimeContext }) => {
     const logger = mastra?.getLogger();
     const toolStartTime = Date.now();
+
+    // Get progress emitter from runtime context if available
+    const progressEmitter = runtimeContext?.get('progressEmitter') as 
+      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
 
     const {
       userId,
@@ -148,6 +152,9 @@ export const saveTransactionTool = createTool({
 
       // Perform currency conversion if transaction currency differs from user's default
       if (normalizedCurrency !== userDefaultCurrency) {
+        // Emit currency conversion progress
+        progressEmitter?.('currencyConversion');
+
         logger?.info('[tool:save-transaction]', {
           event: 'currency_conversion_needed',
           from: normalizedCurrency,
@@ -205,6 +212,9 @@ export const saveTransactionTool = createTool({
       }
 
       // Step 3: Insert transaction into Supabase using service role
+      // Emit saving progress
+      progressEmitter?.('saving');
+
       const dbInsertStart = Date.now();
       const { data, error } = await supabaseService
         .from('transactions')

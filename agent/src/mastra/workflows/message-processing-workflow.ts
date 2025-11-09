@@ -698,9 +698,13 @@ const invokeLoggerAgentStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: checkCacheOutputSchema,
   outputSchema: agentInvocationOutputSchema,
-  execute: async ({ inputData, mastra }) => {
+  execute: async ({ inputData, mastra, runtimeContext }) => {
     const logger = mastra.getLogger();
     const stepStartTime = Date.now();
+
+    // Get progress emitter from runtime context if available
+    const progressEmitter = runtimeContext?.get('progressEmitter') as 
+      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
 
     // Return cached response if available
     if (inputData.isCached && inputData.cachedResponse) {
@@ -775,9 +779,13 @@ const invokeQueryAgentStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: checkCacheOutputSchema,
   outputSchema: agentInvocationOutputSchema,
-  execute: async ({ inputData, mastra }) => {
+  execute: async ({ inputData, mastra, runtimeContext }) => {
     const logger = mastra.getLogger();
     const stepStartTime = Date.now();
+
+    // Get progress emitter from runtime context if available
+    const progressEmitter = runtimeContext?.get('progressEmitter') as 
+      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
 
     // Return cached response if available
     if (inputData.isCached && inputData.cachedResponse) {
@@ -911,9 +919,13 @@ const invokeChatAgentStep = createStep({
   stateSchema: workflowStateSchema,
   inputSchema: checkCacheOutputSchema,
   outputSchema: agentInvocationOutputSchema,
-  execute: async ({ inputData, mastra }) => {
+  execute: async ({ inputData, mastra, runtimeContext }) => {
     const logger = mastra.getLogger();
     const stepStartTime = Date.now();
+
+    // Get progress emitter from runtime context if available
+    const progressEmitter = runtimeContext?.get('progressEmitter') as 
+      ((stage: 'start' | 'categorized' | 'currencyConversion' | 'saving' | 'finalizing') => void) | undefined;
 
     // Return cached response if available
     if (inputData.isCached && inputData.cachedResponse) {
