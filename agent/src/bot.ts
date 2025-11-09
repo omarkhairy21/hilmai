@@ -21,6 +21,7 @@ import {
   isValidMode,
   type UserMode,
 } from './lib/user-mode';
+import { messages } from './lib/messages';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -74,7 +75,7 @@ export function createBot(mastra: Mastra): Bot {
   bot.command('start', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -109,24 +110,7 @@ export function createBot(mastra: Mastra): Bot {
         ],
       };
 
-      const welcomeMessage = fmt`Welcome to HilmAI! 🤖
-
-I'm your personal financial assistant with 3 specialized modes:
-
-💰 ${b()}Logger Mode - Fast transaction logging
-   Best for: "I spent 50 AED at Carrefour"
-
-💬 ${b()}Chat Mode - General help (default)
-   Best for: Questions, onboarding, help
-
-📊 ${b()}Query Mode - Ask about spending
-   Best for: "How much on groceries?"
-
-💡 Getting started:
-• You're in Chat Mode right now
-• Use /mode to switch anytime
-• Try /mode_logger for fast logging
-• Use /help for detailed instructions`;
+      const welcomeMessage = messages.start.welcome();
 
       await ctx.reply(welcomeMessage.text, {
         entities: welcomeMessage.entities,
@@ -138,12 +122,7 @@ I'm your personal financial assistant with 3 specialized modes:
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
-      await ctx.reply(
-        `Welcome to HilmAI! 🤖\n\n` +
-          `I'm your personal financial assistant.\n\n` +
-          `Use /mode to select your mode and get started!`,
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.reply(messages.start.fallback(), { parse_mode: 'Markdown' });
     }
   });
 
@@ -151,24 +130,7 @@ I'm your personal financial assistant with 3 specialized modes:
   bot.command('help', async (ctx) => {
     logger.info('command:help', { userId: ctx.from?.id });
 
-    const helpMsg = fmt`${b()}HilmAI Commands & Features
-
-${b()}Track Expenses:
-• Type: "I spent 50 AED at Starbucks"
-• Voice: Send a voice message
-• Photo: Send a receipt photo
-
-${b()}Ask Questions:
-• "How much did I spend on groceries?"
-• "Show my Starbucks spending"
-• "Total expenses this month"
-
-${b()}Features:
-✅ Fuzzy search (handles typos)
-✅ Conversation memory
-✅ Multiple languages (English & Arabic)
-
-Just start chatting naturally!`;
+    const helpMsg = messages.help.main();
 
     await ctx.reply(helpMsg.text, {
       entities: helpMsg.entities,
@@ -179,7 +141,7 @@ Just start chatting naturally!`;
   bot.command('recent', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -195,12 +157,7 @@ Just start chatting naturally!`;
       });
 
       if (transactions.length === 0) {
-        await ctx.reply(
-          '📋 *Recent Transactions*\n\n' +
-            'No transactions found. Start tracking your expenses!\n\n' +
-            'Try saying: "I spent 50 AED at Carrefour"',
-          { parse_mode: 'Markdown' }
-        );
+        await ctx.reply(messages.recent.empty(), { parse_mode: 'Markdown' });
         return;
       }
 
@@ -210,7 +167,7 @@ Just start chatting naturally!`;
         return `${index + 1}. ${emoji} ${tx.merchant} - ${tx.amount} ${tx.currency} (${tx.transaction_date}) [ID: ${tx.id}]`;
       });
 
-      const messageText = '📋 *Recent Transactions*\n\n' + transactionLines.join('\n');
+      const messageText = messages.recent.header() + '\n\n' + transactionLines.join('\n');
 
       // Generate inline keyboards for each transaction
       const keyboard = {
@@ -229,9 +186,7 @@ Just start chatting naturally!`;
         userId,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply("❌ Sorry, I couldn't fetch your recent transactions. Please try again.", {
-        parse_mode: 'Markdown',
-      });
+      await ctx.reply(messages.recent.fetchFailed(), { parse_mode: 'Markdown' });
     }
   });
 
@@ -239,7 +194,7 @@ Just start chatting naturally!`;
   bot.command('menu', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -254,9 +209,7 @@ Just start chatting naturally!`;
       ],
     };
 
-    const menuMsg = fmt`📱 ${b()}HilmAI Menu
-
-Select an option from the menu below:`;
+    const menuMsg = messages.menu.header();
 
     await ctx.reply(menuMsg.text, {
       entities: menuMsg.entities,
@@ -270,7 +223,7 @@ Select an option from the menu below:`;
     if (userId) {
       const deleted = await AgentResponseCache.clearUser(userId);
       logger.info('command:clear', { userId, deleted });
-      await ctx.reply(`✅ Cleared ${deleted} cached responses.`);
+      await ctx.reply(messages.success.cacheCleared(deleted));
     }
   });
 
@@ -278,7 +231,7 @@ Select an option from the menu below:`;
   bot.command('mode', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -295,26 +248,7 @@ Select an option from the menu below:`;
         ],
       };
 
-      const modeMessage = fmt`🎯 ${b()}Current Mode: ${getModeDescription(currentMode)}
-
-Select a mode:
-
-💰 ${b()}Logger Mode
-Fast transaction logging (no conversation memory)
-Best for: I spent 50 AED at Carrefour
-
-💬 ${b()}Chat Mode
-General conversation and help (default)
-Best for: Questions, help, onboarding
-
-📊 ${b()}Query Mode
-Ask about your spending (minimal memory)
-Best for: How much on groceries?
-
-💡 ${b()}Quick switch commands:
-/mode_logger - Switch to Logger Mode
-/mode_chat - Switch to Chat Mode
-/mode_query - Switch to Query Mode`;
+      const modeMessage = messages.mode.current(getModeDescription(currentMode));
 
       await ctx.reply(modeMessage.text, {
         entities: modeMessage.entities,
@@ -325,7 +259,7 @@ Best for: How much on groceries?
         userId,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply('❌ Failed to fetch your current mode. Please try again.');
+      await ctx.reply(messages.errors.fetchModeFailed());
     }
   });
 
@@ -333,7 +267,7 @@ Best for: How much on groceries?
   bot.command('mode_logger', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -341,16 +275,7 @@ Best for: How much on groceries?
 
     try {
       await setUserMode(userId, 'logger');
-      const loggerMsg = fmt`✅ ${b()}Switched to Logger Mode
-
-💰 Fast transaction logging is now active.
-
-${b()}How to use:
-• Type: "I spent 50 AED at Carrefour"
-• Send a voice message
-• Send a receipt photo
-
-Use /mode to switch modes.`;
+      const loggerMsg = messages.mode.switchedToLogger();
       await ctx.reply(loggerMsg.text, {
         entities: loggerMsg.entities,
       });
@@ -359,7 +284,7 @@ Use /mode to switch modes.`;
         userId,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply('❌ Failed to switch mode. Please try again.');
+      await ctx.reply(messages.errors.modeSwitchFailed());
     }
   });
 
@@ -367,7 +292,7 @@ Use /mode to switch modes.`;
   bot.command('mode_chat', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -375,16 +300,7 @@ Use /mode to switch modes.`;
 
     try {
       await setUserMode(userId, 'chat');
-      const chatMsg = fmt`✅ ${b()}Switched to Chat Mode
-
-💬 General conversation and help is now active.
-
-${b()}I can help you:
-• Learn how to use HilmAI
-• Answer questions
-• Guide you to the right mode
-
-Use /mode to switch modes.`;
+      const chatMsg = messages.mode.switchedToChat();
       await ctx.reply(chatMsg.text, {
         entities: chatMsg.entities,
       });
@@ -393,7 +309,7 @@ Use /mode to switch modes.`;
         userId,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply('❌ Failed to switch mode. Please try again.');
+      await ctx.reply(messages.errors.modeSwitchFailed());
     }
   });
 
@@ -401,7 +317,7 @@ Use /mode to switch modes.`;
   bot.command('mode_query', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -409,16 +325,7 @@ Use /mode to switch modes.`;
 
     try {
       await setUserMode(userId, 'query');
-      const queryMsg = fmt`✅ ${b()}Switched to Query Mode
-
-📊 Ask questions about your spending.
-
-${b()}Examples:
-• "How much on groceries?"
-• "Show my spending this week"
-• "Top 5 expenses this month"
-
-Use /mode to switch modes.`;
+      const queryMsg = messages.mode.switchedToQuery();
       await ctx.reply(queryMsg.text, {
         entities: queryMsg.entities,
       });
@@ -427,7 +334,7 @@ Use /mode to switch modes.`;
         userId,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply('❌ Failed to switch mode. Please try again.');
+      await ctx.reply(messages.errors.modeSwitchFailed());
     }
   });
 
@@ -435,7 +342,7 @@ Use /mode to switch modes.`;
   bot.command('currency', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -449,28 +356,13 @@ Use /mode to switch modes.`;
     if (!currencyArg) {
       try {
         const currentCurrency = await getUserDefaultCurrency(userId);
-        await ctx.reply(
-          `💱 *Your Default Currency*\n\n` +
-            `Current: *${currentCurrency}*\n\n` +
-            `To change your default currency, use:\n` +
-            `/currency <code>\n\n` +
-            `Examples:\n` +
-            `• /currency AED (UAE Dirham)\n` +
-            `• /currency USD (US Dollar)\n` +
-            `• /currency EUR (Euro)\n` +
-            `• /currency EGP (Egyptian Pound)\n` +
-            `• /currency SAR (Saudi Riyal)\n` +
-            `• /currency VND (Vietnamese Dong)\n\n` +
-            `We support 50+ major currencies worldwide.\n` +
-            `All your transactions will be reported in ${currentCurrency}.`,
-          { parse_mode: 'Markdown' }
-        );
+        await ctx.reply(messages.currency.current(currentCurrency), { parse_mode: 'Markdown' });
       } catch (error) {
         logger.error('command:currency:fetch_error', {
           userId,
           error: error instanceof Error ? error.message : String(error),
         });
-        await ctx.reply('❌ Failed to fetch your current currency. Please try again.');
+        await ctx.reply(messages.currency.fetchFailed());
       }
       return;
     }
@@ -478,20 +370,7 @@ Use /mode to switch modes.`;
     // Validate and normalize currency code
     const normalized = normalizeCurrency(currencyArg);
     if (!normalized || !isValidCurrency(currencyArg)) {
-      await ctx.reply(
-        `❌ Invalid currency code: *${currencyArg}*\n\n` +
-          `Please use a valid ISO currency code like:\n` +
-          `• AED (UAE Dirham)\n` +
-          `• USD (US Dollar)\n` +
-          `• EUR (Euro)\n` +
-          `• GBP (British Pound)\n` +
-          `• SAR (Saudi Riyal)\n` +
-          `• EGP (Egyptian Pound)\n` +
-          `• VND (Vietnamese Dong)\n` +
-          `• INR (Indian Rupee)\n\n` +
-          `We support 50+ currencies. Use /currency to see your current default.`,
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.reply(messages.currency.invalidCode(currencyArg), { parse_mode: 'Markdown' });
       return;
     }
 
@@ -501,13 +380,7 @@ Use /mode to switch modes.`;
 
       if (success) {
         logger.info('command:currency:updated', { userId, currency: normalized });
-        await ctx.reply(
-          `✅ *Default Currency Updated*\n\n` +
-            `Your default currency is now: *${normalized}*\n\n` +
-            `All your transactions will be reported in ${normalized}. ` +
-            `Transactions in other currencies will be automatically converted.`,
-          { parse_mode: 'Markdown' }
-        );
+        await ctx.reply(messages.currency.updateSuccess(normalized), { parse_mode: 'Markdown' });
       } else {
         throw new Error('Update failed');
       }
@@ -517,9 +390,7 @@ Use /mode to switch modes.`;
         currency: normalized,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.reply('❌ Failed to update your default currency. Please try again.', {
-        parse_mode: 'Markdown',
-      });
+      await ctx.reply(messages.currency.updateFailed(), { parse_mode: 'Markdown' });
     }
   });
 
@@ -530,7 +401,7 @@ Use /mode to switch modes.`;
     ctx.message.chat.id;
     if (!userId) {
       logger.warn('message:no_user_id');
-      await ctx.reply('❌ Unable to identify user.');
+      await ctx.reply(messages.errors.noUser());
       return;
     }
 
@@ -594,7 +465,7 @@ Use /mode to switch modes.`;
       logger.debug('message:workflow_input_prepared', { userId });
 
       // Step 2: Send "Processing..." message for better perceived latency
-      const processingMessage = await ctx.reply('⏳ Processing...', {
+      const processingMessage = await ctx.reply(messages.processing.loading(), {
         parse_mode: 'Markdown',
       });
       processingMessageId = processingMessage.message_id;
@@ -676,17 +547,13 @@ Use /mode to switch modes.`;
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
       if (errorMessage.includes('Unsupported message type')) {
-        await ctx.reply('❌ Sorry, I can only process text messages, voice messages, and photos.');
+        await ctx.reply(messages.errors.unsupportedType());
       } else if (errorMessage.includes('transcribe')) {
-        await ctx.reply(
-          '❌ Sorry, I had trouble transcribing your voice message. Please try again.'
-        );
+        await ctx.reply(messages.errors.transcribeFailed());
       } else if (errorMessage.includes('extract')) {
-        await ctx.reply(
-          "❌ Sorry, I couldn't read that image clearly. Please try a clearer photo."
-        );
+        await ctx.reply(messages.errors.extractFailed());
       } else {
-        await ctx.reply('❌ Sorry, something went wrong. Please try again in a moment.');
+        await ctx.reply(messages.errors.generic());
       }
     }
   });
@@ -697,7 +564,7 @@ Use /mode to switch modes.`;
     const callbackData = ctx.callbackQuery.data;
 
     if (!userId) {
-      await ctx.answerCallbackQuery('❌ Unable to identify user.');
+      await ctx.answerCallbackQuery(messages.callbacks.noUser());
       return;
     }
 
@@ -706,7 +573,7 @@ Use /mode to switch modes.`;
     const modeStr = callbackData.replace('set_mode_', '');
 
     if (!isValidMode(modeStr)) {
-      await ctx.answerCallbackQuery('❌ Invalid mode.');
+      await ctx.answerCallbackQuery(messages.errors.invalidMode());
       return;
     }
 
@@ -717,8 +584,10 @@ Use /mode to switch modes.`;
 
       await ctx.answerCallbackQuery(`✅ Switched to ${getModeDescription(mode)}`);
 
-      await ctx.editMessageText(`✅ *Mode Changed*\n\n${getModeInstructions(mode)}`, {
+      const changeMsg = messages.mode.changed(getModeInstructions(mode));
+      await ctx.editMessageText(changeMsg.text, {
         parse_mode: 'Markdown',
+        entities: changeMsg.entities,
       });
 
       logger.info('callback:set_mode:success', { userId, mode });
@@ -728,7 +597,7 @@ Use /mode to switch modes.`;
         mode,
         error: error instanceof Error ? error.message : String(error),
       });
-      await ctx.answerCallbackQuery('❌ Failed to switch mode.');
+      await ctx.answerCallbackQuery(messages.errors.modeSwitchFailed());
     }
   });
 
@@ -738,7 +607,7 @@ Use /mode to switch modes.`;
     const callbackData = ctx.callbackQuery.data;
 
     if (!userId) {
-      await ctx.answerCallbackQuery('❌ Unable to identify user.');
+      await ctx.answerCallbackQuery(messages.callbacks.noUser());
       return;
     }
 
@@ -755,10 +624,7 @@ Use /mode to switch modes.`;
         });
 
         if (transactions.length === 0) {
-          await ctx.editMessageText(
-            '📋 *Recent Transactions*\n\n' + 'No transactions found. Start tracking your expenses!',
-            { parse_mode: 'Markdown' }
-          );
+          await ctx.editMessageText(messages.recent.empty(), { parse_mode: 'Markdown' });
           return;
         }
 
@@ -768,7 +634,7 @@ Use /mode to switch modes.`;
           return `${index + 1}. ${emoji} ${tx.merchant} - ${tx.amount} ${tx.currency} (${tx.transaction_date}) [ID: ${tx.id}]`;
         });
 
-        const messageText = '📋 *Recent Transactions*\n\n' + transactionLines.join('\n');
+        const messageText = messages.recent.header() + '\n\n' + transactionLines.join('\n');
 
         // Generate inline keyboards for each transaction
         const keyboard = {
@@ -787,49 +653,14 @@ Use /mode to switch modes.`;
           userId,
           error: error instanceof Error ? error.message : String(error),
         });
-        await ctx.editMessageText(
-          "❌ Sorry, I couldn't fetch your recent transactions. Please try again.",
-          { parse_mode: 'Markdown' }
-        );
+        await ctx.editMessageText(messages.recent.fetchFailed(), { parse_mode: 'Markdown' });
       }
     } else if (callbackData === 'menu_add_transaction') {
-      await ctx.editMessageText(
-        '💰 *Add Transaction*\n\n' +
-          'You can add a transaction by:\n' +
-          '• Typing: "I spent 50 AED at Carrefour"\n' +
-          '• Sending a voice message\n' +
-          '• Sending a receipt photo\n\n' +
-          'Just send your transaction details!',
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.editMessageText(messages.menu.addTransaction(), { parse_mode: 'Markdown' });
     } else if (callbackData === 'menu_reports') {
-      await ctx.editMessageText(
-        '📊 *View Reports*\n\n' +
-          'Ask me questions like:\n' +
-          '• "How much did I spend this month?"\n' +
-          '• "Show my spending by category"\n' +
-          '• "Total expenses this week"\n\n' +
-          'What would you like to know?',
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.editMessageText(messages.menu.reports(), { parse_mode: 'Markdown' });
     } else if (callbackData === 'menu_help') {
-      await ctx.editMessageText(
-        '*HilmAI Help*\n\n' +
-          '*Track Expenses:*\n' +
-          '• Type: "I spent 50 AED at Starbucks"\n' +
-          '• Voice: Send a voice message\n' +
-          '• Photo: Send a receipt photo\n\n' +
-          '*Ask Questions:*\n' +
-          '• "How much did I spend on groceries?"\n' +
-          '• "Show my Starbucks spending"\n' +
-          '• "Total expenses this month"\n\n' +
-          '*Commands:*\n' +
-          '• /menu - Show this menu\n' +
-          '• /help - Detailed help\n' +
-          '• /start - Welcome message\n\n' +
-          'Just start chatting naturally!',
-        { parse_mode: 'Markdown' }
-      );
+      await ctx.editMessageText(messages.menu.help(), { parse_mode: 'Markdown' });
     }
   });
 
@@ -854,7 +685,7 @@ Use /mode to switch modes.`;
 
     if (!userId) {
       logger.warn('callback:no_user_id');
-      await ctx.answerCallbackQuery('❌ Unable to identify user.');
+      await ctx.answerCallbackQuery(messages.callbacks.noUser());
       return;
     }
 
@@ -932,18 +763,7 @@ Use /mode to switch modes.`;
         logger.info('callback:delete_completed', { userId, transactionId });
       } else {
         // For edit, prompt user for changes
-        const promptMessage =
-          `Editing transaction **${transactionId}**.\n\n` +
-          `What would you like to change?\n\n` +
-          `You can update:\n` +
-          `• Amount (e.g., "Change amount to 45 AED")\n` +
-          `• Merchant (e.g., "Update merchant to Carrefour")\n` +
-          `• Category (e.g., "Set category to Groceries")\n` +
-          `• Description (e.g., "Add description: Weekly groceries")\n` +
-          `• Date (e.g., "Change date to yesterday")\n\n` +
-          `Or say "cancel" to cancel.`;
-
-        await ctx.reply(promptMessage, { parse_mode: 'Markdown' });
+        await ctx.reply(messages.callbacks.editPrompt(transactionId), { parse_mode: 'Markdown' });
 
         // The transaction manager agent will handle the edit when user responds
         // Transaction ID is included in the prompt message for context
@@ -957,10 +777,8 @@ Use /mode to switch modes.`;
         stack: error instanceof Error ? error.stack : undefined,
       });
 
-      await ctx.answerCallbackQuery('❌ An error occurred. Please try again.');
-      await ctx.reply('❌ Sorry, something went wrong processing your request. Please try again.', {
-        parse_mode: 'Markdown',
-      });
+      await ctx.answerCallbackQuery(messages.callbacks.error());
+      await ctx.reply(messages.callbacks.genericError(), { parse_mode: 'Markdown' });
     }
   });
 
