@@ -90,6 +90,43 @@ export type Database = {
         };
         Relationships: [];
       };
+      subscription_usage: {
+        Row: {
+          id: number;
+          user_id: number;
+          billing_period_start: string;
+          billing_period_end: string;
+          total_tokens: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id: number;
+          billing_period_start: string;
+          billing_period_end: string;
+          total_tokens?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: number;
+          billing_period_start?: string;
+          billing_period_end?: string;
+          total_tokens?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'subscription_usage_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       users: {
         Row: {
           id: number;
@@ -97,10 +134,26 @@ export type Database = {
           telegram_username: string | null;
           first_name: string | null;
           last_name: string | null;
+          email: string | null;
           default_currency: string;
           current_mode: 'logger' | 'chat' | 'query';
           timezone: string | null;
           metadata: Json | null;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          plan_tier: 'monthly' | 'annual' | null;
+          subscription_status:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'incomplete'
+            | 'incomplete_expired'
+            | 'unpaid'
+            | null;
+          trial_started_at: string | null;
+          trial_ends_at: string | null;
+          current_period_end: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -110,10 +163,26 @@ export type Database = {
           telegram_username?: string | null;
           first_name?: string | null;
           last_name?: string | null;
+          email?: string | null;
           default_currency?: string;
           current_mode?: 'logger' | 'chat' | 'query';
           timezone?: string | null;
           metadata?: Json | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          plan_tier?: 'monthly' | 'annual' | null;
+          subscription_status?:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'incomplete'
+            | 'incomplete_expired'
+            | 'unpaid'
+            | null;
+          trial_started_at?: string | null;
+          trial_ends_at?: string | null;
+          current_period_end?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -123,10 +192,26 @@ export type Database = {
           telegram_username?: string | null;
           first_name?: string | null;
           last_name?: string | null;
+          email?: string | null;
           default_currency?: string;
           current_mode?: 'logger' | 'chat' | 'query';
           timezone?: string | null;
           metadata?: Json | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          plan_tier?: 'monthly' | 'annual' | null;
+          subscription_status?:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'incomplete'
+            | 'incomplete_expired'
+            | 'unpaid'
+            | null;
+          trial_started_at?: string | null;
+          trial_ends_at?: string | null;
+          current_period_end?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -140,6 +225,14 @@ export type Database = {
       increment_merchant_cache_usage: {
         Args: {
           p_merchant_name: string;
+        };
+        Returns: undefined;
+      };
+      increment_usage_tokens: {
+        Args: {
+          p_user_id: number;
+          p_period_start: string;
+          p_tokens: number;
         };
         Returns: undefined;
       };

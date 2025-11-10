@@ -33,6 +33,16 @@ import { messageProcessingWorkflow } from './workflows/message-processing-workfl
 import { saveTransactionTool } from './tools/save-transaction-tool';
 import { hybridQueryTool } from './tools/hybrid-query-tool';
 
+// Import subscription service
+import {
+  createCheckoutSession,
+  createBillingPortalSession,
+  handleStripeWebhook,
+} from '../services/subscription.service';
+
+// Import usage tracker
+import { UsageTrackingProcessor } from '../lib/usage-tracker';
+
 const isDevelopment = config.app.nodeEnv === 'development';
 
 /**
@@ -79,11 +89,14 @@ export const mastra = new Mastra({
 
   // Observability
   observability: {
-    default: { enabled: !isDevelopment },
+    default: {
+      enabled: !isDevelopment,
+    },
     configs: {
       hilmAgentV2: {
         serviceName: config.telemetry.serviceName,
         exporters: [],
+        processors: [new UsageTrackingProcessor()],
       },
     },
   },
@@ -115,6 +128,84 @@ export const mastra = new Mastra({
             timestamp: new Date().toISOString(),
             uptime: process.uptime(),
           });
+        },
+      }),
+
+      // Stripe checkout session endpoint
+      registerApiRoute('/billing/checkout', {
+        method: 'POST',
+        handler: async (c: any) => {
+          try {
+            const body = await c.req.json();
+            const { userId, planTier, successUrl, cancelUrl } = body;
+
+            if (!userId || !planTier || !successUrl || !cancelUrl) {
+              return c.json({ error: 'Missing required fields' }, 400);
+            }
+
+            const result = await createCheckoutSession(userId, planTier, successUrl, cancelUrl);
+
+            if (result.error) {
+              return c.json({ error: result.error }, 400);
+            }
+
+            return c.json({ url: result.url });
+          } catch (error) {
+            console.error('[api] Checkout error:', error);
+            return c.json({ error: 'Internal server error' }, 500);
+          }
+        },
+      }),
+
+      // Stripe billing portal endpoint
+      registerApiRoute('/billing/portal', {
+        method: 'POST',
+        handler: async (c: any) => {
+          try {
+            const body = await c.req.json();
+            const { userId, returnUrl } = body;
+
+            if (!userId || !returnUrl) {
+              return c.json({ error: 'Missing required fields' }, 400);
+            }
+
+            const result = await createBillingPortalSession(userId, returnUrl);
+
+            if (result.error) {
+              return c.json({ error: result.error }, 400);
+            }
+
+            return c.json({ url: result.url });
+          } catch (error) {
+            console.error('[api] Billing portal error:', error);
+            return c.json({ error: 'Internal server error' }, 500);
+          }
+        },
+      }),
+
+      // Stripe webhook endpoint
+      registerApiRoute('/stripe/webhook', {
+        method: 'POST',
+        handler: async (c: any) => {
+          try {
+            const body = await c.req.text();
+            const signature = c.req.header('stripe-signature');
+
+            if (!signature) {
+              return c.json({ error: 'Missing stripe-signature header' }, 400);
+            }
+
+            const result = await handleStripeWebhook(body, signature);
+
+            if (!result.success) {
+              return c.json({ error: result.error }, 400);
+            }
+
+            return c.json({ received: true });
+          } catch (error) {
+            console.error('[api] Webhook error:', error);
+            return c.json({ error: 'Internal server error' }, 500);
+          }
         },
       }),
     ],

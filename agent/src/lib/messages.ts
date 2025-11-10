@@ -261,6 +261,73 @@ Select an option from the menu below:`,
   success: {
     cacheCleared: (count: number) => `✅ Cleared ${count} cached responses.`,
   },
+
+  subscription: {
+    trialWelcome: (daysLeft: number) =>
+      `🎉 *Welcome to HilmAI!*\n\n` +
+      `You're on a *7-day free trial* with ${daysLeft} days remaining.\n\n` +
+      `After your trial ends, you'll need to subscribe to continue using HilmAI.\n\n` +
+      `Use /subscribe to view our plans.`,
+
+    trialExpired: () =>
+      `⏰ *Your trial has expired*\n\n` +
+      `To continue using HilmAI, please subscribe to one of our plans.\n\n` +
+      `Use /subscribe to get started.`,
+
+    accessDenied: () =>
+      `🔒 *Subscription Required*\n\n` +
+      `You need an active subscription to use HilmAI.\n\n` +
+      `Use /subscribe to view our plans and get started.`,
+
+    plans: () =>
+      `💳 *HilmAI Subscription Plans*\n\n` +
+      `Choose a plan that works for you:\n\n` +
+      `📅 *Monthly Plan* - $20/month\n` +
+      `• Billed monthly\n` +
+      `• Cancel anytime\n` +
+      `• Full access to all features\n\n` +
+      `📆 *Annual Plan* - $200/year\n` +
+      `• Save $40 per year\n` +
+      `• Billed annually\n` +
+      `• Full access to all features\n\n` +
+      `All plans include a *7-day free trial*!\n\n` +
+      `Click a button below to subscribe:`,
+
+    billingInfo: (status: string, planTier: string | null, periodEnd: string | null) => {
+      let statusEmoji = '✅';
+      let statusText = 'Active';
+
+      if (status === 'trialing') {
+        statusEmoji = '🎉';
+        statusText = 'Trial';
+      } else if (status === 'past_due') {
+        statusEmoji = '⚠️';
+        statusText = 'Payment Due';
+      } else if (status === 'canceled') {
+        statusEmoji = '❌';
+        statusText = 'Canceled';
+      }
+
+      const planText =
+        planTier === 'monthly'
+          ? 'Monthly ($20/mo)'
+          : planTier === 'annual'
+            ? 'Annual ($200/yr)'
+            : 'No plan';
+      const renewsText = periodEnd ? `Renews: ${new Date(periodEnd).toLocaleDateString()}` : '';
+
+      return (
+        `💳 *Your Subscription*\n\n` +
+        `${statusEmoji} Status: *${statusText}*\n` +
+        `📋 Plan: *${planText}*\n` +
+        (renewsText ? `📅 ${renewsText}\n\n` : '\n') +
+        `Use the button below to manage your subscription:`
+      );
+    },
+
+    checkoutError: () => `❌ Failed to create checkout session. Please try again.`,
+    portalError: () => `❌ Failed to open billing portal. Please try again.`,
+  },
 };
 
 // Type for message return values

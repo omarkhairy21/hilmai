@@ -51,6 +51,14 @@ export const config = {
     serviceName: process.env.OTEL_SERVICE_NAME || 'hilm-agent-v2',
     endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
   },
+
+  // Stripe (for subscriptions)
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    monthlyPriceId: process.env.STRIPE_MONTHLY_PRICE_ID,
+    annualPriceId: process.env.STRIPE_ANNUAL_PRICE_ID,
+  },
 } as const;
 
 /**

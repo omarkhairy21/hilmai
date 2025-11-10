@@ -38,6 +38,7 @@
     "chrono-node": "^2.9.0",
     "grammy": "^1.38.3",
     "openai": "^6.5.0",
+    "stripe": "^17.5.0",
     "supports-color": "^10.2.2",
     "zod": "^4.1.12"
   },

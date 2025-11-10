@@ -4,7 +4,7 @@ import { RuntimeContext } from '@mastra/core/runtime-context';
 import { downloadFile, getTempFilePath } from './lib/file-utils';
 import { AgentResponseCache } from './lib/prompt-cache';
 import { searchTransactionsSQL } from './lib/embeddings';
-import { createOrGetUser } from './services/user.service';
+import { createOrGetUser, hasActiveAccess, getUserSubscription } from './services/user.service';
 import { createProgressController, type ProgressStage } from './services/progress.service';
 import {
   getUserDefaultCurrency,
@@ -21,6 +21,7 @@ import {
   type UserMode,
 } from './lib/user-mode';
 import { messages } from './lib/messages';
+import { createCheckoutSession, createBillingPortalSession } from './services/subscription.service';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -49,6 +50,18 @@ export function createBot(mastra: Mastra): Bot {
       {
         command: 'start',
         description: '🚀 Start the bot',
+      },
+      {
+        command: 'subscribe',
+        description: '💳 View subscription plans',
+      },
+      {
+        command: 'billing',
+        description: '💰 Manage your subscription',
+      },
+      {
+        command: 'setemail',
+        description: '📧 Set your email for subscription',
       },
       {
         command: 'mode',
@@ -400,6 +413,156 @@ export function createBot(mastra: Mastra): Bot {
     }
   });
 
+  // Handle /subscribe command (show subscription plans)
+  bot.command('subscribe', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply(messages.errors.noUser());
+      return;
+    }
+
+    logger.info('command:subscribe', { userId });
+
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '📅 Monthly - $20/mo', callback_data: 'subscribe_monthly' }],
+        [{ text: '📆 Annual - $200/yr', callback_data: 'subscribe_annual' }],
+      ],
+    };
+
+    await ctx.reply(messages.subscription.plans(), {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard,
+    });
+  });
+
+  // Handle /billing command (manage subscription)
+  bot.command('billing', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply(messages.errors.noUser());
+      return;
+    }
+
+    logger.info('command:billing', { userId });
+
+    try {
+      const subscription = await getUserSubscription(userId);
+
+      if (!subscription || !subscription.stripe_customer_id) {
+        await ctx.reply("You don't have a subscription yet. Use /subscribe to get started.", {
+          parse_mode: 'Markdown',
+        });
+        return;
+      }
+
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '💳 Manage Subscription', callback_data: 'open_billing_portal' }],
+        ],
+      };
+
+      await ctx.reply(
+        messages.subscription.billingInfo(
+          subscription.subscription_status || 'unknown',
+          subscription.plan_tier,
+          subscription.current_period_end
+        ),
+        {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard,
+        }
+      );
+    } catch (error) {
+      logger.error('command:billing:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply(messages.errors.generic());
+    }
+  });
+
+  // Handle /setemail command (set user email for subscription)
+  bot.command('setemail', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply(messages.errors.noUser());
+      return;
+    }
+
+    logger.info('command:setemail', { userId });
+
+    // Extract email from command text
+    const commandText = ctx.message?.text || '';
+    const emailMatch = commandText.match(/\/setemail\s+(.+)/);
+
+    if (!emailMatch || !emailMatch[1]) {
+      await ctx.reply(
+        '📧 *Set Your Email*\n\n' +
+          'Please provide your email address:\n' +
+          '`/setemail your@email.com`\n\n' +
+          'This email will be used for subscription management and billing.',
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    const email = emailMatch[1].trim();
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      await ctx.reply('❌ Invalid email format. Please try again with a valid email address.', {
+        parse_mode: 'Markdown',
+      });
+      return;
+    }
+
+    try {
+      // Import supabase service
+      const { supabaseService } = await import('./lib/supabase');
+
+      // Update user email
+      const { error } = await supabaseService
+        .from('users')
+        .update({ email, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+
+      if (error) {
+        logger.error('command:setemail:error', {
+          userId,
+          error: error.message,
+        });
+
+        if (error.code === '23505') {
+          // Unique constraint violation
+          await ctx.reply(
+            '❌ This email is already associated with another account. Please use a different email.',
+            { parse_mode: 'Markdown' }
+          );
+        } else {
+          await ctx.reply(messages.errors.generic());
+        }
+        return;
+      }
+
+      logger.info('command:setemail:success', { userId, email });
+
+      await ctx.reply(
+        '✅ *Email Set Successfully!*\n\n' +
+          `Your email has been set to: ${email}\n\n` +
+          'You can now subscribe to our plans using this email.',
+        { parse_mode: 'Markdown' }
+      );
+    } catch (error) {
+      logger.error('command:setemail:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply(messages.errors.generic());
+    }
+  });
+
   // Main message handler - ultra-simple using message-processing workflow
   bot.on('message', async (ctx) => {
     await ctx.replyWithChatAction('typing');
@@ -408,6 +571,22 @@ export function createBot(mastra: Mastra): Bot {
     if (!userId) {
       logger.warn('message:no_user_id');
       await ctx.reply(messages.errors.noUser());
+      return;
+    }
+
+    // Check subscription access
+    const hasAccess = await hasActiveAccess(userId);
+    if (!hasAccess) {
+      logger.info('message:access_denied', { userId });
+
+      const keyboard = {
+        inline_keyboard: [[{ text: '💳 Subscribe Now', callback_data: 'subscribe_monthly' }]],
+      };
+
+      await ctx.reply(messages.subscription.accessDenied(), {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
       return;
     }
 
@@ -883,6 +1062,113 @@ export function createBot(mastra: Mastra): Bot {
 
       await ctx.answerCallbackQuery(messages.callbacks.error());
       await ctx.reply(messages.callbacks.genericError(), { parse_mode: 'Markdown' });
+    }
+  });
+
+  // Handle subscription callback queries
+  bot.callbackQuery(/^subscribe_(monthly|annual)$/, async (ctx) => {
+    const userId = ctx.from?.id;
+    const callbackData = ctx.callbackQuery.data;
+
+    if (!userId) {
+      await ctx.answerCallbackQuery(messages.callbacks.noUser());
+      return;
+    }
+
+    logger.info('callback:subscribe', { userId, callbackData });
+
+    const planTier = callbackData.replace('subscribe_', '') as 'monthly' | 'annual';
+
+    try {
+      // Create checkout session
+      const result = await createCheckoutSession(
+        userId,
+        planTier,
+        `https://t.me/${ctx.me.username}`, // Success URL (back to bot)
+        `https://t.me/${ctx.me.username}` // Cancel URL (back to bot)
+      );
+
+      if (result.error || !result.url) {
+        await ctx.answerCallbackQuery(messages.subscription.checkoutError());
+        return;
+      }
+
+      await ctx.answerCallbackQuery();
+
+      // Send checkout link
+      const keyboard = {
+        inline_keyboard: [[{ text: '💳 Complete Subscription', url: result.url }]],
+      };
+
+      await ctx.editMessageText(
+        `🎉 *Great choice!*\n\n` +
+          `Click the button below to complete your subscription.\n\n` +
+          `You'll get a *7-day free trial* to start!`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard,
+        }
+      );
+
+      logger.info('callback:subscribe:checkout_created', { userId, planTier });
+    } catch (error) {
+      logger.error('callback:subscribe:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.answerCallbackQuery(messages.subscription.checkoutError());
+    }
+  });
+
+  // Handle billing portal callback
+  bot.callbackQuery('open_billing_portal', async (ctx) => {
+    const userId = ctx.from?.id;
+
+    if (!userId) {
+      await ctx.answerCallbackQuery(messages.callbacks.noUser());
+      return;
+    }
+
+    logger.info('callback:billing_portal', { userId });
+
+    try {
+      const result = await createBillingPortalSession(
+        userId,
+        `https://t.me/${ctx.me.username}` // Return URL (back to bot)
+      );
+
+      if (result.error || !result.url) {
+        await ctx.answerCallbackQuery(messages.subscription.portalError());
+        return;
+      }
+
+      await ctx.answerCallbackQuery();
+
+      // Send portal link
+      const keyboard = {
+        inline_keyboard: [[{ text: '💳 Manage Subscription', url: result.url }]],
+      };
+
+      await ctx.editMessageText(
+        `💳 *Manage Your Subscription*\n\n` +
+          `Click the button below to:\n` +
+          `• Update payment method\n` +
+          `• Change plan\n` +
+          `• Cancel subscription\n` +
+          `• View invoices`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard,
+        }
+      );
+
+      logger.info('callback:billing_portal:opened', { userId });
+    } catch (error) {
+      logger.error('callback:billing_portal:error', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.answerCallbackQuery(messages.subscription.portalError());
     }
   });
 

@@ -128,6 +128,13 @@ OPENAI_API_KEY=your_openai_api_key_here
 # Supabase Configuration
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# Stripe Configuration (for subscriptions)
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret_here
+STRIPE_MONTHLY_PRICE_ID=price_your_monthly_price_id_here
+STRIPE_ANNUAL_PRICE_ID=price_your_annual_price_id_here
 
 # ============================================
 # OPTIONAL ENVIRONMENT VARIABLES
@@ -180,16 +187,65 @@ This will:
 - Enable pgvector extension
 - Create transactions table with vector columns
 - Create merchant_embeddings_cache table
+- Create subscription_usage table
 - Create indexes for performance
 - Create search_transactions_hybrid() RPC function
+- Set up RLS policies
 
-### 5. Build
+### 5. Setup Stripe (for subscriptions)
+
+1. **Create a Stripe account** at https://stripe.com
+2. **Create products and prices:**
+   - Go to Stripe Dashboard → Products
+   - Create a "Monthly Plan" product with a price of $20/month (recurring)
+   - Create an "Annual Plan" product with a price of $200/year (recurring)
+   - Copy the price IDs (starts with `price_`) and add them to your `.env` file
+3. **Set up webhook endpoint:**
+   - Go to Stripe Dashboard → Developers → Webhooks
+   - Add endpoint: `https://your-domain.com/stripe/webhook` (or your Mastra server URL + `/stripe/webhook`)
+   - Select events to listen to:
+     - `customer.subscription.created`
+     - `customer.subscription.updated`
+     - `customer.subscription.deleted`
+     - `invoice.payment_succeeded`
+     - `invoice.payment_failed`
+   - Copy the webhook signing secret (starts with `whsec_`) and add it to your `.env` file
+4. **Configure trial period:**
+   - The bot automatically provides a 7-day free trial for all new subscriptions
+   - This is configured in the checkout session creation (see `subscription.service.ts`)
+
+**Note:** For development, use Stripe test mode keys (starts with `sk_test_`). For production, use live mode keys.
+
+#### Subscription Flow Options
+
+**Option 1: Subscribe via Telegram Bot**
+1. User starts the bot with `/start`
+2. User optionally sets their email with `/setemail your@email.com`
+3. User views plans with `/subscribe`
+4. User clicks a plan button to create a Stripe checkout session
+5. User completes payment on Stripe
+6. Webhook updates user subscription status in Supabase
+
+**Option 2: Subscribe via Marketing Website**
+1. User subscribes on the marketing website (hilm.ai)
+2. Stripe creates a customer with the user's email
+3. User later starts the Telegram bot
+4. User sets their email with `/setemail` (same email used on website)
+5. Webhook automatically links the Stripe subscription to the Telegram user
+6. User gains access to the bot
+
+**Email Management:**
+- Users can set/update their email anytime with `/setemail your@email.com`
+- Email is used to link website subscriptions to Telegram accounts
+- Email is included in Stripe customer records for billing communications
+
+### 6. Build
 
 ```bash
 yarn build
 ```
 
-### 6. Test (Coming in Phase 4)
+### 7. Test (Coming in Phase 5)
 
 ```bash
 # Unit tests
@@ -293,7 +349,16 @@ const result = await supervisor.generate(prompt, {
 });
 ```
 
-### 5. Cost Optimization
+### 5. Subscription Management
+
+Stripe-powered subscription system with:
+- **7-day free trial** for all new users
+- **Two paid plans:** Monthly ($20/mo) and Annual ($200/yr)
+- Automatic access control and trial expiration
+- Usage tracking (token consumption per billing period)
+- Billing portal for subscription management
+
+### 6. Cost Optimization
 
 | Service | V1 | V2 | Savings |
 |---------|----|----|---------|

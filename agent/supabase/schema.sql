@@ -18,10 +18,21 @@ CREATE TABLE IF NOT EXISTS users (
   telegram_username TEXT,
   first_name TEXT,
   last_name TEXT,
+  email TEXT UNIQUE, -- User email for subscription management
   default_currency TEXT NOT NULL DEFAULT 'AED',
   current_mode TEXT NOT NULL DEFAULT 'chat' CHECK (current_mode IN ('logger', 'chat', 'query')),
   timezone TEXT,
   metadata JSONB,
+  
+  -- Subscription fields
+  stripe_customer_id TEXT UNIQUE,
+  stripe_subscription_id TEXT,
+  plan_tier TEXT CHECK (plan_tier IN ('monthly', 'annual')),
+  subscription_status TEXT CHECK (subscription_status IN ('trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid')),
+  trial_started_at TIMESTAMPTZ,
+  trial_ends_at TIMESTAMPTZ,
+  current_period_end TIMESTAMPTZ,
+  
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -106,7 +117,28 @@ USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 50);
 
 -- ============================================================================
--- 6. Hybrid search RPC function
+-- 6. Subscription usage tracking table
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS subscription_usage (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  billing_period_start TIMESTAMPTZ NOT NULL,
+  billing_period_end TIMESTAMPTZ NOT NULL,
+  total_tokens BIGINT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  -- Ensure one row per user per billing period
+  UNIQUE(user_id, billing_period_start)
+);
+
+-- Index for fast lookups
+CREATE INDEX IF NOT EXISTS idx_subscription_usage_user_period 
+ON subscription_usage(user_id, billing_period_start);
+
+-- ============================================================================
+-- 7. Hybrid search RPC function
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION search_transactions_hybrid(
@@ -156,9 +188,10 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- ============================================================================
--- 6. Helper function: Update merchant cache usage count
+-- 8. Helper functions
 -- ============================================================================
 
+-- Update merchant cache usage count
 CREATE OR REPLACE FUNCTION increment_merchant_cache_usage(p_merchant_name TEXT)
 RETURNS void AS $$
 BEGIN
@@ -169,8 +202,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Increment usage tokens for a billing period
+CREATE OR REPLACE FUNCTION increment_usage_tokens(
+  p_user_id BIGINT,
+  p_period_start TIMESTAMPTZ,
+  p_tokens BIGINT
+)
+RETURNS void AS $$
+BEGIN
+  UPDATE subscription_usage
+  SET total_tokens = total_tokens + p_tokens,
+      updated_at = NOW()
+  WHERE user_id = p_user_id
+    AND billing_period_start = p_period_start;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ============================================================================
--- 7. Trigger to update updated_at timestamp
+-- 9. Trigger to update updated_at timestamp
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -196,14 +245,20 @@ CREATE TRIGGER update_users_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_subscription_usage_updated_at
+    BEFORE UPDATE ON subscription_usage
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================================================
--- 8. Row Level Security (RLS) Setup for Telegram Bot
+-- 10. Row Level Security (RLS) Setup for Telegram Bot
 -- ============================================================================
 
 -- Enable RLS on application tables only (user data isolation)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE merchant_embeddings_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscription_usage ENABLE ROW LEVEL SECURITY;
 
 -- NOTE: Mastra system tables (mastra_*, etc.) intentionally have NO RLS
 -- They are framework system tables, not user data
@@ -297,5 +352,18 @@ ON merchant_embeddings_cache FOR DELETE
 USING (auth.role() = 'service_role');
 
 -- ============================================================================
--- Done! Schema is ready for agent-v2 with RLS security
+-- Subscription Usage Table - RLS Policies
+-- ============================================================================
+
+CREATE POLICY "Users can view own usage"
+ON subscription_usage FOR SELECT
+USING (user_id = get_current_user_id());
+
+CREATE POLICY "Backend service can manage all usage"
+ON subscription_usage FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- ============================================================================
+-- Done! Schema is ready for agent-v2 with RLS security and subscriptions
 -- ============================================================================
