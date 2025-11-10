@@ -327,6 +327,29 @@ Select an option from the menu below:`,
 
     checkoutError: () => `❌ Failed to create checkout session. Please try again.`,
     portalError: () => `❌ Failed to open billing portal. Please try again.`,
+
+    subscriptionConfirmed: (planTier: string | null) => {
+      const planName = planTier === 'monthly' ? 'Monthly Plan ($20/month)' : planTier === 'annual' ? 'Annual Plan ($200/year)' : 'Premium Plan';
+      return fmt`✅ ${b()}Subscription Confirmed!
+
+🎉 Thank you for subscribing to HilmAI!
+
+Your ${planName} is now active.
+
+You now have full access to all HilmAI features:
+• 💰 Fast expense logging in Logger Mode
+• 💬 Smart conversations in Chat Mode
+• 📊 Spending insights in Query Mode
+• 🎤 Voice message transcription
+• 📸 Receipt photo scanning
+• 💱 Multi-currency support
+• 📈 Detailed spending analytics
+
+📧 Need to manage your subscription?
+Use /billing to access your subscription dashboard.
+
+Enjoy HilmAI! 🚀`;
+    },
   },
 };
 

@@ -21,7 +21,7 @@ import {
   type UserMode,
 } from './lib/user-mode';
 import { messages } from './lib/messages';
-import { createCheckoutSession, createBillingPortalSession } from './services/subscription.service';
+import { createCheckoutSession, createBillingPortalSession, initializeTelegramApi } from './services/subscription.service';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -39,6 +39,9 @@ type ProgressContext = {
 export function createBot(mastra: Mastra): Bot {
   const bot = new Bot(token!);
   const logger = mastra.getLogger();
+
+  // Initialize Telegram API for subscription messages
+  initializeTelegramApi(bot.api);
 
   // Set up bot commands menu (appears in toolbar)
   bot.api

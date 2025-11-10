@@ -5,9 +5,21 @@
  */
 
 import Stripe from 'stripe';
+import type { Api } from 'grammy';
 import { stripe, STRIPE_PRICES, STRIPE_WEBHOOK_SECRET } from '../lib/stripe';
 import { supabaseService } from '../lib/supabase';
 import { updateUserSubscription, getUserSubscription } from './user.service';
+import { messages } from '../lib/messages';
+
+// Global reference to Telegram API for sending messages
+let telegramApi: Api | null = null;
+
+/**
+ * Initialize Telegram API for sending subscription messages
+ */
+export function initializeTelegramApi(api: Api): void {
+  telegramApi = api;
+}
 
 /**
  * Create a Stripe checkout session for a user
@@ -225,7 +237,13 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription): Prom
     updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString();
   }
 
-  await updateUserSubscription(parseInt(userId, 10), updateData);
+  const parsedUserId = parseInt(userId, 10);
+  await updateUserSubscription(parsedUserId, updateData);
+
+  // Send confirmation message if subscription is now active
+  if (subscription.status === 'active' || subscription.status === 'trialing') {
+    await sendSubscriptionConfirmationMessage(planTier, parsedUserId);
+  }
 
   console.log('[subscription.service] Updated subscription for user:', userId);
 }
@@ -467,6 +485,28 @@ async function findOrCreateUserFromStripeCustomer(
   } catch (error) {
     console.error('[subscription.service] Error finding/creating user:', error);
     return null;
+  }
+}
+
+/**
+ * Send subscription confirmation message to user via Telegram
+ */
+export async function sendSubscriptionConfirmationMessage(planTier: string | null, userId: number): Promise<void> {
+  if (!telegramApi) {
+    console.warn('[subscription.service] Telegram API not initialized, skipping confirmation message for user:', userId);
+    return;
+  }
+
+  try {
+    const message = messages.subscription.subscriptionConfirmed(planTier);
+    await telegramApi.sendMessage(userId, message.text, {
+      parse_mode: 'HTML',
+      entities: message.entities,
+    });
+    console.log('[subscription.service] Sent confirmation message to user:', userId);
+  } catch (error) {
+    console.error('[subscription.service] Failed to send confirmation message to user:', userId, error);
+    // Don't throw - message delivery shouldn't block subscription processing
   }
 }
 
