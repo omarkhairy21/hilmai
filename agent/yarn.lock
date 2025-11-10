@@ -2337,13 +2337,6 @@
   dependencies:
     undici-types "~7.16.0"
 
-"@types/node@>=8.1.0":
-  version "24.10.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.10.0.tgz#6b79086b0dfc54e775a34ba8114dcc4e0221f31f"
-  integrity sha512-qzQZRBqkFsYyaSWXuEHc2WR9c0a0CXwiE5FWUvn7ZM+vdy1uZLfCunD38UzhuB7YN/J11ndbDBcTmOdxJo9Q7A==
-  dependencies:
-    undici-types "~7.16.0"
-
 "@types/oracledb@6.5.2":
   version "6.5.2"
   resolved "https://registry.npmjs.org/@types/oracledb/-/oracledb-6.5.2.tgz"
@@ -4871,12 +4864,11 @@ strip-json-comments@^5.0.2, strip-json-comments@^5.0.3:
   resolved "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-5.0.3.tgz"
   integrity sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==
 
-stripe@^17.5.0:
-  version "17.7.0"
-  resolved "https://registry.yarnpkg.com/stripe/-/stripe-17.7.0.tgz#7816be2559e6f58bf4c005758fe20be78cdbf995"
-  integrity sha512-aT2BU9KkizY9SATf14WhhYVv2uOapBWX0OFWF4xvcj1mPaNotlSc2CsxpS4DS46ZueSppmCF5BX1sNYBtwBvfw==
+stripe@^18.5.0:
+  version "18.5.0"
+  resolved "https://registry.yarnpkg.com/stripe/-/stripe-18.5.0.tgz#4da5f51c45d5443f6cbf398392ffe12f94b809d6"
+  integrity sha512-Hp+wFiEQtCB0LlNgcFh5uVyKznpDjzyUZ+CNVEf+I3fhlYvh7rZruIg+jOwzJRCpy0ZTPMjlzm7J2/M2N6d+DA==
   dependencies:
-    "@types/node" ">=8.1.0"
     qs "^6.11.0"
 
 supports-color@^10.2.2:

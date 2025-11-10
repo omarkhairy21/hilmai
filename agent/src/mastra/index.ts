@@ -137,13 +137,19 @@ export const mastra = new Mastra({
         handler: async (c: any) => {
           try {
             const body = await c.req.json();
-            const { userId, planTier, successUrl, cancelUrl } = body;
+            const { userId, planTier, successUrl, cancelUrl, includeTrial } = body;
 
             if (!userId || !planTier || !successUrl || !cancelUrl) {
               return c.json({ error: 'Missing required fields' }, 400);
             }
 
-            const result = await createCheckoutSession(userId, planTier, successUrl, cancelUrl);
+            const result = await createCheckoutSession(
+              userId,
+              planTier,
+              successUrl,
+              cancelUrl,
+              includeTrial ?? false // Default to false (no trial) if not specified
+            );
 
             if (result.error) {
               return c.json({ error: result.error }, 400);

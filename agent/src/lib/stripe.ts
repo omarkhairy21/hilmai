@@ -17,7 +17,7 @@ if (!stripeSecretKey) {
  * Used for creating customers, subscriptions, checkout sessions, and handling webhooks
  */
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2025-02-24.acacia',
+  apiVersion: '2025-08-27.basil',
   typescript: true,
 });
 

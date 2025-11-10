@@ -428,7 +428,8 @@ export function createBot(mastra: Mastra): Bot {
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '📅 Monthly - $20/mo', callback_data: 'subscribe_monthly' }],
+        [{ text: '🎁 Free Trial', callback_data: 'subscribe_monthly_trial' }],
+        [{ text: '📅 Monthly - $20/mo', callback_data: 'subscribe_monthly_notrial' }],
         [{ text: '📆 Annual - $200/yr', callback_data: 'subscribe_annual' }],
       ],
     };
@@ -583,7 +584,7 @@ export function createBot(mastra: Mastra): Bot {
       logger.info('message:access_denied', { userId });
 
       const keyboard = {
-        inline_keyboard: [[{ text: '💳 Subscribe Now', callback_data: 'subscribe_monthly' }]],
+        inline_keyboard: [[{ text: '💳 Subscribe Now', callback_data: 'subscribe_monthly_notrial' }]],
       };
 
       await ctx.reply(messages.subscription.accessDenied(), {
@@ -1069,7 +1070,7 @@ export function createBot(mastra: Mastra): Bot {
   });
 
   // Handle subscription callback queries
-  bot.callbackQuery(/^subscribe_(monthly|annual)$/, async (ctx) => {
+  bot.callbackQuery(/^subscribe_(monthly_notrial|monthly_trial|annual)$/, async (ctx) => {
     const userId = ctx.from?.id;
     const callbackData = ctx.callbackQuery.data;
 
@@ -1080,15 +1081,29 @@ export function createBot(mastra: Mastra): Bot {
 
     logger.info('callback:subscribe', { userId, callbackData });
 
-    const planTier = callbackData.replace('subscribe_', '') as 'monthly' | 'annual';
+    // Parse plan tier and trial option
+    let planTier: 'monthly' | 'annual' = 'monthly';
+    let includeTrial = false;
+
+    if (callbackData === 'subscribe_monthly_trial') {
+      planTier = 'monthly';
+      includeTrial = true;
+    } else if (callbackData === 'subscribe_monthly_notrial') {
+      planTier = 'monthly';
+      includeTrial = false;
+    } else if (callbackData === 'subscribe_annual') {
+      planTier = 'annual';
+      includeTrial = false; // Annual never has trial
+    }
 
     try {
-      // Create checkout session
+      // Create checkout session with trial option
       const result = await createCheckoutSession(
         userId,
         planTier,
         `https://t.me/${ctx.me.username}`, // Success URL (back to bot)
-        `https://t.me/${ctx.me.username}` // Cancel URL (back to bot)
+        `https://t.me/${ctx.me.username}`, // Cancel URL (back to bot)
+        includeTrial
       );
 
       if (result.error || !result.url) {
@@ -1098,22 +1113,21 @@ export function createBot(mastra: Mastra): Bot {
 
       await ctx.answerCallbackQuery();
 
-      // Send checkout link
+      // Send checkout link with appropriate message
       const keyboard = {
         inline_keyboard: [[{ text: '💳 Complete Subscription', url: result.url }]],
       };
 
-      await ctx.editMessageText(
-        `🎉 *Great choice!*\n\n` +
-          `Click the button below to complete your subscription.\n\n` +
-          `You'll get a *7-day free trial* to start!`,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: keyboard,
-        }
-      );
+      const confirmationMessage = includeTrial
+        ? messages.subscription.trialCheckoutMessage()
+        : messages.subscription.noTrialCheckoutMessage();
 
-      logger.info('callback:subscribe:checkout_created', { userId, planTier });
+      await ctx.editMessageText(confirmationMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+
+      logger.info('callback:subscribe:checkout_created', { userId, planTier, includeTrial });
     } catch (error) {
       logger.error('callback:subscribe:error', {
         userId,

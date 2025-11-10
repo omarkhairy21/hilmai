@@ -23,12 +23,18 @@ export function initializeTelegramApi(api: Api): void {
 
 /**
  * Create a Stripe checkout session for a user
+ * @param userId - The user's ID
+ * @param planTier - The subscription plan tier ('monthly' or 'annual')
+ * @param successUrl - URL to redirect to on successful checkout
+ * @param cancelUrl - URL to redirect to on canceled checkout
+ * @param includeTrial - Whether to include a 7-day free trial (only for monthly plan, default: false)
  */
 export async function createCheckoutSession(
   userId: number,
   planTier: 'monthly' | 'annual',
   successUrl: string,
-  cancelUrl: string
+  cancelUrl: string,
+  includeTrial = false
 ): Promise<{ url: string | null; error: string | null }> {
   try {
     // Get or create Stripe customer
@@ -77,10 +83,21 @@ export async function createCheckoutSession(
     }
 
     // Create checkout session
+    const subscriptionData: Stripe.Checkout.SessionCreateParams.SubscriptionData = {
+      metadata: {
+        telegram_user_id: userId.toString(),
+        plan_tier: planTier,
+      },
+    };
+
+    // Only add trial for monthly plan if includeTrial is true
+    if (includeTrial && planTier === 'monthly') {
+      subscriptionData.trial_period_days = 7; // 7-day trial for monthly plan only
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
-      payment_method_types: ['card'],
       line_items: [
         {
           price: priceId,
@@ -89,13 +106,7 @@ export async function createCheckoutSession(
       ],
       success_url: successUrl,
       cancel_url: cancelUrl,
-      subscription_data: {
-        trial_period_days: 7, // 7-day trial
-        metadata: {
-          telegram_user_id: userId.toString(),
-          plan_tier: planTier,
-        },
-      },
+      subscription_data: subscriptionData,
       metadata: {
         telegram_user_id: userId.toString(),
         plan_tier: planTier,
@@ -232,9 +243,12 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription): Prom
     }
   }
 
-  // Add current period end if it's valid
-  if (subscription.current_period_end && subscription.current_period_end > 0) {
-    updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString();
+  // Add current period end from the first subscription item
+  if (subscription.items?.data && subscription.items.data.length > 0) {
+    const firstItem = subscription.items.data[0];
+    if (firstItem && 'current_period_end' in firstItem && firstItem.current_period_end) {
+      updateData.current_period_end = new Date(firstItem.current_period_end * 1000).toISOString();
+    }
   }
 
   const parsedUserId = parseInt(userId, 10);
@@ -282,11 +296,15 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
  * Handle successful payment events
  */
 async function handlePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
-  if (!invoice.subscription) {
+  if (!invoice.parent?.subscription_details?.subscription) {
     return;
   }
 
-  const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+  const subscriptionId = typeof invoice.parent.subscription_details.subscription === 'string'
+    ? invoice.parent.subscription_details.subscription
+    : invoice.parent.subscription_details.subscription.id;
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   await handleSubscriptionUpdate(subscription);
 }
 
@@ -294,11 +312,15 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
  * Handle failed payment events
  */
 async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-  if (!invoice.subscription) {
+  if (!invoice.parent?.subscription_details?.subscription) {
     return;
   }
 
-  const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+  const subscriptionId = typeof invoice.parent.subscription_details.subscription === 'string'
+    ? invoice.parent.subscription_details.subscription
+    : invoice.parent.subscription_details.subscription.id;
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const userId = subscription.metadata.telegram_user_id;
 
   if (!userId) {

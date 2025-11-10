@@ -282,15 +282,19 @@ Select an option from the menu below:`,
     plans: () =>
       `💳 *HilmAI Subscription Plans*\n\n` +
       `Choose a plan that works for you:\n\n` +
-      `📅 *Monthly Plan* - $20/month\n` +
+      `📅 *Monthly Plan - $20/month*\n` +
       `• Billed monthly\n` +
       `• Cancel anytime\n` +
       `• Full access to all features\n\n` +
-      `📆 *Annual Plan* - $200/year\n` +
+      `📆 *Annual Plan - $200/year*\n` +
       `• Save $40 per year\n` +
       `• Billed annually\n` +
       `• Full access to all features\n\n` +
-      `All plans include a *7-day free trial*!\n\n` +
+      `🎁 *Free Trial Option*\n` +
+      `• Available for monthly plans\n` +
+      `• 7 days completely free\n` +
+      `• No payment required during trial\n` +
+      `• Cancel anytime before trial ends\n\n` +
       `Click a button below to subscribe:`,
 
     billingInfo: (status: string, planTier: string | null, periodEnd: string | null) => {
@@ -324,6 +328,27 @@ Select an option from the menu below:`,
         `Use the button below to manage your subscription:`
       );
     },
+
+    trialCheckoutMessage: () =>
+      `🎉 *Monthly Plan with Free Trial*\n\n` +
+      `Start your 7-day free trial today!\n\n` +
+      `✨ What you get:\n` +
+      `• Full access to all HilmAI features\n` +
+      `• No payment required for 7 days\n` +
+      `• Cancel anytime before trial ends\n` +
+      `• After trial: $20/month\n\n` +
+      `💳 You'll need a payment method to activate the trial.\n` +
+      `No charges will be made during the 7-day trial period.`,
+
+    noTrialCheckoutMessage: () =>
+      `💳 *Monthly Plan - Instant Access*\n\n` +
+      `Get started with HilmAI right away!\n\n` +
+      `✅ What you get:\n` +
+      `• Full access to all features\n` +
+      `• Billing starts immediately\n` +
+      `• $20/month, cancel anytime\n` +
+      `• No surprises, transparent pricing\n\n` +
+      `🔒 Your payment is secure and processed by Stripe.`,
 
     checkoutError: () => `❌ Failed to create checkout session. Please try again.`,
     portalError: () => `❌ Failed to open billing portal. Please try again.`,
