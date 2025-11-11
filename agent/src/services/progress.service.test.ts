@@ -7,22 +7,16 @@ import {
 import { messages } from '../lib/messages';
 import type { Api } from 'grammy';
 
-/**
- * Mock objects for testing
- */
-interface MockApi {
+type MockApi = {
   editMessageText: ReturnType<typeof vi.fn>;
   deleteMessage: ReturnType<typeof vi.fn>;
-}
+};
 
-interface MockLogger {
+type MockLogger = {
   info: ReturnType<typeof vi.fn>;
   debug: ReturnType<typeof vi.fn>;
-}
+};
 
-/**
- * Test suite for ProgressController
- */
 describe('ProgressController', () => {
   let mockApi: MockApi;
   let mockLogger: MockLogger;
@@ -36,7 +30,6 @@ describe('ProgressController', () => {
   };
 
   beforeEach(() => {
-    // Reset all mocks before each test
     mockApi = {
       editMessageText: vi.fn().mockResolvedValue(undefined),
       deleteMessage: vi.fn().mockResolvedValue(undefined),
@@ -56,12 +49,11 @@ describe('ProgressController', () => {
       testData.userId
     );
 
-    // Use the logger mode messages for testing
     stageMessages = messages.processingByMode.logger;
   });
 
   describe('update()', () => {
-    it('should update message with stage text', async () => {
+    it('updates message with stage text', async () => {
       await progressController.update('start');
 
       expect(mockApi.editMessageText).toHaveBeenCalledWith(
@@ -72,7 +64,7 @@ describe('ProgressController', () => {
       );
     });
 
-    it('should log successful update', async () => {
+    it('logs successful updates', async () => {
       await progressController.update('categorized');
 
       expect(mockLogger.info).toHaveBeenCalledWith('progress:update', {
@@ -82,18 +74,8 @@ describe('ProgressController', () => {
       });
     });
 
-    it('should skip if already at same stage', async () => {
+    it('skips duplicate stages', async () => {
       await progressController.update('start');
-      mockApi.editMessageText.mockClear();
-
-      // Try to update to same stage again
-      await progressController.update('start');
-
-      expect(mockApi.editMessageText).not.toHaveBeenCalled();
-    });
-
-    it('should skip if workflow is completed', async () => {
-      progressController.complete();
       mockApi.editMessageText.mockClear();
 
       await progressController.update('start');
@@ -101,31 +83,33 @@ describe('ProgressController', () => {
       expect(mockApi.editMessageText).not.toHaveBeenCalled();
     });
 
-    it('should skip if another update is in progress', async () => {
-      // Simulate a slow API call
-      mockApi.editMessageText.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+    it('skips updates after completion', async () => {
+      await progressController.complete();
+      mockApi.editMessageText.mockClear();
 
-      // Start first update
-      const firstUpdate = progressController.update('start');
+      await progressController.update('start');
 
-      // Try to update immediately (while first is in progress)
-      await progressController.update('categorized');
-
-      // First update should have been called, but second should not
-      expect(mockApi.editMessageText).toHaveBeenCalledTimes(1);
-      expect(mockApi.editMessageText).toHaveBeenCalledWith(
-        testData.chatId,
-        testData.messageId,
-        stageMessages.start,
-        { parse_mode: 'Markdown' }
-      );
-
-      await firstUpdate;
+      expect(mockApi.editMessageText).not.toHaveBeenCalled();
     });
 
-    it('should log errors on API failure', async () => {
+    it('queues updates sequentially', async () => {
+      const callOrder: string[] = [];
+      mockApi.editMessageText.mockImplementation(async (_chatId, _messageId, text) => {
+        callOrder.push(text as string);
+        if (text === stageMessages.start) {
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+      });
+
+      const first = progressController.update('start');
+      const second = progressController.update('categorized');
+
+      await Promise.all([first, second]);
+
+      expect(callOrder).toEqual([stageMessages.start, stageMessages.categorized]);
+    });
+
+    it('logs errors when edit fails', async () => {
       const testError = new Error('API failed');
       mockApi.editMessageText.mockRejectedValue(testError);
 
@@ -137,172 +121,176 @@ describe('ProgressController', () => {
         error: 'API failed',
       });
     });
-
-    it('should handle non-Error exceptions', async () => {
-      mockApi.editMessageText.mockRejectedValue('string error');
-
-      await progressController.update('saving');
-
-      expect(mockLogger.debug).toHaveBeenCalledWith('progress:update_failed', {
-        userId: testData.userId,
-        stage: 'saving',
-        error: 'string error',
-      });
-    });
-
-    it('should transition through multiple stages', async () => {
-      const stages: ProgressStage[] = ['start', 'categorized', 'saving', 'finalizing'];
-
-      for (const stage of stages) {
-        await progressController.update(stage);
-      }
-
-      expect(mockApi.editMessageText).toHaveBeenCalledTimes(stages.length);
-
-      stages.forEach((stage, index) => {
-        const call = mockApi.editMessageText.mock.calls[index];
-        expect(call[0]).toBe(testData.chatId);
-        expect(call[1]).toBe(testData.messageId);
-        expect(call[2]).toBe(stageMessages[stage]);
-      });
-    });
   });
 
   describe('emit()', () => {
-    it('should call update without blocking', async () => {
-      // emit() should return immediately
-      const emitStart = Date.now();
+    it('returns immediately', () => {
+      const start = Date.now();
       progressController.emit('start');
-      const emitDuration = Date.now() - emitStart;
+      const duration = Date.now() - start;
 
-      // emit() should be very fast (< 10ms)
-      expect(emitDuration).toBeLessThan(10);
+      expect(duration).toBeLessThan(10);
     });
 
-    it('should eventually update the message', async () => {
+    it('eventually edits the message', async () => {
       progressController.emit('categorized');
 
-      // Wait for the async update to complete
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await progressController.waitForIdle();
 
-      expect(mockApi.editMessageText).toHaveBeenCalled();
+      expect(mockApi.editMessageText).toHaveBeenCalledWith(
+        testData.chatId,
+        testData.messageId,
+        stageMessages.categorized,
+        { parse_mode: 'Markdown' }
+      );
     });
 
-    it('should ignore emit errors', async () => {
-      mockApi.editMessageText.mockRejectedValue(new Error('test error'));
+    it('swallows edit errors', async () => {
+      mockApi.editMessageText.mockRejectedValue(new Error('boom'));
 
-      // Should not throw
-      expect(() => {
-        progressController.emit('start');
-      }).not.toThrow();
+      expect(() => progressController.emit('start')).not.toThrow();
+      await progressController.waitForIdle();
+    });
+  });
+
+  describe('waitForIdle()', () => {
+    it('resolves after queued updates', async () => {
+      progressController.emit('saving');
+      progressController.emit('finalizing');
+
+      await progressController.waitForIdle();
+
+      expect(mockApi.editMessageText).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('complete()', () => {
-    it('should prevent further updates', async () => {
-      progressController.complete();
+    it('prevents further updates', async () => {
+      await progressController.complete();
+      mockApi.editMessageText.mockClear();
 
       await progressController.update('start');
+      progressController.emit('saving');
+      await progressController.waitForIdle();
 
       expect(mockApi.editMessageText).not.toHaveBeenCalled();
     });
 
-    it('should mark controller as inactive', () => {
-      expect(progressController.isActive()).toBe(true);
+    it('waits for pending updates before resolving', async () => {
+      let resolveUpdate: (() => void) | undefined;
+      mockApi.editMessageText.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveUpdate = resolve;
+          })
+      );
 
-      progressController.complete();
+      progressController.emit('finalizing');
+      await Promise.resolve();
 
+      const completePromise = progressController.complete();
       expect(progressController.isActive()).toBe(false);
+      expect(mockApi.editMessageText).toHaveBeenCalledTimes(1);
+
+      resolveUpdate?.();
+      await completePromise;
+
+      mockApi.editMessageText.mockClear();
+      progressController.emit('saving');
+      await progressController.waitForIdle();
+
+      expect(mockApi.editMessageText).not.toHaveBeenCalled();
     });
   });
 
   describe('fail()', () => {
-    it('should delete the message', async () => {
+    it('deletes the progress message', async () => {
       await progressController.fail();
 
       expect(mockApi.deleteMessage).toHaveBeenCalledWith(testData.chatId, testData.messageId);
     });
 
-    it('should mark controller as inactive', async () => {
-      await progressController.fail();
+    it('waits for pending updates before deleting', async () => {
+      let resolveUpdate: (() => void) | undefined;
+      mockApi.editMessageText.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveUpdate = resolve;
+          })
+      );
 
-      expect(progressController.isActive()).toBe(false);
+      progressController.emit('saving');
+
+      const failPromise = progressController.fail();
+      expect(mockApi.deleteMessage).not.toHaveBeenCalled();
+
+      resolveUpdate?.();
+      await failPromise;
+
+      expect(mockApi.deleteMessage).toHaveBeenCalledWith(testData.chatId, testData.messageId);
     });
 
-    it('should prevent further updates after failure', async () => {
-      await progressController.fail();
-      mockApi.editMessageText.mockClear();
+    it('ignores delete errors', async () => {
+      mockApi.deleteMessage.mockRejectedValue(new Error('cannot delete'));
 
-      await progressController.update('start');
-
-      expect(mockApi.editMessageText).not.toHaveBeenCalled();
-    });
-
-    it('should ignore delete errors', async () => {
-      mockApi.deleteMessage.mockRejectedValue(new Error('delete failed'));
-
-      // Should not throw
       await expect(progressController.fail()).resolves.not.toThrow();
     });
   });
 
   describe('isActive()', () => {
-    it('should return true initially', () => {
+    it('is true before completion', () => {
       expect(progressController.isActive()).toBe(true);
     });
 
-    it('should return false after complete()', () => {
-      progressController.complete();
+    it('is false after completion', async () => {
+      await progressController.complete();
+
       expect(progressController.isActive()).toBe(false);
     });
 
-    it('should return false after fail()', async () => {
+    it('is false after failure', async () => {
       await progressController.fail();
+
       expect(progressController.isActive()).toBe(false);
     });
   });
 
-  describe('concurrent operations', () => {
-    it('should handle concurrent emit() calls gracefully', async () => {
-      const stages: ProgressStage[] = ['start', 'categorized', 'saving', 'finalizing'];
+  describe('concurrency handling', () => {
+    it('processes rapid emits in order', async () => {
+      const order: string[] = [];
+      mockApi.editMessageText.mockImplementation(async (_chatId, _messageId, text) => {
+        order.push(text as string);
+      });
 
-      // Emit all stages concurrently
-      stages.forEach((stage) => progressController.emit(stage));
+      ['start', 'categorized', 'saving', 'finalizing'].forEach((stage) => {
+        progressController.emit(stage as ProgressStage);
+      });
 
-      // Wait for all updates
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await progressController.waitForIdle();
 
-      // Should have made some edits (not all will succeed due to lock)
-      expect(mockApi.editMessageText.mock.calls.length).toBeGreaterThan(0);
+      expect(order).toEqual([
+        stageMessages.start,
+        stageMessages.categorized,
+        stageMessages.saving,
+        stageMessages.finalizing,
+      ]);
     });
 
-    it('should handle update after emit gracefully', async () => {
+    it('ignores emits after completion', async () => {
       progressController.emit('start');
+      await progressController.waitForIdle();
+      mockApi.editMessageText.mockClear();
 
-      // Wait a tiny bit
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // This should either succeed or be skipped
-      await progressController.update('categorized');
-
-      // No error should be thrown
-      expect(mockApi.editMessageText.mock.calls.length).toBeGreaterThan(0);
-    });
-
-    it('should not update after complete even with pending emits', async () => {
-      progressController.emit('start');
-      progressController.complete();
+      await progressController.complete();
       progressController.emit('categorized');
+      await progressController.waitForIdle();
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Only the first emit might succeed, but no more should
-      expect(mockApi.editMessageText.mock.calls.length).toBeLessThanOrEqual(1);
+      expect(mockApi.editMessageText).not.toHaveBeenCalled();
     });
   });
 
   describe('stage transitions', () => {
-    it('should allow valid stage progressions', async () => {
+    it('supports forward progression', async () => {
       const stages: ProgressStage[] = ['start', 'categorized', 'saving', 'finalizing'];
 
       for (const stage of stages) {
@@ -312,14 +300,12 @@ describe('ProgressController', () => {
       expect(mockApi.editMessageText).toHaveBeenCalledTimes(stages.length);
     });
 
-    it('should allow skipping stages', async () => {
+    it('supports skipping stages', async () => {
       await progressController.update('start');
       mockApi.editMessageText.mockClear();
 
-      // Jump to finalizing, skipping intermediate stages
       await progressController.update('finalizing');
 
-      expect(mockApi.editMessageText).toHaveBeenCalledOnce();
       expect(mockApi.editMessageText).toHaveBeenCalledWith(
         testData.chatId,
         testData.messageId,
@@ -328,14 +314,18 @@ describe('ProgressController', () => {
       );
     });
 
-    it('should allow going back to previous stages', async () => {
+    it('supports moving backwards', async () => {
       await progressController.update('finalizing');
       mockApi.editMessageText.mockClear();
 
-      // Go back to start
       await progressController.update('start');
 
-      expect(mockApi.editMessageText).toHaveBeenCalledOnce();
+      expect(mockApi.editMessageText).toHaveBeenCalledWith(
+        testData.chatId,
+        testData.messageId,
+        stageMessages.start,
+        { parse_mode: 'Markdown' }
+      );
     });
   });
 });

@@ -20,10 +20,11 @@ export type ProgressStage =
  */
 export interface ProgressController {
   update: (stage: ProgressStage) => Promise<void>;
-  complete: () => void;
+  complete: () => Promise<void>;
   fail: () => Promise<void>;
   emit: (stage: ProgressStage) => void;
   isActive: () => boolean;
+  waitForIdle: () => Promise<void>;
 }
 
 /**
@@ -84,56 +85,75 @@ export function createProgressController(
   const stageMessages = getModeSpecificMessages(mode);
   let currentStage: ProgressStage | null = null;
   let isCompleted = false;
-  let isUpdating = false;
+  let isLocked = false;
+  let queue: Promise<void> = Promise.resolve();
+
+  /**
+   * Enqueue an update to ensure message edits run sequentially
+   */
+  const enqueueStageUpdate = (stage: ProgressStage): Promise<void> => {
+    if (isLocked || isCompleted) {
+      return queue;
+    }
+
+    queue = queue.then(async () => {
+      if (isLocked || isCompleted) {
+        return;
+      }
+
+      if (currentStage === stage) {
+        return;
+      }
+
+      currentStage = stage;
+      const messageText = stageMessages[stage];
+
+      try {
+        await api.editMessageText(chatId, messageId, messageText, {
+          parse_mode: 'Markdown',
+        });
+
+        logger.info('progress:update', {
+          userId,
+          stage,
+          messageId,
+        });
+      } catch (error) {
+        logger.debug('progress:update_failed', {
+          userId,
+          stage,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    });
+
+    return queue;
+  };
+
+  /**
+   * Wait for all queued updates to finish
+   */
+  const waitForIdle = async (): Promise<void> => {
+    await queue;
+  };
 
   /**
    * Update the progress message with the given stage
    */
   const update = async (stage: ProgressStage): Promise<void> => {
-    // Skip if workflow is complete
-    if (isCompleted) {
-      return;
-    }
-
-    // Skip if already at this stage
-    if (currentStage === stage) {
-      return;
-    }
-
-    // Skip if another update is in progress
-    if (isUpdating) {
-      return;
-    }
-
-    isUpdating = true;
-    currentStage = stage;
-    const messageText = stageMessages[stage];
-
-    try {
-      await api.editMessageText(chatId, messageId, messageText, {
-        parse_mode: 'Markdown',
-      });
-
-      logger.info('progress:update', {
-        userId,
-        stage,
-        messageId,
-      });
-    } catch (error) {
-      logger.debug('progress:update_failed', {
-        userId,
-        stage,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    } finally {
-      isUpdating = false;
-    }
+    await enqueueStageUpdate(stage);
   };
 
   /**
    * Mark progress as complete - stops further updates
    */
-  const complete = (): void => {
+  const complete = async (): Promise<void> => {
+    if (isCompleted) {
+      return;
+    }
+
+    isLocked = true;
+    await waitForIdle();
     isCompleted = true;
   };
 
@@ -141,6 +161,12 @@ export function createProgressController(
    * Mark progress as failed - deletes the progress message
    */
   const fail = async (): Promise<void> => {
+    if (isCompleted) {
+      return;
+    }
+
+    isLocked = true;
+    await waitForIdle();
     isCompleted = true;
     try {
       await api.deleteMessage(chatId, messageId);
@@ -154,7 +180,7 @@ export function createProgressController(
    * Calls update() without blocking the caller
    */
   const emit = (stage: ProgressStage): void => {
-    update(stage).catch(() => {
+    enqueueStageUpdate(stage).catch(() => {
       // Ignore errors in emit
     });
   };
@@ -162,7 +188,7 @@ export function createProgressController(
   /**
    * Check if progress controller is still active
    */
-  const isActive = (): boolean => !isCompleted;
+  const isActive = (): boolean => !isLocked && !isCompleted;
 
   return {
     update,
@@ -170,5 +196,6 @@ export function createProgressController(
     fail,
     emit,
     isActive,
+    waitForIdle,
   };
 }

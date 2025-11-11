@@ -235,7 +235,7 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
       });
 
       // Mark progress as complete immediately to prevent watcher from sending more updates
-      progress.complete();
+      await progress.complete();
 
       if (workflowResult.status === 'failed') {
         // Delete processing message and send error
