@@ -1,31 +1,46 @@
 # HilmAI Agent V2 - Complete Architecture Guide
 
-**Date:** October 29, 2025
-**Status:** Implementation Ready
-**Version:** 2.0
+**Date:** November 10, 2025
+**Status:** Production Implementation
+**Version:** 2.1
 
 ---
 
 ## Executive Summary
 
-This document provides a complete architecture redesign for the HilmAI Telegram bot, addressing critical issues with reliability, consistency, conversation memory, and user experience.
+This document describes the production architecture of the HilmAI Telegram bot, featuring a mode-based design with integrated subscription management.
 
-### Key Problems in V1
+### Core Architecture Features
 
-1. **❌ Inconsistent Input Processing**: 3 separate workflows (text/voice/photo) causing inconsistencies
-2. **❌ Missing Conversation Memory**: No context between messages
-3. **❌ Date Handling Issues**: "yesterday" fails for voice/photo inputs
-4. **❌ Generic Responses**: Robotic responses for non-transaction queries
-5. **❌ Complex Query Pipeline**: 3-step RAG pipeline (slow, expensive, fragile)
+1. **✅ Mode-Based System**: Three specialized modes (Logger, Chat, Query) with distinct behaviors
+2. **✅ Unified Input Pipeline**: Single workflow for all input types (text/voice/photo)
+3. **✅ Subscription Management**: Integrated 7-day trial + Stripe billing
+4. **✅ Conversation Memory**: Mode-specific memory configurations
+5. **✅ Hybrid Search**: SQL-first with pgvector fallback for fuzzy matching
+6. **✅ Supabase pgvector**: Vector search with subscription tracking
 
-### V2 Solutions
+### Mode System
 
-1. **✅ Unified Input Pipeline**: Single workflow for all input types
-2. **✅ Conversation Memory**: Persistent context using Mastra's resourceId
-3. **✅ Supervisor Agent Pattern**: Hierarchical delegation with native sub-agents
-4. **✅ Hybrid Search**: SQL-first with pgvector fallback for fuzzy matching
-5. **✅ Natural Responses**: Context-aware, conversational replies
-6. **✅ Supabase pgvector**: Replaces Pinecone (saves $70/month)
+**💰 Logger Mode**
+- Fast transaction logging
+- No conversation memory (stateless)
+- Best for: "I spent 50 AED at Carrefour"
+
+**💬 Chat Mode** (Default)
+- General conversation and help
+- Full conversation memory
+- Best for: Onboarding, questions, help
+
+**📊 Query Mode**
+- Spending queries and insights
+- Minimal memory
+- Best for: "How much on groceries?"
+
+### Subscription Tiers
+
+**Free Trial**: 7-day trial (auto-granted on `/start`)  
+**Monthly Plan**: $20/month (optional 7-day trial)  
+**Annual Plan**: $200/year (no trial)
 
 ---
 
@@ -46,10 +61,15 @@ This document provides a complete architecture redesign for the HilmAI Telegram 
 
 ## Architecture Overview
 
-### Unified Flow
+### Mode-Based Flow
 
 ```
 User Message (Text/Voice/Photo)
+    ↓
+Subscription Access Check
+    ├─ Trial active? → Continue
+    ├─ Subscription active? → Continue
+    └─ No access? → Show subscribe prompt + END
     ↓
 Input Normalization Layer
     ├─ Voice → Transcribe with Whisper
@@ -58,56 +78,117 @@ Input Normalization Layer
     ↓
 ALL get: Date Context + User Info
     ↓
-Supervisor Agent (with conversation memory)
+Fetch User Mode (logger/chat/query)
     ↓
-┌──────────────────────────────────────────┐
-│ Decision: Which sub-agent to call?      │
-│                                          │
-│ Options:                                 │
-│ 1. Transaction Logger Agent              │
-│ 2. Query Executor Agent (SQL + pgvector)│
-│ 3. Conversation Agent                    │
-└──────────────────────────────────────────┘
+Send Mode-Specific Progress Message
     ↓
-Sub-Agent executes with tools
+Message-Processing Workflow
+    ├─ Check Cache
+    ├─ Route to Mode-Specific Agent
+    │   ├─ Logger Mode → Transaction Logger (no memory)
+    │   ├─ Chat Mode → Conversation Agent (full memory)
+    │   └─ Query Mode → Query Executor (minimal memory)
+    ├─ Agent executes with tools
+    ├─ Generate response
+    └─ Cache if appropriate
     ↓
-Natural Response to User
+Update Progress Message with Final Response
 ```
 
-### V1 vs V2 Comparison
+### Mode Comparison
 
-| Feature | V1 (Current) | V2 (Proposed) |
-|---------|--------------|---------------|
-| **Input handling** | 3 separate handlers | 1 unified handler |
-| **Date context** | Text only | All input types |
-| **Memory** | None | Persistent per user |
-| **Agent pattern** | Flat | Hierarchical (supervisor) |
-| **Query method** | RAG (Pinecone) | SQL + pgvector (Supabase) |
-| **Responses** | Generic/robotic | Natural/contextual |
-| **Sub-agents** | Via tools (wrapper) | Native agent support |
-| **Cost** | ~$140/month | ~$97/month |
+| Feature | Logger Mode | Chat Mode | Query Mode |
+|---------|------------|-----------|------------|
+| **Memory** | None (stateless) | Full conversation | Minimal |
+| **Best For** | Fast logging | Help & onboarding | Spending questions |
+| **Agent** | Transaction Logger | Conversation | Query Executor |
+| **Speed** | Fastest | Medium | Fast |
+| **Examples** | "50 AED at Carrefour" | "What can you do?" | "How much on groceries?" |
+| **Use Case** | Rapid expense entry | Learning, help | Financial insights |
 
 ---
 
 ## Key Architectural Decisions
 
-### 1. Development Approach: Fresh Start
+### 1. Mode-Based System (Production Implementation)
 
-**Decision:** Build agent-v2/ from scratch, then replace agent/
+**Decision:** Implement three specialized modes instead of a single supervisor agent
 
 **Rationale:**
-- Still in dev phase (no production users yet)
-- Clean architecture without legacy constraints
-- Easy comparison between V1 and V2
-- Simple migration: `mv agent agent-old && mv agent-v2 agent`
+- **User Control**: Users choose the mode that fits their current task
+- **Performance**: Logger mode bypasses memory for faster processing
+- **Clarity**: Each mode has clear, distinct behavior
+- **Flexibility**: Easy to switch modes via commands or inline keyboard
 
-**Timeline:** 3 weeks development + 1 week testing
+**Implementation:**
+- Mode stored in `users.current_mode` database field
+- Default mode: `chat` (best for onboarding)
+- Quick commands: `/mode_logger`, `/mode_chat`, `/mode_query`
+- Inline keyboard for visual selection
+
+**Benefits:**
+- ✅ Faster logging (stateless)
+- ✅ Better onboarding (chat mode with memory)
+- ✅ Clear user expectations per mode
+- ✅ Reduced token costs (selective memory)
 
 ---
 
-### 2. Supervisor with Native Sub-Agents
+### 2. Subscription & Trial System
 
-**Discovery:** Mastra Agent supports native sub-agents via `agents: Record<string, Agent>`
+**Decision:** Integrate Stripe subscriptions with automatic 7-day trial on signup
+
+**Rationale:**
+- **Monetization**: Sustainable revenue model
+- **Low Friction**: Trial starts immediately on `/start`
+- **Fair Access**: 7 days to experience full product
+- **Conversion**: Trial-to-paid funnel with Stripe
+
+**Implementation:**
+- New users auto-get `subscription_status = 'trialing'`
+- `trial_ends_at = NOW() + 7 days`
+- Access check on every message: `hasActiveAccess(userId)`
+- Stripe integration for paid subscriptions
+- Webhook handling for subscription events
+
+**Subscription Tiers:**
+| Tier | Price | Trial | Features |
+|------|-------|-------|----------|
+| Free Trial | $0 | 7 days | Full access |
+| Monthly | $20/mo | Optional | Full access |
+| Annual | $200/yr | No | Full access + save $40 |
+
+---
+
+### 3. Onboarding Flow
+
+**Decision:** Start users in Chat Mode with trial access
+
+**Rationale:**
+- **Discovery**: Chat mode helps users learn the system
+- **Memory**: Conversation context for better onboarding
+- **Flexibility**: Users can switch modes after understanding options
+
+**Welcome Flow:**
+```
+1. /start → Create user with 7-day trial
+2. Send welcome message explaining 3 modes
+3. Show inline keyboard for mode selection
+4. Default to Chat Mode if no selection
+5. User can switch anytime via /mode
+```
+
+**Welcome Message:**
+- Explains all 3 modes clearly
+- Shows inline keyboard for immediate mode selection
+- Mentions trial status (7 days free)
+- Provides quick commands for later use
+
+---
+
+### 4. Mastra Agent Integration
+
+**Discovery:** Mastra Agent system with workflows and tools
 
 **Implementation:**
 
@@ -138,7 +219,7 @@ export const supervisorAgent = new Agent({
 
 ---
 
-### 3. SQL vs Embeddings: Hybrid Approach
+### 5. SQL vs Embeddings: Hybrid Approach
 
 #### Phase 1: SQL-First (V2 Launch)
 
@@ -197,7 +278,7 @@ return sqlResults;
 
 ---
 
-### 4. Supabase pgvector vs Pinecone
+### 6. Supabase pgvector vs Pinecone
 
 **Decision:** Use Supabase pgvector instead of Pinecone
 

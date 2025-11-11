@@ -2,106 +2,162 @@ import { fmt, b } from '@grammyjs/parse-mode';
 
 export const messages = {
   start: {
-    welcome: () => fmt`Welcome to HilmAI! 🤖
+    welcome: () => fmt`👋 ${b()}Welcome to HilmAI!
 
-I'm your personal financial assistant with 3 specialized modes:
+I'm your AI assistant that makes expense tracking effortless.
 
-💰 ${b()}Logger Mode - Fast transaction logging
-   Best for: "I spent 50 AED at Carrefour"
+${b()}Why HilmAI changes everything:
 
-💬 ${b()}Chat Mode - General help (default)
-   Best for: Questions, onboarding, help
+💬 ${b()}Just talk naturally
+"I spent 50 AED at Carrefour"
+No forms, no fields, no hassle.
 
-📊 ${b()}Query Mode - Ask about spending
-   Best for: "How much on groceries?"
+📸 ${b()}Snap & done
+Take a photo of any receipt.
+I'll extract everything instantly.
 
-💡 Getting started:
-• You're in Chat Mode right now
-• Use /mode to switch anytime
-• Try /mode_logger for fast logging
-• Use /help for detailed instructions`,
+🎤 ${b()}Voice messages work
+Say it in any language.
+I'll understand and save it.
+
+🧠 ${b()}Smart insights
+"How much on groceries?"
+Get instant answers, zero effort.
+
+${b()}Choose your mode:
+
+💰 ${b()}Logger - Fastest logging
+💬 ${b()}Chat - Ask me anything (Current)
+📊 ${b()}Query - Financial insights
+
+💡 ${b()}Try it now:
+Say "I spent 100 AED at Carrefour" or /mode_logger for quick logging`,
 
     fallback: () =>
-      `Welcome to HilmAI! 🤖\n\n` +
-      `I'm your personal financial assistant.\n\n` +
-      `Use /mode to select your mode and get started!`,
+      `👋 Welcome to HilmAI!\n\n` +
+      `Your AI assistant for effortless expense tracking.\n\n` +
+      `💬 Just talk: "I spent 50 AED at Carrefour"\n` +
+      `📸 Snap receipts: Instant extraction\n` +
+      `🎤 Voice messages: Any language\n` +
+      `🧠 Get insights: "How much on groceries?"\n\n` +
+      `Try it now or use /mode to pick your style!`,
   },
 
   help: {
-    main: () => fmt`${b()}HilmAI Commands & Features
+    main: () => fmt`${b()}HilmAI - Your AI Expense Tracker
 
-${b()}Track Expenses:
-• Type: "I spent 50 AED at Starbucks"
-• Voice: Send a voice message
-• Photo: Send a receipt photo
+${b()}📝 Track Expenses (3 ways):
+• ${b()}Text: "I spent 50 AED at Starbucks"
+• ${b()}Voice: Send a voice message (any language!)
+• ${b()}Photo: Snap your receipt - I'll extract everything
 
-${b()}Ask Questions:
+${b()}💬 Ask Questions:
 • "How much did I spend on groceries?"
-• "Show my Starbucks spending"
-• "Total expenses this month"
+• "Show my Starbucks spending this month"
+• "What's my biggest expense category?"
+• "Total spending this week"
 
-${b()}Features:
-✅ Fuzzy search (handles typos)
-✅ Conversation memory
-✅ Multiple languages (English & Arabic)
+${b()}🎯 3 Specialized Modes:
+• ${b()}Logger Mode - Fastest for rapid logging
+• ${b()}Chat Mode - Best for questions & help
+• ${b()}Query Mode - Deep financial insights
 
-Just start chatting naturally!`,
+${b()}⚡ Smart Features:
+✅ Handles typos ("Carrefur" → "Carrefour")
+✅ Remembers conversation context
+✅ Multi-currency support (50+ currencies)
+✅ Auto-categorization
+✅ Works in English & Arabic
+
+${b()}🚀 Quick Commands:
+• /mode - Switch modes
+• /recent - View recent transactions
+• /currency - Set default currency
+• /subscribe - View plans
+
+Try saying: "I spent 100 AED at Carrefour for groceries"`,
   },
 
   mode: {
     current: (mode: string) => fmt`🎯 ${b()}Current Mode: ${mode}
 
-Select a mode:
+${b()}Choose the mode that fits your task:
 
-💰 ${b()}Logger Mode
-Fast transaction logging (no conversation memory)
-Best for: I spent 50 AED at Carrefour
+💰 ${b()}Logger Mode - Lightning Fast ⚡
+${b()}No typing needed! Perfect for:
+• Voice messages: "50 AED at Carrefour"
+• Receipt photos: Snap & done
+• Quick text: "100 AED groceries"
+${b()}Speed: Instant (no memory overhead)
 
-💬 ${b()}Chat Mode
-General conversation and help (default)
-Best for: Questions, help, onboarding
+💬 ${b()}Chat Mode - Smart Assistant 🤖
+${b()}I remember everything! Perfect for:
+• Learning: "How do I track expenses?"
+• Questions: "What can you do?"
+• Help: "Show me my options"
+${b()}Speed: Normal (with conversation memory)
 
-📊 ${b()}Query Mode
-Ask about your spending (minimal memory)
-Best for: How much on groceries?
+📊 ${b()}Query Mode - Financial Insights 📈
+${b()}Get instant answers! Perfect for:
+• "How much on groceries this month?"
+• "Show my Starbucks spending"
+• "Top 5 expenses this week"
+${b()}Speed: Fast (minimal memory)
 
-💡 ${b()}Quick switch commands:
-/mode_logger - Switch to Logger Mode
-/mode_chat - Switch to Chat Mode
-/mode_query - Switch to Query Mode`,
+💡 ${b()}Pro tip: Switch anytime!
+/mode_logger → Fast logging
+/mode_chat → Help & questions
+/mode_query → Financial insights`,
 
-    switchedToLogger: () => fmt`✅ ${b()}Switched to Logger Mode
+    switchedToLogger: () => fmt`✅ ${b()}Logger Mode Activated!
 
-💰 Fast transaction logging is now active.
+💰 ${b()}You're now in speed mode - perfect for rapid expense tracking.
 
-${b()}How to use:
-• Type: "I spent 50 AED at Carrefour"
-• Send a voice message
-• Send a receipt photo
+${b()}Try these:
+• ${b()}Voice: Just say "50 AED at Carrefour"
+• ${b()}Photo: Snap your receipt - I'll handle the rest
+• ${b()}Text: "100 AED groceries"
 
-Use /mode to switch modes.`,
+${b()}Why Logger Mode?
+✅ Fastest processing (no conversation memory)
+✅ Perfect for on-the-go logging
+✅ Works with voice, photo, and text
 
-    switchedToChat: () => fmt`✅ ${b()}Switched to Chat Mode
+Need help? Switch to Chat Mode: /mode_chat`,
 
-💬 General conversation and help is now active.
+    switchedToChat: () => fmt`✅ ${b()}Chat Mode Activated!
+
+💬 ${b()}I'm your smart assistant - ask me anything!
 
 ${b()}I can help you:
-• Learn how to use HilmAI
-• Answer questions
-• Guide you to the right mode
+• ${b()}Learn: "How does expense tracking work?"
+• ${b()}Understand: "What's the difference between modes?"
+• ${b()}Navigate: "How do I see my spending?"
+• ${b()}Answer: Any questions you have!
 
-Use /mode to switch modes.`,
+${b()}Why Chat Mode?
+✅ I remember our conversation
+✅ Best for learning and discovery
+✅ Friendly, conversational help
 
-    switchedToQuery: () => fmt`✅ ${b()}Switched to Query Mode
+Ready to log expenses? Try Logger Mode: /mode_logger`,
 
-📊 Ask questions about your spending.
+    switchedToQuery: () => fmt`✅ ${b()}Query Mode Activated!
 
-${b()}Examples:
-• "How much on groceries?"
-• "Show my spending this week"
-• "Top 5 expenses this month"
+📊 ${b()}Get instant insights into your spending!
 
-Use /mode to switch modes.`,
+${b()}Try asking:
+• ${b()}"How much did I spend on groceries?"
+• ${b()}"Show my Starbucks spending this month"
+• ${b()}"What's my biggest expense category?"
+• ${b()}"Total spending this week"
+
+${b()}Why Query Mode?
+✅ Fast financial insights
+✅ Smart search (handles typos!)
+✅ Multi-currency aggregation
+
+Need to log expenses? Try Logger Mode: /mode_logger`,
 
     changed: (instructions: string) => fmt`✅ ${b()}Mode Changed
 
@@ -266,36 +322,54 @@ Select an option from the menu below:`,
     trialWelcome: (daysLeft: number) =>
       `🎉 *Welcome to HilmAI!*\n\n` +
       `You're on a *7-day free trial* with ${daysLeft} days remaining.\n\n` +
-      `After your trial ends, you'll need to subscribe to continue using HilmAI.\n\n` +
-      `Use /subscribe to view our plans.`,
+      `✨ *What you can do during your trial:*\n` +
+      `• Track unlimited expenses\n` +
+      `• Use voice messages & receipt photos\n` +
+      `• Get AI-powered insights\n` +
+      `• Multi-currency support\n` +
+      `• All 3 specialized modes\n\n` +
+      `After your trial, continue for just $20/month.\n\n` +
+      `Use /subscribe to view plans and secure your spot!`,
 
     trialExpired: () =>
-      `⏰ *Your trial has expired*\n\n` +
-      `To continue using HilmAI, please subscribe to one of our plans.\n\n` +
-      `Use /subscribe to get started.`,
+      `⏰ *Your 7-day trial has ended*\n\n` +
+      `Thanks for trying HilmAI! We hope you loved tracking your expenses with AI.\n\n` +
+      `💡 *Continue where you left off:*\n` +
+      `• All your data is saved and waiting\n` +
+      `• Subscribe to regain instant access\n` +
+      `• Choose monthly ($20) or annual ($200)\n\n` +
+      `Ready to continue? Use /subscribe to pick a plan.`,
 
     accessDenied: () =>
       `🔒 *Subscription Required*\n\n` +
-      `You need an active subscription to use HilmAI.\n\n` +
-      `Use /subscribe to view our plans and get started.`,
+      `To use HilmAI, you need an active subscription.\n\n` +
+      `✨ *What you'll get:*\n` +
+      `• Unlimited expense tracking\n` +
+      `• Voice messages & receipt scanning\n` +
+      `• AI-powered categorization\n` +
+      `• Multi-currency support\n` +
+      `• 3 specialized tracking modes\n\n` +
+      `📅 Plans start at just $20/month\n\n` +
+      `Use /subscribe to get started!`,
 
     plans: () =>
-      `💳 *HilmAI Subscription Plans*\n\n` +
-      `Choose a plan that works for you:\n\n` +
-      `📅 *Monthly Plan - $20/month*\n` +
-      `• Billed monthly\n` +
-      `• Cancel anytime\n` +
-      `• Full access to all features\n\n` +
-      `📆 *Annual Plan - $200/year*\n` +
-      `• Save $40 per year\n` +
-      `• Billed annually\n` +
-      `• Full access to all features\n\n` +
-      `🎁 *Free Trial Option*\n` +
-      `• Available for monthly plans\n` +
-      `• 7 days completely free\n` +
-      `• No payment required during trial\n` +
-      `• Cancel anytime before trial ends\n\n` +
-      `Click a button below to subscribe:`,
+      `💳 *Choose Your Plan*\n\n` +
+      `✨ *What you get:*\n` +
+      `✅ Talk, voice, or snap receipts\n` +
+      `✅ AI extracts everything\n` +
+      `✅ Multi-currency tracking\n` +
+      `✅ Instant insights on demand\n` +
+      `✅ 3 specialized modes\n` +
+      `✅ Unlimited transactions\n\n` +
+      `📅 *Monthly - $20/month*\n` +
+      `Perfect for getting started\n` +
+      `Cancel anytime, no commitment\n\n` +
+      `📆 *Annual - $200/year*\n` +
+      `💰 SAVE $40 (2 months free!)\n` +
+      `Best value for serious trackers\n\n` +
+      `🎁 *New here? Try free for 7 days!*\n` +
+      `Test all features, no card needed\n\n` +
+      `Choose below to get started:`,
 
     billingInfo: (status: string, planTier: string | null, periodEnd: string | null) => {
       let statusEmoji = '✅';
@@ -330,25 +404,40 @@ Select an option from the menu below:`,
     },
 
     trialCheckoutMessage: () =>
-      `🎉 *Monthly Plan with Free Trial*\n\n` +
-      `Start your 7-day free trial today!\n\n` +
-      `✨ What you get:\n` +
-      `• Full access to all HilmAI features\n` +
-      `• No payment required for 7 days\n` +
-      `• Cancel anytime before trial ends\n` +
-      `• After trial: $20/month\n\n` +
-      `💳 You'll need a payment method to activate the trial.\n` +
-      `No charges will be made during the 7-day trial period.`,
+      `🎉 *Start Your FREE 7-Day Trial!*\n\n` +
+      `Experience HilmAI with zero commitment.\n\n` +
+      `✨ *During your trial:*\n` +
+      `• Full access to all features\n` +
+      `• Unlimited expense tracking\n` +
+      `• Voice messages & receipt photos\n` +
+      `• AI-powered insights\n` +
+      `• Multi-currency support\n\n` +
+      `💳 *Payment Details:*\n` +
+      `• We need a card to start your trial\n` +
+      `• No charges for 7 days\n` +
+      `• Cancel anytime during trial\n` +
+      `• After trial: $20/month (cancel anytime)\n\n` +
+      `🔒 *Secure checkout powered by Stripe*\n` +
+      `Your data is encrypted and safe.\n\n` +
+      `Click below to start your free trial!`,
 
     noTrialCheckoutMessage: () =>
-      `💳 *Monthly Plan - Instant Access*\n\n` +
-      `Get started with HilmAI right away!\n\n` +
-      `✅ What you get:\n` +
-      `• Full access to all features\n` +
-      `• Billing starts immediately\n` +
-      `• $20/month, cancel anytime\n` +
-      `• No surprises, transparent pricing\n\n` +
-      `🔒 Your payment is secure and processed by Stripe.`,
+      `💳 *Monthly Plan - Start Immediately*\n\n` +
+      `Jump right in and start tracking!\n\n` +
+      `✅ *What you get:*\n` +
+      `• Instant access to all features\n` +
+      `• Unlimited expense tracking\n` +
+      `• Voice messages & receipt photos\n` +
+      `• AI-powered insights\n` +
+      `• Multi-currency support\n\n` +
+      `💵 *Pricing:*\n` +
+      `• $20/month, billed monthly\n` +
+      `• Cancel anytime, no penalties\n` +
+      `• Transparent pricing, no hidden fees\n` +
+      `• First charge happens today\n\n` +
+      `🔒 *Secure checkout powered by Stripe*\n` +
+      `Your payment info is encrypted and protected.\n\n` +
+      `Click below to subscribe!`,
 
     checkoutError: () => `❌ Failed to create checkout session. Please try again.`,
     portalError: () => `❌ Failed to open billing portal. Please try again.`,

@@ -121,6 +121,10 @@ export function createBot(mastra: Mastra): Bot {
           userId,
           username: ctx.from?.username,
           firstName: ctx.from?.first_name,
+          // Telemetry: Track user onboarding funnel
+          event: created ? 'user_signup' : 'user_return',
+          trialStatus: 'active',
+          onboardingStep: 'welcome_message',
         });
       }
 
@@ -581,7 +585,13 @@ export function createBot(mastra: Mastra): Bot {
     // Check subscription access
     const hasAccess = await hasActiveAccess(userId);
     if (!hasAccess) {
-      logger.info('message:access_denied', { userId });
+      logger.info('message:access_denied', {
+        userId,
+        // Telemetry: Track trial expiration and conversion opportunities
+        event: 'access_denied',
+        reason: 'trial_expired_or_no_subscription',
+        conversionOpportunity: 'subscribe_prompt_shown',
+      });
 
       const keyboard = {
         inline_keyboard: [[{ text: '💳 Subscribe Now', callback_data: 'subscribe_monthly_notrial' }]],
@@ -877,7 +887,15 @@ export function createBot(mastra: Mastra): Bot {
         entities: changeMsg.entities,
       });
 
-      logger.info('callback:set_mode:success', { userId, mode });
+      logger.info('callback:set_mode:success', {
+        userId,
+        mode,
+        // Telemetry: Track mode switches for UX optimization
+        event: 'mode_switched',
+        previousMode: 'unknown', // Could be fetched before update
+        newMode: mode,
+        switchMethod: 'callback',
+      });
     } catch (error) {
       logger.error('callback:set_mode:error', {
         userId,
@@ -1127,7 +1145,16 @@ export function createBot(mastra: Mastra): Bot {
         reply_markup: keyboard,
       });
 
-      logger.info('callback:subscribe:checkout_created', { userId, planTier, includeTrial });
+      logger.info('callback:subscribe:checkout_created', {
+        userId,
+        planTier,
+        includeTrial,
+        // Telemetry: Track subscription funnel
+        event: 'checkout_initiated',
+        subscriptionType: includeTrial ? 'trial' : 'paid',
+        plan: planTier,
+        price: planTier === 'monthly' ? 20 : 200,
+      });
     } catch (error) {
       logger.error('callback:subscribe:error', {
         userId,
