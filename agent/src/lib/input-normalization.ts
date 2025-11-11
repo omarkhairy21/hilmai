@@ -15,6 +15,9 @@
 import type { Context } from 'grammy';
 import { openai } from './openai';
 import { downloadFile, getTempFilePath, deleteFile } from './file-utils';
+import { getUserTimezone } from '../services/user.service';
+import { format as formatDate } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import fs from 'fs';
 
 /**
@@ -29,14 +32,17 @@ export interface NormalizedInput {
     /** Input type */
     inputType: 'text' | 'voice' | 'photo';
 
-    /** Current date (ISO format) */
+    /** Current date (ISO format) in user's timezone */
     currentDate: string;
 
-    /** Current time (ISO format) */
+    /** Current time (ISO format) in user's timezone */
     currentTime: string;
 
-    /** Yesterday's date (ISO format) */
+    /** Yesterday's date (ISO format) in user's timezone */
     yesterday: string;
+
+    /** User's timezone (IANA format) */
+    timezone: string;
 
     /** Telegram user ID */
     userId: number;
@@ -56,24 +62,28 @@ export interface NormalizedInput {
 }
 
 /**
- * Generate date context strings
+ * Generate date context strings in user's timezone
+ * @param timezone - IANA timezone string (e.g., 'America/New_York')
  */
-function getDateContext() {
+function getDateContext(timezone: string) {
   const now = new Date();
 
-  // Current date and time
-  const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
-  const currentTime = now.toISOString(); // Full ISO timestamp
+  // Convert to user's timezone
+  const zonedTime = toZonedTime(now, timezone);
 
-  // Yesterday
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  // Current date and time in user's timezone
+  const currentDate = formatDate(zonedTime, 'yyyy-MM-dd'); // YYYY-MM-DD
+  const currentTime = zonedTime.toISOString(); // Full ISO timestamp
+
+  // Yesterday in user's timezone
+  const yesterdayDate = new Date(zonedTime);
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterday = formatDate(yesterdayDate, 'yyyy-MM-dd');
 
   return {
     currentDate,
     currentTime,
-    yesterday: yesterdayStr,
+    yesterday,
   };
 }
 
@@ -180,7 +190,13 @@ async function extractFromPhoto(imageFilePath: string): Promise<string> {
  * @returns Normalized input with text and metadata
  */
 export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
-  const dateContext = getDateContext();
+  const userId = ctx.from!.id;
+
+  // Fetch user's timezone (defaults to UTC if not set)
+  const timezone = await getUserTimezone(userId);
+
+  // Generate date context in user's timezone
+  const dateContext = getDateContext(timezone);
   const userMetadata = getUserMetadata(ctx);
 
   try {
@@ -193,6 +209,7 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
         metadata: {
           inputType: 'text',
           ...dateContext,
+          timezone,
           ...userMetadata,
         },
       };
@@ -223,6 +240,7 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
           metadata: {
             inputType: 'voice',
             ...dateContext,
+            timezone,
             ...userMetadata,
           },
         };
@@ -259,6 +277,7 @@ export async function normalizeInput(ctx: Context): Promise<NormalizedInput> {
           metadata: {
             inputType: 'photo',
             ...dateContext,
+            timezone,
             ...userMetadata,
           },
         };
@@ -290,6 +309,7 @@ export function buildContextPrompt(input: NormalizedInput): string {
   // Build context header
   const contextLines = [
     `[Current Date: Today is ${metadata.currentDate}, Yesterday was ${metadata.yesterday}]`,
+    `[User Timezone: ${metadata.timezone}]`,
     `[User: ${metadata.firstName || 'Unknown'} (@${metadata.username || 'unknown'})]`,
     `[Message Type: ${metadata.inputType}]`,
     '',

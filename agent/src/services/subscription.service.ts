@@ -300,9 +300,10 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
     return;
   }
 
-  const subscriptionId = typeof invoice.parent.subscription_details.subscription === 'string'
-    ? invoice.parent.subscription_details.subscription
-    : invoice.parent.subscription_details.subscription.id;
+  const subscriptionId =
+    typeof invoice.parent.subscription_details.subscription === 'string'
+      ? invoice.parent.subscription_details.subscription
+      : invoice.parent.subscription_details.subscription.id;
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   await handleSubscriptionUpdate(subscription);
@@ -316,9 +317,10 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     return;
   }
 
-  const subscriptionId = typeof invoice.parent.subscription_details.subscription === 'string'
-    ? invoice.parent.subscription_details.subscription
-    : invoice.parent.subscription_details.subscription.id;
+  const subscriptionId =
+    typeof invoice.parent.subscription_details.subscription === 'string'
+      ? invoice.parent.subscription_details.subscription
+      : invoice.parent.subscription_details.subscription.id;
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const userId = subscription.metadata.telegram_user_id;
@@ -513,9 +515,15 @@ async function findOrCreateUserFromStripeCustomer(
 /**
  * Send subscription confirmation message to user via Telegram
  */
-export async function sendSubscriptionConfirmationMessage(planTier: string | null, userId: number): Promise<void> {
+export async function sendSubscriptionConfirmationMessage(
+  planTier: string | null,
+  userId: number
+): Promise<void> {
   if (!telegramApi) {
-    console.warn('[subscription.service] Telegram API not initialized, skipping confirmation message for user:', userId);
+    console.warn(
+      '[subscription.service] Telegram API not initialized, skipping confirmation message for user:',
+      userId
+    );
     return;
   }
 
@@ -527,7 +535,11 @@ export async function sendSubscriptionConfirmationMessage(planTier: string | nul
     });
     console.log('[subscription.service] Sent confirmation message to user:', userId);
   } catch (error) {
-    console.error('[subscription.service] Failed to send confirmation message to user:', userId, error);
+    console.error(
+      '[subscription.service] Failed to send confirmation message to user:',
+      userId,
+      error
+    );
     // Don't throw - message delivery shouldn't block subscription processing
   }
 }

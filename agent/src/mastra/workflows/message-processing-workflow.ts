@@ -22,6 +22,8 @@ import {
 } from '@mastra/core/workflows';
 import { z } from 'zod';
 import fs from 'fs';
+import { formatInTimeZone } from 'date-fns-tz';
+import { subDays } from 'date-fns';
 
 import { openai } from '../../lib/openai';
 import { deleteFile } from '../../lib/file-utils';
@@ -43,6 +45,7 @@ const workflowInputSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   messageId: z.number(),
+  timezone: z.string().optional(),
 });
 
 const workflowOutputSchema = z.object({
@@ -87,6 +90,7 @@ const determineInputTypeOutputSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   messageId: z.number(),
+  timezone: z.string(),
 });
 
 type DetermineInputOutput = z.infer<typeof determineInputTypeOutputSchema>;
@@ -98,12 +102,12 @@ const determineInputTypeStep = createStep({
   inputSchema: workflowInputSchema,
   outputSchema: determineInputTypeOutputSchema,
   execute: async ({ inputData }) => {
+    const timezone = inputData.timezone ?? 'UTC';
     const now = new Date();
-    const currentDate = now.toISOString().split('T')[0];
-    const currentTime = now.toISOString();
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const currentDate = formatInTimeZone(now, timezone, 'yyyy-MM-dd');
+    const currentTime = formatInTimeZone(now, timezone, "yyyy-MM-dd'T'HH:mm:ssXXX");
+    const yesterday = subDays(now, 1);
+    const yesterdayStr = formatInTimeZone(yesterday, timezone, 'yyyy-MM-dd');
 
     let inputType: DetermineInputOutput['inputType'];
     if (inputData.messageText) {
@@ -129,6 +133,7 @@ const determineInputTypeStep = createStep({
       firstName: inputData.firstName,
       lastName: inputData.lastName,
       messageId: inputData.messageId,
+      timezone,
     };
     return result;
   },
@@ -150,6 +155,7 @@ const transcribeVoiceOutputSchema = z.object({
   messageId: z.number(),
   voiceFilePath: z.string(),
   photoFilePath: z.string().optional(),
+  timezone: z.string(),
 });
 
 type TranscribeVoiceOutput = z.infer<typeof transcribeVoiceOutputSchema>;
@@ -208,6 +214,7 @@ const transcribeVoiceStep = createStep({
       messageId: inputData.messageId,
       voiceFilePath: audioFilePath,
       photoFilePath: inputData.photoFilePath,
+      timezone: inputData.timezone,
     };
     return result;
   },
@@ -229,6 +236,7 @@ const extractFromPhotoOutputSchema = z.object({
   messageId: z.number(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string(),
+  timezone: z.string(),
 });
 
 type ExtractFromPhotoOutput = z.infer<typeof extractFromPhotoOutputSchema>;
@@ -312,6 +320,7 @@ const extractFromPhotoStep = createStep({
       messageId: inputData.messageId,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: imageFilePath,
+      timezone: inputData.timezone,
     };
     return result;
   },
@@ -333,6 +342,7 @@ const passTextOutputSchema = z.object({
   messageId: z.number(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string().optional(),
+  timezone: z.string(),
 });
 
 type PassTextOutput = z.infer<typeof passTextOutputSchema>;
@@ -362,6 +372,7 @@ const passTextStep = createStep({
       messageId: inputData.messageId,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
+      timezone: inputData.timezone,
     };
     return result;
   },
@@ -433,6 +444,7 @@ const buildContextPromptOutputSchema = z.object({
   messageId: z.number(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string().optional(),
+  timezone: z.string(),
 });
 
 type BuildContextOutput = z.infer<typeof buildContextPromptOutputSchema>;
@@ -469,6 +481,7 @@ const buildContextPromptStep = createStep({
 
     const contextLines = [
       `[Current Date: Today is ${inputData.currentDate}, Yesterday was ${inputData.yesterday}]`,
+      `[User Timezone: ${inputData.timezone}]`,
       `[User: ${inputData.firstName || 'Unknown'} (@${inputData.username || 'unknown'})]`,
       `[User ID: ${inputData.userId}]`,
       `[Message ID: ${inputData.messageId}]`,
@@ -499,6 +512,7 @@ const buildContextPromptStep = createStep({
       messageId: inputData.messageId,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
+      timezone: inputData.timezone,
     };
     return result;
   },
@@ -519,6 +533,7 @@ const fetchUserModeOutputSchema = z.object({
   messageId: z.number(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string().optional(),
+  timezone: z.string(),
 });
 
 type FetchUserModeOutput = z.infer<typeof fetchUserModeOutputSchema>;
@@ -568,6 +583,7 @@ const checkCacheOutputSchema = z.object({
   messageId: z.number(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string().optional(),
+  timezone: z.string(),
 });
 
 type CheckCacheOutput = z.infer<typeof checkCacheOutputSchema>;
@@ -611,6 +627,7 @@ const checkCacheStep = createStep({
         firstName: inputData.firstName,
         lastName: inputData.lastName,
         messageId: inputData.messageId,
+        timezone: inputData.timezone,
         voiceFilePath: inputData.voiceFilePath,
         photoFilePath: inputData.photoFilePath,
       };
@@ -636,6 +653,7 @@ const checkCacheStep = createStep({
       messageId: inputData.messageId,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
+      timezone: inputData.timezone,
     };
     return result;
   },
@@ -655,6 +673,7 @@ const agentInvocationOutputSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   messageId: z.number(),
+  timezone: z.string(),
   voiceFilePath: z.string().optional(),
   photoFilePath: z.string().optional(),
   telegramMarkup: z
@@ -725,6 +744,7 @@ const invokeLoggerAgentStep = createStep({
         firstName: inputData.firstName,
         lastName: inputData.lastName,
         messageId: inputData.messageId,
+        timezone: inputData.timezone,
         voiceFilePath: inputData.voiceFilePath,
         photoFilePath: inputData.photoFilePath,
       };
@@ -766,6 +786,7 @@ const invokeLoggerAgentStep = createStep({
       messageId: inputData.messageId,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
+      timezone: inputData.timezone,
     };
     return result;
   },
@@ -807,6 +828,7 @@ const invokeQueryAgentStep = createStep({
         firstName: inputData.firstName,
         lastName: inputData.lastName,
         messageId: inputData.messageId,
+        timezone: inputData.timezone,
         voiceFilePath: inputData.voiceFilePath,
         photoFilePath: inputData.photoFilePath,
       };
@@ -904,6 +926,7 @@ const invokeQueryAgentStep = createStep({
       firstName: inputData.firstName,
       lastName: inputData.lastName,
       messageId: inputData.messageId,
+      timezone: inputData.timezone,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
       telegramMarkup,
@@ -948,6 +971,7 @@ const invokeChatAgentStep = createStep({
         firstName: inputData.firstName,
         lastName: inputData.lastName,
         messageId: inputData.messageId,
+        timezone: inputData.timezone,
         voiceFilePath: inputData.voiceFilePath,
         photoFilePath: inputData.photoFilePath,
       };
@@ -992,6 +1016,7 @@ const invokeChatAgentStep = createStep({
       firstName: inputData.firstName,
       lastName: inputData.lastName,
       messageId: inputData.messageId,
+      timezone: inputData.timezone,
       voiceFilePath: inputData.voiceFilePath,
       photoFilePath: inputData.photoFilePath,
     };

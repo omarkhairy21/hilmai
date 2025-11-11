@@ -185,3 +185,62 @@ export async function hasActiveAccess(userId: number): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Get user's timezone
+ * Returns the timezone or 'UTC' as default
+ */
+export async function getUserTimezone(userId: number): Promise<string> {
+  try {
+    const { data, error } = await supabaseService
+      .from('users')
+      .select('timezone')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.warn(`[user.service] Failed to fetch timezone for user ${userId}:`, error);
+      return 'UTC'; // Default fallback
+    }
+
+    // Return stored timezone or UTC as default
+    return data?.timezone || 'UTC';
+  } catch (error) {
+    console.error('[user.service] Failed to get timezone:', error);
+    return 'UTC'; // Default fallback
+  }
+}
+
+/**
+ * Update user's timezone
+ * Validates timezone against IANA timezone database
+ */
+export async function updateUserTimezone(userId: number, timezone: string): Promise<boolean> {
+  try {
+    // Validate timezone using Intl API
+    try {
+      // This will throw if timezone is invalid
+      new Intl.DateTimeFormat('en-US', { timeZone: timezone });
+    } catch {
+      console.error(`[user.service] Invalid timezone: ${timezone}`);
+      return false;
+    }
+
+    const { error } = await supabaseService
+      .from('users')
+      .update({
+        timezone,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[user.service] Failed to update timezone:', error);
+    return false;
+  }
+}

@@ -4,7 +4,13 @@ import { RuntimeContext } from '@mastra/core/runtime-context';
 import { downloadFile, getTempFilePath } from './lib/file-utils';
 import { AgentResponseCache } from './lib/prompt-cache';
 import { searchTransactionsSQL } from './lib/embeddings';
-import { createOrGetUser, hasActiveAccess, getUserSubscription } from './services/user.service';
+import {
+  createOrGetUser,
+  hasActiveAccess,
+  getUserSubscription,
+  updateUserTimezone,
+  getUserTimezone,
+} from './services/user.service';
 import { createProgressController, type ProgressStage } from './services/progress.service';
 import {
   getUserDefaultCurrency,
@@ -21,7 +27,18 @@ import {
   type UserMode,
 } from './lib/user-mode';
 import { messages } from './lib/messages';
-import { createCheckoutSession, createBillingPortalSession, initializeTelegramApi } from './services/subscription.service';
+import {
+  createCheckoutSession,
+  createBillingPortalSession,
+  initializeTelegramApi,
+} from './services/subscription.service';
+import {
+  parseTimezoneInput,
+  getTimezoneConfirmation,
+  getTimezoneOptions,
+} from './lib/timezone-parser';
+import { formatInTimeZone } from 'date-fns-tz';
+import { subDays } from 'date-fns';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -79,6 +96,10 @@ export function createBot(mastra: Mastra): Bot {
         description: '💱 Set default currency',
       },
       {
+        command: 'timezone',
+        description: '🌍 Set your timezone',
+      },
+      {
         command: 'help',
         description: '❓ Get help and instructions',
       },
@@ -126,6 +147,22 @@ export function createBot(mastra: Mastra): Bot {
           trialStatus: 'active',
           onboardingStep: 'welcome_message',
         });
+      }
+
+      // Prompt new users to set their timezone
+      if (created) {
+        const tzPrompt =
+          '🌍 *Please set your timezone* so transactions are logged with the correct date!\n\n' +
+          'Use `/timezone` command with one of these formats:\n' +
+          '• City name: `/timezone Bangkok` or `/timezone New York`\n' +
+          '• GMT offset: `/timezone +7` or `/timezone -5`\n' +
+          '• IANA timezone: `/timezone Asia/Bangkok` or `/timezone America/New_York`\n\n' +
+          'Examples:\n' +
+          '`/timezone Bangkok` → Asia/Bangkok (UTC+7)\n' +
+          '`/timezone +7` → UTC+7\n' +
+          '`/timezone Asia/Kolkata` → India (UTC+5:30)';
+
+        await ctx.reply(tzPrompt, { parse_mode: 'Markdown' });
       }
 
       const modeKeyboard = {
@@ -420,6 +457,67 @@ export function createBot(mastra: Mastra): Bot {
     }
   });
 
+  // Handle /timezone command (set user's timezone)
+  bot.command('timezone', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      await ctx.reply(messages.errors.noUser());
+      return;
+    }
+
+    logger.info('command:timezone', { userId });
+
+    // Get command arguments
+    const args = ctx.message?.text?.split(' ').slice(1) || [];
+    const userInput = args.join(' ').trim();
+
+    // If no argument provided, show quick options
+    if (!userInput) {
+      const options = getTimezoneOptions();
+      await ctx.reply(options, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    // Parse user input (city name, GMT offset, or IANA timezone)
+    const parsed = parseTimezoneInput(userInput);
+
+    if (!parsed) {
+      const invalidMsg = messages.timezone.invalidInput(userInput);
+      await ctx.reply(invalidMsg.text, {
+        entities: invalidMsg.entities,
+      });
+      return;
+    }
+
+    // Update user's timezone
+    try {
+      const success = await updateUserTimezone(userId, parsed.timezone);
+
+      if (success) {
+        logger.info('command:timezone:updated', {
+          userId,
+          timezone: parsed.timezone,
+          userInput,
+        });
+
+        const confirmation = getTimezoneConfirmation(parsed);
+        await ctx.reply(confirmation, { parse_mode: 'Markdown' });
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (error) {
+      logger.error('command:timezone:update_error', {
+        userId,
+        userInput,
+        timezone: parsed.timezone,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await ctx.reply('❌ Failed to update timezone. Please try again.', {
+        parse_mode: 'Markdown',
+      });
+    }
+  });
+
   // Handle /subscribe command (show subscription plans)
   bot.command('subscribe', async (ctx) => {
     const userId = ctx.from?.id;
@@ -594,7 +692,9 @@ export function createBot(mastra: Mastra): Bot {
       });
 
       const keyboard = {
-        inline_keyboard: [[{ text: '💳 Subscribe Now', callback_data: 'subscribe_monthly_notrial' }]],
+        inline_keyboard: [
+          [{ text: '💳 Subscribe Now', callback_data: 'subscribe_monthly_notrial' }],
+        ],
       };
 
       await ctx.reply(messages.subscription.accessDenied(), {
@@ -617,12 +717,15 @@ export function createBot(mastra: Mastra): Bot {
       // Step 1: Prepare workflow input from Grammy context
       logger.info('message:preparing_workflow_input', { userId });
 
+      const userTimezone = await getUserTimezone(userId);
+
       const workflowInput: any = {
         userId,
         username: ctx.from?.username,
         firstName: ctx.from?.first_name,
         lastName: ctx.from?.last_name,
         messageId: ctx.message!.message_id,
+        timezone: userTimezone,
       };
 
       // Handle text
@@ -797,6 +900,7 @@ export function createBot(mastra: Mastra): Bot {
         inputType: metadata.inputType,
         cached: metadata.cached,
         hasMarkup: Boolean(telegramMarkup),
+        response: JSON.stringify(response, null, 2),
       });
 
       // Step 7: Update processing message with final response
@@ -1009,11 +1113,10 @@ export function createBot(mastra: Mastra): Bot {
       }
 
       // Build context prompt for transaction manager agent
+      const userTimezone = await getUserTimezone(userId);
       const now = new Date();
-      const currentDate = now.toISOString().split('T')[0];
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      const currentDate = formatInTimeZone(now, userTimezone, 'yyyy-MM-dd');
+      const yesterdayStr = formatInTimeZone(subDays(now, 1), userTimezone, 'yyyy-MM-dd');
 
       const userMetadata = {
         userId,
@@ -1026,6 +1129,7 @@ export function createBot(mastra: Mastra): Bot {
 
       const contextPrompt = [
         `[Current Date: Today is ${currentDate}, Yesterday was ${yesterdayStr}]`,
+        `[User Timezone: ${userTimezone}]`,
         `[User: ${ctx.from?.first_name || 'Unknown'} (@${ctx.from?.username || 'unknown'})]`,
         `[User ID: ${userId}]`,
         `[Message ID: ${ctx.callbackQuery.message?.message_id ?? 0}]`,

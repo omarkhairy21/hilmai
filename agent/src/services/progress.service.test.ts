@@ -4,6 +4,7 @@ import {
   type ProgressStage,
   type ProgressController,
 } from './progress.service';
+import { messages } from '../lib/messages';
 import type { Api } from 'grammy';
 
 /**
@@ -46,22 +47,17 @@ describe('ProgressController', () => {
       debug: vi.fn(),
     };
 
-    stageMessages = {
-      start: 'Processing...',
-      categorized: 'Analyzing...',
-      currencyConversion: 'Converting currency...',
-      saving: 'Saving transaction...',
-      finalizing: 'Finalizing...',
-    };
-
     progressController = createProgressController(
       mockApi as unknown as Api,
       testData.chatId,
       testData.messageId,
-      stageMessages,
+      'logger',
       mockLogger as unknown as ReturnType<any>,
       testData.userId
     );
+
+    // Use the logger mode messages for testing
+    stageMessages = messages.processingByMode.logger;
   });
 
   describe('update()', () => {

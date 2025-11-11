@@ -252,6 +252,18 @@ Select an option from the menu below:`,
       'Just start chatting naturally!',
   },
 
+  timezone: {
+    invalidInput: (input: string) => fmt`❌ I didn't recognize "${input}"
+
+Please try one of these formats:
+
+${b()}City names: Bangkok, Dubai, New York, London, Tokyo
+${b()}GMT offset: +7, -5, +5:30
+${b()}IANA timezone: Asia/Bangkok, America/New_York
+
+Use /timezone to see more options.`,
+  },
+
   errors: {
     noUser: () => '❌ Unable to identify user.',
     generic: () => '❌ Sorry, something went wrong. Please try again in a moment.',
@@ -443,7 +455,12 @@ Select an option from the menu below:`,
     portalError: () => `❌ Failed to open billing portal. Please try again.`,
 
     subscriptionConfirmed: (planTier: string | null) => {
-      const planName = planTier === 'monthly' ? 'Monthly Plan ($20/month)' : planTier === 'annual' ? 'Annual Plan ($200/year)' : 'Premium Plan';
+      const planName =
+        planTier === 'monthly'
+          ? 'Monthly Plan ($20/month)'
+          : planTier === 'annual'
+            ? 'Annual Plan ($200/year)'
+            : 'Premium Plan';
       return fmt`✅ ${b()}Subscription Confirmed!
 
 🎉 Thank you for subscribing to HilmAI!
