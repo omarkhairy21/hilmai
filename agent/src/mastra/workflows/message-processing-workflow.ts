@@ -71,8 +71,8 @@ const workflowOutputSchema = z.object({
 
 const workflowStateSchema = z.object({});
 
-type WorkflowInput = z.infer<typeof workflowInputSchema>;
-type WorkflowOutput = z.infer<typeof workflowOutputSchema>;
+export type WorkflowInput = z.infer<typeof workflowInputSchema>;
+export type WorkflowOutput = z.infer<typeof workflowOutputSchema>;
 
 /**
  * STEP 1: Determine input type + date context
@@ -93,49 +93,61 @@ const determineInputTypeOutputSchema = z.object({
   timezone: z.string(),
 });
 
-type DetermineInputOutput = z.infer<typeof determineInputTypeOutputSchema>;
+export type DetermineInputOutput = z.infer<typeof determineInputTypeOutputSchema>;
 
-const determineInputTypeStep = createStep({
+export function resolveDetermineInputOutput(
+  inputData: WorkflowInput,
+  now: Date = new Date()
+): DetermineInputOutput {
+  const timezone = inputData.timezone ?? 'UTC';
+  const currentDate = formatInTimeZone(now, timezone, 'yyyy-MM-dd');
+  const currentTime = formatInTimeZone(now, timezone, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  const yesterday = subDays(now, 1);
+  const yesterdayStr = formatInTimeZone(yesterday, timezone, 'yyyy-MM-dd');
+
+  const sanitizedMessage = inputData.messageText?.trim();
+  const hasText = Boolean(sanitizedMessage);
+  const hasVoice = Boolean(inputData.voiceFilePath);
+  const hasPhoto = Boolean(inputData.photoFilePath);
+
+  let inputType: DetermineInputOutput['inputType'];
+  if (hasText) {
+    inputType = 'text';
+  } else if (hasVoice) {
+    inputType = 'voice';
+  } else if (hasPhoto) {
+    inputType = 'photo';
+  } else {
+    throw new Error('Unsupported message type. Provide text, voice, or photo input.');
+  }
+
+  const result: DetermineInputOutput = {
+    inputType,
+    messageText: hasText ? sanitizedMessage : undefined,
+    voiceFilePath: inputData.voiceFilePath,
+    photoFilePath: inputData.photoFilePath,
+    currentDate,
+    currentTime,
+    yesterday: yesterdayStr,
+    userId: inputData.userId,
+    username: inputData.username,
+    firstName: inputData.firstName,
+    lastName: inputData.lastName,
+    messageId: inputData.messageId,
+    timezone,
+  };
+
+  return result;
+}
+
+export const determineInputTypeStep = createStep({
   id: 'determine-input-type',
   description: 'Determine message type and attach date/user context',
   stateSchema: workflowStateSchema,
   inputSchema: workflowInputSchema,
   outputSchema: determineInputTypeOutputSchema,
   execute: async ({ inputData }) => {
-    const timezone = inputData.timezone ?? 'UTC';
-    const now = new Date();
-    const currentDate = formatInTimeZone(now, timezone, 'yyyy-MM-dd');
-    const currentTime = formatInTimeZone(now, timezone, "yyyy-MM-dd'T'HH:mm:ssXXX");
-    const yesterday = subDays(now, 1);
-    const yesterdayStr = formatInTimeZone(yesterday, timezone, 'yyyy-MM-dd');
-
-    let inputType: DetermineInputOutput['inputType'];
-    if (inputData.messageText) {
-      inputType = 'text';
-    } else if (inputData.voiceFilePath) {
-      inputType = 'voice';
-    } else if (inputData.photoFilePath) {
-      inputType = 'photo';
-    } else {
-      throw new Error('Unsupported message type. Provide text, voice, or photo input.');
-    }
-
-    const result: DetermineInputOutput = {
-      inputType,
-      messageText: inputData.messageText,
-      voiceFilePath: inputData.voiceFilePath,
-      photoFilePath: inputData.photoFilePath,
-      currentDate,
-      currentTime,
-      yesterday: yesterdayStr,
-      userId: inputData.userId,
-      username: inputData.username,
-      firstName: inputData.firstName,
-      lastName: inputData.lastName,
-      messageId: inputData.messageId,
-      timezone,
-    };
-    return result;
+    return resolveDetermineInputOutput(inputData);
   },
 });
 

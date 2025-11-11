@@ -30,7 +30,6 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
   bot.on('message', async (ctx) => {
     await ctx.replyWithChatAction('typing');
     const userId = ctx.from?.id;
-    ctx.message.chat.id;
     if (!userId) {
       logger.warn('message:no_user_id');
       await ctx.reply(messages.errors.noUser());
@@ -87,7 +86,10 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
 
       // Handle text
       if (ctx.message?.text) {
-        workflowInput.messageText = ctx.message.text;
+        const trimmedText = ctx.message.text.trim();
+        if (trimmedText.length > 0) {
+          workflowInput.messageText = trimmedText;
+        }
       }
 
       // Handle voice
@@ -119,6 +121,20 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
         const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
         await downloadFile(fileUrl, tempFilePath);
         workflowInput.photoFilePath = tempFilePath;
+      }
+
+      const hasSupportedInput =
+        Boolean(workflowInput.messageText) ||
+        Boolean(workflowInput.voiceFilePath) ||
+        Boolean(workflowInput.photoFilePath);
+
+      if (!hasSupportedInput) {
+        logger.warn('message:unsupported_type', {
+          userId,
+          messageKeys: Object.keys(ctx.message ?? {}),
+        });
+        await ctx.reply(messages.errors.unsupportedType());
+        return;
       }
 
       logger.debug('message:workflow_input_prepared', { userId });

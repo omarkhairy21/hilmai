@@ -17,8 +17,7 @@
 
 ## Build, Test, and Development Commands
 
-- Daily loop: `cd agent && yarn bot:dev` for hot-reload development; switch to `yarn bot` to mirror production polling/webhooks.
-- Mastra playground: `yarn dev` opens port 4111 so you can trigger workflows without Telegram in the loop.
+- Daily loop: `cd agent && yarn dev` for hot-reload development with Mastra playground (opens port 4111).
 - Release: only when deploying, run `yarn build && yarn start` plus `docker compose up` to mirror prod.
 
 ## Coding Style & Naming Conventions

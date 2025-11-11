@@ -107,9 +107,9 @@ export const saveTransactionTool = createTool({
         userPayload.last_name = lastName;
       }
 
-      // Step 1: Generate merchant embedding and upsert user in parallel
+      // Step 1: Generate merchant embedding and upsert user in parallel (with graceful fallback)
       const embeddingStart = Date.now();
-      const [merchantEmbedding, userUpsertResult] = await Promise.all([
+      const operationResults = await Promise.allSettled([
         getMerchantEmbedding(merchant),
         supabaseService.from('users').upsert([userPayload]),
       ]);
@@ -122,22 +122,56 @@ export const saveTransactionTool = createTool({
         merchant,
       });
 
-      if (userUpsertResult.error) {
+      const [embeddingResult, userUpsertResult] = operationResults;
+
+      let merchantEmbedding: number[] | null = null;
+      if (embeddingResult.status === 'fulfilled') {
+        merchantEmbedding = embeddingResult.value;
+        logger?.debug('[tool:save-transaction]', {
+          event: 'embedding_generated',
+          dimensions: merchantEmbedding.length,
+          userId,
+        });
+      } else {
+        logger?.warn('[tool:save-transaction]', {
+          event: 'embedding_failed',
+          reason:
+            embeddingResult.reason instanceof Error
+              ? embeddingResult.reason.message
+              : String(embeddingResult.reason),
+          userId,
+          merchant,
+        });
+      }
+
+      if (userUpsertResult.status === 'rejected') {
         logger?.error('[tool:save-transaction]', {
           event: 'user_upsert_failed',
-          error: userUpsertResult.error.message,
+          error:
+            userUpsertResult.reason instanceof Error
+              ? userUpsertResult.reason.message
+              : String(userUpsertResult.reason),
           userId,
         });
         throw new Error(
-          `Failed to sync user profile before saving transaction: ${userUpsertResult.error.message}`
+          `Failed to sync user profile before saving transaction: ${
+            userUpsertResult.reason instanceof Error
+              ? userUpsertResult.reason.message
+              : String(userUpsertResult.reason)
+          }`
         );
       }
 
-      logger?.debug('[tool:save-transaction]', {
-        event: 'embedding_generated',
-        dimensions: merchantEmbedding.length,
-        userId,
-      });
+      if (userUpsertResult.value.error) {
+        logger?.error('[tool:save-transaction]', {
+          event: 'user_upsert_failed',
+          error: userUpsertResult.value.error.message,
+          userId,
+        });
+        throw new Error(
+          `Failed to sync user profile before saving transaction: ${userUpsertResult.value.error.message}`
+        );
+      }
 
       // Step 2: Get user's default currency and perform conversion if needed
       const conversionStart = Date.now();

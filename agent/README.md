@@ -121,6 +121,8 @@ Create a `.env` file in the `agent-v2` directory with the following variables:
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 # Optional: Set to 'true' to use polling instead of webhooks
 TELEGRAM_POLLING=false
+# Optional: Interval (ms) for heartbeat logs that confirm the bot is alive (default 300000 / 5 minutes)
+BOT_HEARTBEAT_INTERVAL_MS=300000
 
 # OpenAI API Configuration
 OPENAI_API_KEY=your_openai_api_key_here
@@ -365,6 +367,12 @@ Stripe-powered subscription system with:
 | Pinecone | $70/mo | $0 | $70/mo |
 | OpenAI | $70/mo | $60/mo | $10/mo |
 | **Total** | **$140/mo** | **$97/mo** | **$43/mo (31%)** |
+
+### 7. Runtime Observability
+
+- `bot.ts` now registers heartbeat logs (`bot:heartbeat`) so you can confirm the polling/webhook worker is alive.
+- The heartbeat interval is configurable via `BOT_HEARTBEAT_INTERVAL_MS` (defaults to 5 minutes) and logs process uptime and RSS memory usage.
+- Graceful shutdown hooks capture `SIGINT`/`SIGTERM` and emit `bot:shutdown_*` logs, making deploy rollouts easier to monitor.
 
 ## Performance Targets
 

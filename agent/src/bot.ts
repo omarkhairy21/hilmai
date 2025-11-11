@@ -2,6 +2,7 @@ import { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
 import { initializeTelegramApi } from './services/subscription.service';
 import { registerAllHandlers } from './handlers';
+import { registerBotHealth } from './services/health.service';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -72,6 +73,9 @@ export function createBot(mastra: Mastra): Bot {
 
   // Register all handlers (commands, callbacks, messages)
   registerAllHandlers(bot, mastra);
+
+  // Register lifecycle telemetry hooks
+  registerBotHealth(bot, logger);
 
   // Error handler for bot-level errors
   bot.catch((err) => {
