@@ -16,8 +16,8 @@ import type { Context } from 'grammy';
 import { openai } from './openai';
 import { downloadFile, getTempFilePath, deleteFile } from './file-utils';
 import { getUserTimezone } from '../services/user.service';
-import { format as formatDate } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import * as dateFns from 'date-fns';
+import * as dateFnsTz from 'date-fns-tz';
 import fs from 'fs';
 
 /**
@@ -69,16 +69,16 @@ function getDateContext(timezone: string) {
   const now = new Date();
 
   // Convert to user's timezone
-  const zonedTime = toZonedTime(now, timezone);
+  const zonedTime = dateFnsTz.toZonedTime(now, timezone);
 
   // Current date and time in user's timezone
-  const currentDate = formatDate(zonedTime, 'yyyy-MM-dd'); // YYYY-MM-DD
+  const currentDate = dateFns.format(zonedTime, 'yyyy-MM-dd'); // YYYY-MM-DD
   const currentTime = zonedTime.toISOString(); // Full ISO timestamp
 
   // Yesterday in user's timezone
   const yesterdayDate = new Date(zonedTime);
   yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterday = formatDate(yesterdayDate, 'yyyy-MM-dd');
+  const yesterday = dateFns.format(yesterdayDate, 'yyyy-MM-dd');
 
   return {
     currentDate,
