@@ -1,5 +1,6 @@
-import { Bot, webhookCallback } from 'grammy';
+import { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
+import type { Context as HonoContext } from 'hono';
 import { initializeTelegramApi } from './services/subscription.service';
 import { registerAllHandlers } from './handlers';
 import { registerBotHealth } from './services/health.service';
@@ -119,19 +120,43 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
 }
 
 /**
- * Create webhook callback for use with Express or other web frameworks
+ * Create webhook callback for use with Hono (Mastra's web framework)
  * Use this for production webhook-based bot deployment
  *
  * @param mastra - Mastra instance for logging and tools
- * @returns Middleware function compatible with Express
+ * @returns Async function that handles Hono context
  *
  * @example
- * import express from 'express';
- * const app = express();
- * const handler = createBotWebhookCallback(mastra);
- * app.post('/telegram/webhook', express.json(), handler);
+ * import { registerApiRoute } from '@mastra/core/server';
+ * const apiRoutes = [
+ *   registerApiRoute('/telegram/webhook', {
+ *     method: 'POST',
+ *     handler: createBotWebhookCallback(mastra),
+ *   }),
+ * ];
  */
-export function createBotWebhookCallback(mastra: Mastra): (req: any, res: any) => Promise<void> {
+export function createBotWebhookCallback(
+  mastra: Mastra
+): (c: HonoContext) => Promise<Response> {
   const bot = createBot(mastra);
-  return webhookCallback(bot, 'express');
+  const logger = mastra.getLogger();
+
+  return async (c: HonoContext) => {
+    try {
+      // Get the request body
+      const body = await c.req.json();
+
+      // Process the update through grammy
+      await bot.handleUpdate(body);
+
+      return c.json({ ok: true });
+    } catch (error) {
+      logger.error('bot:webhook_handle_update_error', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      // Return 200 to prevent Telegram from retrying
+      return c.json({ ok: true });
+    }
+  };
 }

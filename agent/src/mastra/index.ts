@@ -15,6 +15,7 @@ import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { registerApiRoute } from '@mastra/core/server';
+import type { Context } from 'hono';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from '../lib/config';
@@ -123,7 +124,7 @@ export const mastra = new Mastra({
       // Health check endpoint
       registerApiRoute('/health', {
         method: 'GET',
-        handler: async (c: any) => {
+        handler: async (c: Context) => {
           return c.json({
             status: 'ok',
             service: 'hilm-ai-agent-v2',
@@ -137,7 +138,7 @@ export const mastra = new Mastra({
       // Stripe checkout session endpoint
       registerApiRoute('/billing/checkout', {
         method: 'POST',
-        handler: async (c: any) => {
+        handler: async (c: Context) => {
           try {
             const body = await c.req.json();
             const { userId, planTier, successUrl, cancelUrl, includeTrial } = body;
@@ -169,7 +170,7 @@ export const mastra = new Mastra({
       // Stripe billing portal endpoint
       registerApiRoute('/billing/portal', {
         method: 'POST',
-        handler: async (c: any) => {
+        handler: async (c: Context) => {
           try {
             const body = await c.req.json();
             const { userId, returnUrl } = body;
@@ -195,7 +196,7 @@ export const mastra = new Mastra({
       // Stripe webhook endpoint
       registerApiRoute('/stripe/webhook', {
         method: 'POST',
-        handler: async (c: any) => {
+        handler: async (c: Context) => {
           try {
             const body = await c.req.text();
             const signature = c.req.header('stripe-signature');
@@ -221,7 +222,7 @@ export const mastra = new Mastra({
       // Telegram bot webhook endpoint
       registerApiRoute('/telegram/webhook', {
         method: 'POST',
-        handler: async (c: any) => {
+        handler: async (c: Context) => {
           // Handler will be bound to mastra instance after initialization
           return getWebhookHandler(mastra)(c);
         },

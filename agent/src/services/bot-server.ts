@@ -10,6 +10,7 @@
  */
 
 import type { Mastra } from '@mastra/core/mastra';
+import type { Context } from 'hono';
 import { config } from '../lib/config';
 import { createBot, createBotWebhookCallback, type BotOptions } from '../bot';
 
@@ -93,11 +94,12 @@ export function createConfiguredBot(mastra: Mastra) {
 /**
  * Get webhook callback handler for integration with Mastra server
  *
- * This handler can be mounted on any Express-compatible router
- * in Mastra's API route configuration.
+ * This handler can be mounted on Mastra's API route configuration.
+ * It validates the Telegram webhook secret token and delegates to
+ * the bot webhook handler.
  *
  * @param mastra - Mastra instance
- * @returns Async middleware function for handling webhook requests
+ * @returns Async function for handling webhook requests with Hono context
  *
  * @example
  * // In mastra/index.ts
@@ -110,33 +112,30 @@ export function createConfiguredBot(mastra: Mastra) {
  *   }),
  * ];
  */
-export function getWebhookHandler(mastra: Mastra) {
-  const handler = createBotWebhookCallback(mastra);
+export function getWebhookHandler(mastra: Mastra): (c: Context) => Promise<Response> {
+  const botHandler = createBotWebhookCallback(mastra);
   const logger = mastra.getLogger();
 
-  // Wrap handler to add logging and error handling
-  return async (c: any) => {
+  // Return Hono-compatible middleware
+  return async (c: Context) => {
     try {
-      const req = c.req;
-      const res = c;
-
       // Verify secret token if configured
       if (process.env.TELEGRAM_WEBHOOK_SECRET) {
-        const headerSecret = req.headers.get('x-telegram-bot-api-secret-token');
+        const headerSecret = c.req.header('x-telegram-bot-api-secret-token');
         if (headerSecret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
           logger.warn('bot-server:webhook_invalid_secret', {
-            ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip'),
+            ip: c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip'),
           });
           return c.json({ error: 'Unauthorized' }, 401);
         }
       }
 
-      // Call the webhook handler
-      await handler(req, res);
-      return c.json({ ok: true });
+      // Delegate to bot webhook handler
+      return await botHandler(c);
     } catch (error) {
       logger.error('bot-server:webhook_error', {
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       });
       return c.json({ error: 'Internal server error' }, 500);
     }
