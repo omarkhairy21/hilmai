@@ -135,19 +135,29 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
  *   }),
  * ];
  */
+// Cache for bot instance used in webhook mode
+let webhookBotInstance: Bot | null = null;
+
 export function createBotWebhookCallback(
   mastra: Mastra
 ): (c: HonoContext) => Promise<Response> {
-  const bot = createBot(mastra);
   const logger = mastra.getLogger();
 
   return async (c: HonoContext) => {
     try {
+      // Initialize bot instance once (lazy initialization)
+      if (!webhookBotInstance) {
+        webhookBotInstance = createBot(mastra);
+        // Initialize bot to fetch bot info from Telegram
+        await webhookBotInstance.init();
+        logger.info('bot:webhook_bot_initialized');
+      }
+
       // Get the request body
       const body = await c.req.json();
 
       // Process the update through grammy
-      await bot.handleUpdate(body);
+      await webhookBotInstance.handleUpdate(body);
 
       return c.json({ ok: true });
     } catch (error) {
