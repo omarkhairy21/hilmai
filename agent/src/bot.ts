@@ -1,8 +1,9 @@
-import { Bot } from 'grammy';
+import { Bot, webhookCallback } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
 import { initializeTelegramApi } from './services/subscription.service';
 import { registerAllHandlers } from './handlers';
 import { registerBotHealth } from './services/health.service';
+import { config } from './lib/config';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -13,8 +14,18 @@ if (!token) {
 /**
  * Create and configure the Telegram bot
  * All handlers are registered via the modular handler system
+ *
+ * @param mastra - Mastra instance for logging and tools
+ * @param options - Optional configuration for webhook setup
  */
-export function createBot(mastra: Mastra): Bot {
+export interface BotOptions {
+  webhook?: {
+    url: string;
+    secretToken?: string;
+  };
+}
+
+export function createBot(mastra: Mastra, options?: BotOptions): Bot {
   const bot = new Bot(token!);
   const logger = mastra.getLogger();
 
@@ -85,5 +96,42 @@ export function createBot(mastra: Mastra): Bot {
     });
   });
 
+  // Register webhook if provided in options
+  if (options?.webhook?.url) {
+    bot.api
+      .setWebhook(options.webhook.url, {
+        secret_token: options.webhook.secretToken,
+      })
+      .then(() => {
+        logger.info('bot:webhook_registered', {
+          url: options.webhook?.url,
+        });
+      })
+      .catch((error) => {
+        logger.error('bot:webhook_registration_failed', {
+          url: options.webhook?.url,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+  }
+
   return bot;
+}
+
+/**
+ * Create webhook callback for use with Express or other web frameworks
+ * Use this for production webhook-based bot deployment
+ *
+ * @param mastra - Mastra instance for logging and tools
+ * @returns Middleware function compatible with Express
+ *
+ * @example
+ * import express from 'express';
+ * const app = express();
+ * const handler = createBotWebhookCallback(mastra);
+ * app.post('/telegram/webhook', express.json(), handler);
+ */
+export function createBotWebhookCallback(mastra: Mastra): (req: any, res: any) => Promise<void> {
+  const bot = createBot(mastra);
+  return webhookCallback(bot, 'express');
 }

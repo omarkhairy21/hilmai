@@ -9,6 +9,8 @@ export const config = {
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
     polling: process.env.TELEGRAM_POLLING === 'true',
+    webhookUrl: process.env.TELEGRAM_WEBHOOK_URL,
+    useWebhook: process.env.TELEGRAM_USE_WEBHOOK === 'true',
   },
 
   // OpenAI
@@ -31,12 +33,6 @@ export const config = {
   libsql: {
     url: process.env.LIBSQL_URL,
     authToken: process.env.LIBSQL_AUTH_TOKEN,
-  },
-
-  // Upstash Redis (for memory - alternative to PostgreSQL)
-  upstash: {
-    redisUrl: process.env.UPSTASH_REDIS_REST_URL,
-    redisToken: process.env.UPSTASH_REDIS_REST_TOKEN,
   },
 
   // App
@@ -89,23 +85,6 @@ export function validateConfig(): void {
         'Please set them in your .env file.'
     );
   }
-}
-
-/**
- * Get Upstash Redis credentials
- */
-export function getUpstashConfig(): { url: string; token: string } | undefined {
-  if (!config.upstash.redisUrl || !config.upstash.redisToken) {
-    console.warn(
-      '[config] Upstash Redis credentials not set. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in .env to use Upstash memory.'
-    );
-    return undefined;
-  }
-
-  return {
-    url: config.upstash.redisUrl,
-    token: config.upstash.redisToken,
-  };
 }
 
 /**

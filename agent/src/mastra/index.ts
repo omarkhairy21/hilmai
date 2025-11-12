@@ -40,6 +40,9 @@ import {
   handleStripeWebhook,
 } from '../services/subscription.service';
 
+// Import bot server utilities
+import { getWebhookHandler, getBotMode, validateWebhookConfig } from '../services/bot-server';
+
 // Import usage tracker
 import { UsageTrackingProcessor } from '../lib/usage-tracker';
 
@@ -214,34 +217,35 @@ export const mastra = new Mastra({
           }
         },
       }),
+
+      // Telegram bot webhook endpoint
+      registerApiRoute('/telegram/webhook', {
+        method: 'POST',
+        handler: async (c: any) => {
+          // Handler will be bound to mastra instance after initialization
+          return getWebhookHandler(mastra)(c);
+        },
+      }),
     ],
   },
 });
 
-// Export individual agents for easy access
-export const supervisor = mastra.getAgent('supervisor');
-export const transactionLogger = mastra.getAgent('transactionLogger');
-export const queryExecutor = mastra.getAgent('queryExecutor');
-export const conversation = mastra.getAgent('conversation');
-
-// Export tools for standalone use (only agent tools)
-export const tools = {
-  saveTransaction: saveTransactionTool,
-  hybridQuery: hybridQueryTool,
-};
+// Validate webhook configuration after mastra instance creation
+try {
+  validateWebhookConfig(mastra);
+  const botMode = getBotMode(mastra);
+  mastra.getLogger().info('mastra:bot_mode', { mode: botMode });
+} catch (error) {
+  mastra.getLogger().warn('mastra:webhook_validation_failed', {
+    error: error instanceof Error ? error.message : String(error),
+  });
+}
 
 // Bot instance (will be initialized lazily)
 let bot: any | null = null;
 
 // Health check logging
 const logger = mastra.getLogger();
-logger.info('HilmAI V2 initialized', {
-  agents: ['supervisor', 'transactionLogger', 'queryExecutor', 'conversation'],
-  tools: Object.keys(tools),
-  environment: config.app.nodeEnv,
-  port: config.app.mastraPort,
-});
-
 // Function to start bot in polling mode (for development)
 export async function startPollingBot() {
   const usePolling = config.telegram.polling;
@@ -265,10 +269,6 @@ export async function startPollingBot() {
   }
 }
 
-// Export function to get bot instance (for testing/debugging)
-export function getBotInstance() {
-  return bot;
-}
 
 // Auto-start polling bot in development mode
 startPollingBot().catch((error) => {
