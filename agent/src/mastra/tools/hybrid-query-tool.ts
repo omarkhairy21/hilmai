@@ -38,7 +38,8 @@ export const hybridQueryTool = createTool({
     success: z.boolean(),
     transactions: z.array(
       z.object({
-        id: z.number(),
+        id: z.string(), // UUID
+        display_id: z.number(),
         amount: z.number(),
         currency: z.string(),
         merchant: z.string(),

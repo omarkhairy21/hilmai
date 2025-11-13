@@ -283,16 +283,65 @@ Use /timezone to see more options.`,
     error: () => '❌ An error occurred. Please try again.',
     genericError: () => '❌ Sorry, something went wrong processing your request. Please try again.',
 
-    editPrompt: (transactionId: number) =>
-      `Editing transaction **${transactionId}**.\n\n` +
-      `What would you like to change?\n\n` +
-      `You can update:\n` +
-      `• Amount (e.g., "Change amount to 45 AED")\n` +
-      `• Merchant (e.g., "Update merchant to Carrefour")\n` +
-      `• Category (e.g., "Set category to Groceries")\n` +
-      `• Description (e.g., "Add description: Weekly groceries")\n` +
-      `• Date (e.g., "Change date to yesterday")\n\n` +
-      `Or say "cancel" to cancel.`,
+    editPrompt: (displayId: number) =>
+      `✏️ *Edit Transaction #${displayId}*\n\n` +
+      `Use the /edit command to update this transaction:\n\n` +
+      `/edit ${displayId} <your changes>\n\n` +
+      `*Examples:*\n` +
+      `• \`/edit ${displayId} Date yesterday\`\n` +
+      `• \`/edit ${displayId} Update category to Dining\`\n` +
+      `• \`/edit ${displayId} Change amount to 50 AED\`\n` +
+      `• \`/edit ${displayId} Update merchant to Carrefour\`\n` +
+      `• \`/edit ${displayId} Add description: Weekly groceries\`\n\n` +
+      `You can update: amount, merchant, category, description, or date.`,
+  },
+
+  edit: {
+    invalidUsage: () =>
+      `❌ *Invalid Usage*\n\n` +
+      `Format: \`/edit <transaction_id> <changes>\`\n\n` +
+      `*Examples:*\n` +
+      `• \`/edit 18 Date yesterday\`\n` +
+      `• \`/edit 18 Update category to Dining\`\n` +
+      `• \`/edit 18 Change amount to 50 AED\`\n\n` +
+      `What would you like to change?`,
+
+    invalidTransactionId: () =>
+      `❌ *Invalid Transaction ID*\n\n` +
+      `Please provide a valid transaction ID.\n\n` +
+      `Format: \`/edit <transaction_id> <changes>\`\n\n` +
+      `Example: \`/edit 18 Date yesterday\``,
+
+    missingChanges: () =>
+      `❌ *Missing Changes*\n\n` +
+      `Please specify what you want to change.\n\n` +
+      `Format: \`/edit <transaction_id> <changes>\`\n\n` +
+      `*Examples:*\n` +
+      `• \`/edit 18 Date yesterday\`\n` +
+      `• \`/edit 18 Update category to Dining\`\n` +
+      `• \`/edit 18 Change amount to 50 AED\``,
+
+    processing: () => `🔄 *Updating transaction...*`,
+
+    success: () => `✅ *Transaction updated successfully!*`,
+
+    error: () =>
+      `❌ *Failed to update transaction*\n\n` +
+      `Sorry, I couldn't update that transaction. Please try again or contact support if the problem persists.`,
+  },
+
+  delete: {
+    confirmDelete: (displayId: number) =>
+      `⚠️ *Delete Transaction #${displayId}?*\n\n` +
+      `This action cannot be undone.\n\n` +
+      `Use the button below to confirm deletion.`,
+
+    deleteSuccess: (displayId: number) =>
+      `✅ *Transaction #${displayId} deleted successfully*`,
+
+    deleteFailed: (displayId: number) =>
+      `❌ *Failed to delete transaction #${displayId}*\n\n` +
+      `Please try again. If the problem persists, contact support.`,
   },
 
   // Mode-specific progress messages

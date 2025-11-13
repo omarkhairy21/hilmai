@@ -34,7 +34,7 @@ export const saveTransactionTool = createTool({
   }),
   outputSchema: z.object({
     success: z.boolean(),
-    transactionId: z.number().optional(),
+    transactionId: z.string().optional(), // UUID
     message: z.string(),
   }),
   execute: async ({ context, mastra, runtimeContext }) => {

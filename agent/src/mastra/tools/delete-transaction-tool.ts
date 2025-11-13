@@ -18,7 +18,7 @@ export const deleteTransactionTool = createTool({
   id: 'delete-transaction',
   description: 'Delete a transaction from the database',
   inputSchema: z.object({
-    transactionId: z.number().describe('Transaction ID to delete'),
+    transactionId: z.string().describe('Transaction ID (UUID) to delete'),
     userId: z.number().describe('Telegram user ID (for security verification)'),
   }),
   outputSchema: z.object({

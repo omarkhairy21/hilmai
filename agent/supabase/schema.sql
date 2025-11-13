@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS transactions (
-  id BIGSERIAL PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Secure UUID primary key (internal use)
+  display_id INT NOT NULL, -- Sequential number for user-friendly display (e.g., 1, 2, 3)
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
   -- Transaction data
@@ -66,7 +67,10 @@ CREATE TABLE IF NOT EXISTS transactions (
 
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Ensure display_id is unique per user (each user has their own sequence)
+  CONSTRAINT unique_user_display_id UNIQUE(user_id, display_id)
 );
 
 -- ============================================================================
@@ -153,7 +157,8 @@ CREATE OR REPLACE FUNCTION search_transactions_hybrid(
   p_limit INTEGER DEFAULT 50
 )
 RETURNS TABLE (
-  id BIGINT,
+  id UUID,
+  display_id INT,
   amount DECIMAL,
   currency TEXT,
   merchant TEXT,
@@ -166,6 +171,7 @@ BEGIN
   RETURN QUERY
   SELECT
     t.id,
+    t.display_id,
     t.amount,
     t.currency,
     t.merchant,
@@ -190,6 +196,45 @@ $$ LANGUAGE plpgsql STABLE;
 -- ============================================================================
 -- 8. Helper functions
 -- ============================================================================
+
+-- Auto-increment display_id per user on transaction insert
+CREATE OR REPLACE FUNCTION set_next_display_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Get the next display_id for this user (max existing + 1, or 1 if none exist)
+  SELECT COALESCE(MAX(display_id), 0) + 1
+  INTO NEW.display_id
+  FROM transactions
+  WHERE user_id = NEW.user_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to auto-set display_id before insert
+CREATE TRIGGER set_transaction_display_id
+BEFORE INSERT ON transactions
+FOR EACH ROW
+EXECUTE FUNCTION set_next_display_id();
+
+-- Helper function: Get transaction ID (UUID) by display_id and user_id
+CREATE OR REPLACE FUNCTION get_transaction_id_by_display_id(
+  p_user_id BIGINT,
+  p_display_id INT
+)
+RETURNS UUID AS $$
+DECLARE
+  v_id UUID;
+BEGIN
+  SELECT id
+  INTO v_id
+  FROM transactions
+  WHERE user_id = p_user_id AND display_id = p_display_id
+  LIMIT 1;
+
+  RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Update merchant cache usage count
 CREATE OR REPLACE FUNCTION increment_merchant_cache_usage(p_merchant_name TEXT)

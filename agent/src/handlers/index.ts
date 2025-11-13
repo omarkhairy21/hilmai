@@ -11,6 +11,7 @@ import { registerTimezoneCommand } from './commands/timezone.handler';
 import { registerRecentCommand } from './commands/recent.handler';
 import { registerSubscribeCommand } from './commands/subscribe.handler';
 import { registerBillingCommand } from './commands/billing.handler';
+import { registerEditCommand } from './commands/edit.handler';
 import { registerClearCommand } from './commands/clear.handler';
 
 // Callback handlers
@@ -41,6 +42,7 @@ export function registerAllHandlers(bot: Bot, mastra: Mastra): void {
   registerRecentCommand(bot, mastra);
   registerSubscribeCommand(bot, mastra);
   registerBillingCommand(bot, mastra);
+  registerEditCommand(bot, mastra); // /edit <transaction_id> <changes>
   registerClearCommand(bot, mastra);
 
   // Register callback query handlers

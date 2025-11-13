@@ -143,7 +143,8 @@ export interface HybridSearchParams {
  * Transaction result from hybrid search
  */
 export interface TransactionResult {
-  id: number;
+  id: string; // UUID
+  display_id: number;
   amount: number;
   currency: string;
   merchant: string;
@@ -234,7 +235,7 @@ export async function searchTransactionsSQL(params: {
   try {
     let query = supabaseService
       .from('transactions')
-      .select('id, amount, currency, merchant, category, description, transaction_date')
+      .select('id, display_id, amount, currency, merchant, category, description, transaction_date')
       .eq('user_id', userId);
 
     // Apply filters
@@ -271,6 +272,7 @@ export async function searchTransactionsSQL(params: {
     // Add similarity field (1.0 for exact matches) and map to TransactionResult
     return (data || []).map((tx) => ({
       id: tx.id,
+      display_id: tx.display_id,
       amount: tx.amount,
       currency: tx.currency,
       merchant: tx.merchant,

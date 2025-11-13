@@ -49,19 +49,20 @@ export function registerRecentCommand(bot: Bot, mastra: Mastra): void {
         return;
       }
 
-      // Format transactions with IDs
+      // Format transactions with display IDs
       const transactionLines = transactions.map((tx, index) => {
         const emoji = getCategoryEmoji(tx.category);
-        return `${index + 1}. ${emoji} ${tx.merchant} - ${tx.amount} ${tx.currency} (${tx.transaction_date}) [ID: ${tx.id}]`;
+        return `${index + 1}. ${emoji} ${tx.merchant} - ${tx.amount} ${tx.currency} (${tx.transaction_date}) [#${tx.display_id}]`;
       });
 
       const messageText = messages.recent.header() + '\n\n' + transactionLines.join('\n');
 
       // Generate inline keyboards for each transaction
+      // Use display_id (sequential number) in callback data, not UUID
       const keyboard = {
         inline_keyboard: transactions.map((tx) => [
-          { text: 'Edit', callback_data: `edit_${tx.id}` },
-          { text: 'Delete', callback_data: `delete_${tx.id}` },
+          { text: 'Edit', callback_data: `edit_${tx.display_id}` },
+          { text: 'Delete', callback_data: `delete_${tx.display_id}` },
         ]),
       };
 

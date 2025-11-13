@@ -19,7 +19,7 @@ export const editTransactionTool = createTool({
   id: 'edit-transaction',
   description: 'Edit an existing transaction by updating its fields',
   inputSchema: z.object({
-    transactionId: z.number().describe('Transaction ID to edit'),
+    transactionId: z.string().describe('Transaction ID (UUID) to edit'),
     userId: z.number().describe('Telegram user ID (for security verification)'),
     amount: z.number().optional().describe('New transaction amount'),
     currency: z.string().optional().describe('New currency code (e.g., AED, USD, SAR)'),

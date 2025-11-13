@@ -1,9 +1,7 @@
 import type { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
-import { getUserTimezone } from '../../services/user.service';
 import { messages } from '../../lib/messages';
-import { formatInTimeZone } from 'date-fns-tz';
-import { subDays } from 'date-fns';
+import { supabaseService } from '../../lib/supabase';
 
 /**
  * Register transaction callback query handlers
@@ -28,79 +26,61 @@ export function registerTransactionCallbacks(bot: Bot, mastra: Mastra): void {
     });
 
     try {
-      // Parse callback data
-      const [action, transactionIdStr] = callbackData.split('_');
-      const transactionId = parseInt(transactionIdStr, 10);
+      // Parse callback data: edit_<display_id> or delete_<display_id>
+      const [action, displayIdStr] = callbackData.split('_');
+      const displayId = parseInt(displayIdStr, 10);
 
-      if (!transactionId || isNaN(transactionId)) {
-        throw new Error(`Invalid transaction ID: ${transactionIdStr}`);
-      }
-
-      // Build context prompt for transaction manager agent
-      const userTimezone = await getUserTimezone(userId);
-      const now = new Date();
-      const currentDate = formatInTimeZone(now, userTimezone, 'yyyy-MM-dd');
-      const yesterdayStr = formatInTimeZone(subDays(now, 1), userTimezone, 'yyyy-MM-dd');
-
-      const userMetadata = {
-        userId,
-        telegramChatId: userId,
-        username: ctx.from?.username ?? null,
-        firstName: ctx.from?.first_name ?? null,
-        lastName: ctx.from?.last_name ?? null,
-        messageId: ctx.callbackQuery.message?.message_id ?? 0,
-      };
-
-      const contextPrompt = [
-        `[Current Date: Today is ${currentDate}, Yesterday was ${yesterdayStr}]`,
-        `[User Timezone: ${userTimezone}]`,
-        `[User: ${ctx.from?.first_name || 'Unknown'} (@${ctx.from?.username || 'unknown'})]`,
-        `[User ID: ${userId}]`,
-        `[Message ID: ${ctx.callbackQuery.message?.message_id ?? 0}]`,
-        `[User Metadata JSON: ${JSON.stringify(userMetadata)}]`,
-        `[Message Type: callback]`,
-        '',
-        `User clicked "${action}" button for transaction ID ${transactionId}.`,
-        action === 'edit'
-          ? 'Wait for user to provide new transaction details, then update the transaction.'
-          : 'Delete this transaction immediately and confirm the deletion.',
-      ].join('\n');
-
-      // Get transaction manager agent
-      const transactionManagerAgent = mastra.getAgent('transactionManager');
-      if (!transactionManagerAgent) {
-        throw new Error('Transaction manager agent is not registered');
+      if (!displayId || isNaN(displayId)) {
+        throw new Error(`Invalid display ID: ${displayIdStr}`);
       }
 
       // Acknowledge callback query
       await ctx.answerCallbackQuery();
 
-      // For delete, execute immediately
+      // For delete, execute directly without agent (no reasoning needed)
       if (action === 'delete') {
-        const generation = await transactionManagerAgent.generate(contextPrompt, {
-          memory: {
-            thread: `user-${userId}`,
-            resource: userId.toString(),
-          },
-        });
+        try {
+          // Delete transaction from database
+          const { error: deleteError } = await supabaseService
+            .from('transactions')
+            .delete()
+            .eq('user_id', userId)
+            .eq('display_id', displayId);
 
-        const response = generation.text ?? 'Transaction deleted successfully.';
+          if (deleteError) {
+            throw deleteError;
+          }
 
-        // Edit the original message to show deletion confirmation
-        if (ctx.callbackQuery.message) {
-          await ctx.editMessageText(response, { parse_mode: 'Markdown' });
-        } else {
-          await ctx.reply(response, { parse_mode: 'Markdown' });
+          // Show confirmation message
+          const confirmationMessage = `✅ *Transaction #${displayId} deleted successfully*`;
+
+          // Edit the original message to show deletion confirmation
+          if (ctx.callbackQuery.message) {
+            await ctx.editMessageText(confirmationMessage, { parse_mode: 'Markdown' });
+          } else {
+            await ctx.reply(confirmationMessage, { parse_mode: 'Markdown' });
+          }
+
+          logger.info('callback:delete_completed', { userId, displayId });
+        } catch (deleteError) {
+          logger.error('callback:delete_error', {
+            userId,
+            displayId,
+            error: deleteError instanceof Error ? deleteError.message : String(deleteError),
+          });
+
+          const errorMessage = `❌ Failed to delete transaction #${displayId}. Please try again.`;
+          if (ctx.callbackQuery.message) {
+            await ctx.editMessageText(errorMessage, { parse_mode: 'Markdown' });
+          } else {
+            await ctx.reply(errorMessage, { parse_mode: 'Markdown' });
+          }
         }
-
-        logger.info('callback:delete_completed', { userId, transactionId });
       } else {
-        // For edit, prompt user for changes
-        await ctx.reply(messages.callbacks.editPrompt(transactionId), { parse_mode: 'Markdown' });
+        // For edit, show user the /edit command with their display_id
+        await ctx.reply(messages.callbacks.editPrompt(displayId), { parse_mode: 'Markdown' });
 
-        // The transaction manager agent will handle the edit when user responds
-        // Transaction ID is included in the prompt message for context
-        logger.info('callback:edit_prompted', { userId, transactionId });
+        logger.info('callback:edit_prompted', { userId, displayId });
       }
     } catch (error) {
       logger.error('callback:error', {

@@ -479,11 +479,51 @@ export function createBot(mastra: Mastra): Bot {
 
 1. **Always validate userId** - Check if `ctx.from?.id` exists
 2. **Use structured logging** - Log with context: `logger.info('command:name', { userId })`
-3. **Use centralized messages** - Import from `lib/messages.ts`
+3. **Use centralized messages** - Import from `lib/messages.ts` for ALL user-facing text
 4. **Wrap in try-catch** - Handle errors gracefully
 5. **Import shared utilities** - Use services from `services/` and utils from `lib/`
 6. **Keep handlers focused** - One responsibility per handler file
 7. **Group related commands** - Mode commands can be in one file (e.g., `mode.handler.ts` handles `/mode`, `/mode_logger`, etc.)
+
+### Message Management
+
+**All user-facing text MUST be centralized in `src/lib/messages.ts`:**
+
+```typescript
+// ❌ Bad: Message hardcoded in handler
+await ctx.reply('❌ Failed to update transaction');
+
+// ✅ Good: Use centralized messages
+await ctx.reply(messages.edit.error());
+```
+
+**Message Organization:**
+
+- Group messages by feature/domain (e.g., `messages.edit.*`, `messages.delete.*`)
+- Use descriptive function names that indicate the message's purpose
+- Include parameters for dynamic content (user names, IDs, etc.)
+- Always include Markdown formatting and emojis for consistency
+
+**Example structure:**
+
+```typescript
+edit: {
+  invalidUsage: () => '❌ *Invalid Usage*\n\n...',
+  processing: () => '🔄 *Updating transaction...*',
+  error: () => '❌ *Failed to update transaction*\n\n...',
+},
+delete: {
+  deleteSuccess: (displayId: number) => `✅ *Transaction #${displayId} deleted*`,
+  deleteFailed: (displayId: number) => `❌ *Failed to delete transaction #${displayId}*`,
+},
+```
+
+**Benefits:**
+- 🎯 Single source of truth for user messaging
+- 🌐 Easy to update messaging across the entire bot
+- 🔄 Reuse messages across multiple handlers
+- 📝 Consistent tone and formatting
+- 🧪 Easier to test message content
 
 ### Benefits of This Architecture
 
