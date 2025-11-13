@@ -34,15 +34,17 @@ import { messageProcessingWorkflow } from './workflows/message-processing-workfl
 import { saveTransactionTool } from './tools/save-transaction-tool';
 import { hybridQueryTool } from './tools/hybrid-query-tool';
 
-// Import subscription service
+// Import API route handlers
 import {
-  createCheckoutSession,
-  createBillingPortalSession,
+  handleHealthCheck,
+  handleCheckout,
+  handleBillingPortal,
   handleStripeWebhook,
-} from '../services/subscription.service';
+  handleTelegramWebhook,
+} from '../api';
 
 // Import bot server utilities
-import { getWebhookHandler, getBotMode, validateWebhookConfig } from '../services/bot-server';
+import { getBotMode, validateWebhookConfig } from '../services/bot-server';
 
 // Import usage tracker
 import { UsageTrackingProcessor } from '../lib/usage-tracker';
@@ -124,108 +126,31 @@ export const mastra = new Mastra({
       // Health check endpoint
       registerApiRoute('/health', {
         method: 'GET',
-        handler: async (c: Context) => {
-          return c.json({
-            status: 'ok',
-            service: 'hilm-ai-agent-v2',
-            version: '2.0.0',
-            timestamp: new Date().toISOString(),
-            uptime: process.uptime(),
-          });
-        },
+        handler: async (c: Context) => handleHealthCheck(c, mastra),
       }),
 
       // Stripe checkout session endpoint
       registerApiRoute('/billing/checkout', {
         method: 'POST',
-        handler: async (c: Context) => {
-          try {
-            const body = await c.req.json();
-            const { userId, planTier, successUrl, cancelUrl, includeTrial } = body;
-
-            if (!userId || !planTier || !successUrl || !cancelUrl) {
-              return c.json({ error: 'Missing required fields' }, 400);
-            }
-
-            const result = await createCheckoutSession(
-              userId,
-              planTier,
-              successUrl,
-              cancelUrl,
-              includeTrial ?? false // Default to false (no trial) if not specified
-            );
-
-            if (result.error) {
-              return c.json({ error: result.error }, 400);
-            }
-
-            return c.json({ url: result.url });
-          } catch (error) {
-            console.error('[api] Checkout error:', error);
-            return c.json({ error: 'Internal server error' }, 500);
-          }
-        },
+        handler: async (c: Context) => handleCheckout(c, mastra),
       }),
 
       // Stripe billing portal endpoint
       registerApiRoute('/billing/portal', {
         method: 'POST',
-        handler: async (c: Context) => {
-          try {
-            const body = await c.req.json();
-            const { userId, returnUrl } = body;
-
-            if (!userId || !returnUrl) {
-              return c.json({ error: 'Missing required fields' }, 400);
-            }
-
-            const result = await createBillingPortalSession(userId, returnUrl);
-
-            if (result.error) {
-              return c.json({ error: result.error }, 400);
-            }
-
-            return c.json({ url: result.url });
-          } catch (error) {
-            console.error('[api] Billing portal error:', error);
-            return c.json({ error: 'Internal server error' }, 500);
-          }
-        },
+        handler: async (c: Context) => handleBillingPortal(c, mastra),
       }),
 
       // Stripe webhook endpoint
       registerApiRoute('/stripe/webhook', {
         method: 'POST',
-        handler: async (c: Context) => {
-          try {
-            const body = await c.req.text();
-            const signature = c.req.header('stripe-signature');
-
-            if (!signature) {
-              return c.json({ error: 'Missing stripe-signature header' }, 400);
-            }
-
-            const result = await handleStripeWebhook(body, signature);
-
-            if (!result.success) {
-              return c.json({ error: result.error }, 400);
-            }
-
-            return c.json({ received: true });
-          } catch (error) {
-            console.error('[api] Webhook error:', error);
-            return c.json({ error: 'Internal server error' }, 500);
-          }
-        },
+        handler: async (c: Context) => handleStripeWebhook(c, mastra),
       }),
 
       // Telegram bot webhook endpoint
       registerApiRoute('/telegram/webhook', {
         method: 'POST',
-        handler: async (c: Context) => {
-          // Handler will be bound to mastra instance after initialization
-          return getWebhookHandler(mastra)(c);
-        },
+        handler: async (c: Context) => handleTelegramWebhook(c, mastra),
       }),
     ],
   },
