@@ -97,4 +97,3 @@ async function announceBotIdentity(bot: Bot, logger: Logger): Promise<void> {
     });
   }
 }
-

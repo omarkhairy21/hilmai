@@ -1,6 +1,6 @@
 /**
  * Billing API Handlers
- * 
+ *
  * Handles Stripe checkout and billing portal session creation
  */
 
@@ -16,7 +16,7 @@ import {
  */
 export async function handleCheckout(c: Context, mastra: Mastra) {
   const logger = mastra.getLogger();
-  
+
   try {
     const body = await c.req.json();
     const { userId, planTier, successUrl, cancelUrl, includeTrial } = body;
@@ -84,7 +84,7 @@ export async function handleCheckout(c: Context, mastra: Mastra) {
  */
 export async function handleBillingPortal(c: Context, mastra: Mastra) {
   const logger = mastra.getLogger();
-  
+
   try {
     const body = await c.req.json();
     const { userId, returnUrl } = body;
@@ -133,4 +133,3 @@ export async function handleBillingPortal(c: Context, mastra: Mastra) {
     return c.json({ error: 'Internal server error' }, 500);
   }
 }
-

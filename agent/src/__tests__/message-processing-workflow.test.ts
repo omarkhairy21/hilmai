@@ -3,8 +3,7 @@ import type { WorkflowInput } from '../mastra/workflows/message-processing-workf
 
 process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? 'test-key';
 process.env.SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
-process.env.SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'service-role-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'service-role-key';
 process.env.SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? 'anon-key';
 
 const { resolveDetermineInputOutput } = await import(
@@ -99,4 +98,3 @@ describe('resolveDetermineInputOutput', () => {
     );
   });
 });
-

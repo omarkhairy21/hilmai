@@ -27,7 +27,8 @@ export function getBotMode(mastra: Mastra): 'webhook' | 'polling' {
   if (config.telegram.useWebhook) {
     if (!config.telegram.webhookUrl) {
       logger.warn('bot-server:webhook_enabled_but_no_url', {
-        message: 'TELEGRAM_USE_WEBHOOK=true but TELEGRAM_WEBHOOK_URL not set. Falling back to polling.',
+        message:
+          'TELEGRAM_USE_WEBHOOK=true but TELEGRAM_WEBHOOK_URL not set. Falling back to polling.',
       });
       return 'polling';
     }
@@ -47,7 +48,8 @@ export function getBotMode(mastra: Mastra): 'webhook' | 'polling' {
   // Production without webhook URL: require explicit configuration
   if (config.app.nodeEnv === 'production') {
     logger.warn('bot-server:production_without_webhook', {
-      message: 'Running in production without webhook. Set TELEGRAM_USE_WEBHOOK=true and TELEGRAM_WEBHOOK_URL.',
+      message:
+        'Running in production without webhook. Set TELEGRAM_USE_WEBHOOK=true and TELEGRAM_WEBHOOK_URL.',
     });
   }
 

@@ -195,7 +195,6 @@ export async function startPollingBot() {
   }
 }
 
-
 // Auto-start polling bot in development mode
 startPollingBot().catch((error) => {
   logger.error('Failed to start polling bot', {

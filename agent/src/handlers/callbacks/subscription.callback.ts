@@ -3,6 +3,7 @@ import type { Mastra } from '@mastra/core/mastra';
 import {
   createCheckoutSession,
   createBillingPortalSession,
+  initializeLogger,
 } from '../../services/subscription.service';
 import { messages } from '../../lib/messages';
 
@@ -13,12 +14,16 @@ import { messages } from '../../lib/messages';
 export function registerSubscriptionCallbacks(bot: Bot, mastra: Mastra): void {
   const logger = mastra.getLogger();
 
+  // Initialize logger in subscription service
+  initializeLogger(logger);
+
   // Handle subscription plan selection
   bot.callbackQuery(/^subscribe_(monthly_notrial|monthly_trial|annual)$/, async (ctx) => {
     const userId = ctx.from?.id;
     const callbackData = ctx.callbackQuery.data;
 
     if (!userId) {
+      logger.warn('callback:subscribe:no_user_id');
       await ctx.answerCallbackQuery(messages.callbacks.noUser());
       return;
     }
@@ -41,6 +46,12 @@ export function registerSubscriptionCallbacks(bot: Bot, mastra: Mastra): void {
     }
 
     try {
+      logger.info('callback:subscribe:creating_session', {
+        userId,
+        planTier,
+        includeTrial,
+      });
+
       // Create checkout session with trial option
       const result = await createCheckoutSession(
         userId,
@@ -51,6 +62,12 @@ export function registerSubscriptionCallbacks(bot: Bot, mastra: Mastra): void {
       );
 
       if (result.error || !result.url) {
+        logger.error('callback:subscribe:checkout_failed', {
+          userId,
+          planTier,
+          includeTrial,
+          error: result.error,
+        });
         await ctx.answerCallbackQuery(messages.subscription.checkoutError());
         return;
       }
@@ -82,9 +99,12 @@ export function registerSubscriptionCallbacks(bot: Bot, mastra: Mastra): void {
         price: planTier === 'monthly' ? 20 : 200,
       });
     } catch (error) {
-      logger.error('callback:subscribe:error', {
+      logger.error('callback:subscribe:exception', {
         userId,
+        planTier,
+        includeTrial,
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       });
       await ctx.answerCallbackQuery(messages.subscription.checkoutError());
     }
@@ -95,6 +115,7 @@ export function registerSubscriptionCallbacks(bot: Bot, mastra: Mastra): void {
     const userId = ctx.from?.id;
 
     if (!userId) {
+      logger.warn('callback:billing_portal:no_user_id');
       await ctx.answerCallbackQuery(messages.callbacks.noUser());
       return;
     }
@@ -102,12 +123,18 @@ export function registerSubscriptionCallbacks(bot: Bot, mastra: Mastra): void {
     logger.info('callback:billing_portal', { userId });
 
     try {
+      logger.info('callback:billing_portal:creating_session', { userId });
+
       const result = await createBillingPortalSession(
         userId,
         `https://t.me/${ctx.me.username}` // Return URL (back to bot)
       );
 
       if (result.error || !result.url) {
+        logger.error('callback:billing_portal:session_failed', {
+          userId,
+          error: result.error,
+        });
         await ctx.answerCallbackQuery(messages.subscription.portalError());
         return;
       }
@@ -134,9 +161,10 @@ export function registerSubscriptionCallbacks(bot: Bot, mastra: Mastra): void {
 
       logger.info('callback:billing_portal:opened', { userId });
     } catch (error) {
-      logger.error('callback:billing_portal:error', {
+      logger.error('callback:billing_portal:exception', {
         userId,
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       });
       await ctx.answerCallbackQuery(messages.subscription.portalError());
     }

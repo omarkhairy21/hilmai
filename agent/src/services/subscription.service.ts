@@ -6,6 +6,7 @@
 
 import Stripe from 'stripe';
 import type { Api } from 'grammy';
+import type { IMastraLogger } from '@mastra/core/logger';
 import { stripe, STRIPE_PRICES, STRIPE_WEBHOOK_SECRET } from '../lib/stripe';
 import { supabaseService } from '../lib/supabase';
 import { updateUserSubscription, getUserSubscription } from './user.service';
@@ -13,12 +14,20 @@ import { messages } from '../lib/messages';
 
 // Global reference to Telegram API for sending messages
 let telegramApi: Api | null = null;
+let logger: IMastraLogger | null = null;
 
 /**
  * Initialize Telegram API for sending subscription messages
  */
 export function initializeTelegramApi(api: Api): void {
   telegramApi = api;
+}
+
+/**
+ * Initialize logger for subscription service
+ */
+export function initializeLogger(loggerInstance: IMastraLogger): void {
+  logger = loggerInstance;
 }
 
 /**
@@ -37,49 +46,91 @@ export async function createCheckoutSession(
   includeTrial = false
 ): Promise<{ url: string | null; error: string | null }> {
   try {
+    // Validate price ID is configured FIRST
+    const priceId = planTier === 'monthly' ? STRIPE_PRICES.monthly : STRIPE_PRICES.annual;
+
+    if (!priceId) {
+      const errorMsg = `Price ID not configured for ${planTier} plan. Set STRIPE_MONTHLY_PRICE_ID or STRIPE_ANNUAL_PRICE_ID in environment.`;
+      if (logger) {
+        logger.error('subscription:checkout:missing_price_id', {
+          userId,
+          planTier,
+          error: errorMsg,
+        });
+      }
+      return { url: null, error: errorMsg };
+    }
+
     // Get or create Stripe customer
-    const { data: user } = await supabaseService
+    const { data: user, error: userError } = await supabaseService
       .from('users')
       .select('stripe_customer_id, telegram_username, first_name, email')
       .eq('id', userId)
       .single();
 
-    if (!user) {
-      return { url: null, error: 'User not found' };
+    if (userError || !user) {
+      const errorMsg = 'User not found';
+      if (logger) {
+        logger.error('subscription:checkout:user_not_found', {
+          userId,
+          error: userError?.message || errorMsg,
+        });
+      }
+      return { url: null, error: errorMsg };
     }
 
     let customerId = user.stripe_customer_id;
 
     // Create Stripe customer if doesn't exist
     if (!customerId) {
-      const customerData: Stripe.CustomerCreateParams = {
-        metadata: {
-          telegram_user_id: userId.toString(),
-        },
-        name: user.first_name || user.telegram_username || `User ${userId}`,
-      };
+      try {
+        const customerData: Stripe.CustomerCreateParams = {
+          metadata: {
+            telegram_user_id: userId.toString(),
+          },
+          name: user.first_name || user.telegram_username || `User ${userId}`,
+        };
 
-      // Add email if available
-      if (user.email) {
-        customerData.email = user.email;
+        // Add email if available
+        if (user.email) {
+          customerData.email = user.email;
+        }
+
+        const customer = await stripe.customers.create(customerData);
+
+        customerId = customer.id;
+
+        // Update user with Stripe customer ID
+        const { error: updateError } = await supabaseService
+          .from('users')
+          .update({ stripe_customer_id: customerId })
+          .eq('id', userId);
+
+        if (updateError) {
+          if (logger) {
+            logger.warn('subscription:checkout:failed_to_save_customer_id', {
+              userId,
+              customerId,
+              error: updateError.message,
+            });
+          }
+        } else if (logger) {
+          logger.info('subscription:checkout:customer_created', {
+            userId,
+            customerId,
+          });
+        }
+      } catch (customerError) {
+        const errorMsg =
+          customerError instanceof Error ? customerError.message : String(customerError);
+        if (logger) {
+          logger.error('subscription:checkout:customer_creation_failed', {
+            userId,
+            error: errorMsg,
+          });
+        }
+        return { url: null, error: 'Failed to create Stripe customer' };
       }
-
-      const customer = await stripe.customers.create(customerData);
-
-      customerId = customer.id;
-
-      // Update user with Stripe customer ID
-      await supabaseService
-        .from('users')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', userId);
-    }
-
-    // Get price ID based on plan tier
-    const priceId = planTier === 'monthly' ? STRIPE_PRICES.monthly : STRIPE_PRICES.annual;
-
-    if (!priceId) {
-      return { url: null, error: `Price ID not configured for ${planTier} plan` };
     }
 
     // Create checkout session
@@ -93,6 +144,16 @@ export async function createCheckoutSession(
     // Only add trial for monthly plan if includeTrial is true
     if (includeTrial && planTier === 'monthly') {
       subscriptionData.trial_period_days = 7; // 7-day trial for monthly plan only
+    }
+
+    if (logger) {
+      logger.info('subscription:checkout:creating_session', {
+        userId,
+        customerId,
+        planTier,
+        priceId,
+        includeTrial,
+      });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -113,12 +174,28 @@ export async function createCheckoutSession(
       },
     });
 
+    if (logger) {
+      logger.info('subscription:checkout:session_created', {
+        userId,
+        sessionId: session.id,
+        planTier,
+      });
+    }
+
     return { url: session.url, error: null };
   } catch (error) {
-    console.error('[subscription.service] Failed to create checkout session:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (logger) {
+      logger.error('subscription:checkout:error', {
+        userId,
+        planTier,
+        error: errorMsg,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+    }
     return {
       url: null,
-      error: error instanceof Error ? error.message : 'Failed to create checkout session',
+      error: errorMsg,
     };
   }
 }
@@ -131,14 +208,28 @@ export async function createBillingPortalSession(
   returnUrl: string
 ): Promise<{ url: string | null; error: string | null }> {
   try {
-    const { data: user } = await supabaseService
+    const { data: user, error: userError } = await supabaseService
       .from('users')
       .select('stripe_customer_id')
       .eq('id', userId)
       .single();
 
-    if (!user || !user.stripe_customer_id) {
-      return { url: null, error: 'No Stripe customer found' };
+    if (userError || !user || !user.stripe_customer_id) {
+      const errorMsg = 'No Stripe customer found';
+      if (logger) {
+        logger.error('subscription:billing_portal:customer_not_found', {
+          userId,
+          error: userError?.message || errorMsg,
+        });
+      }
+      return { url: null, error: errorMsg };
+    }
+
+    if (logger) {
+      logger.info('subscription:billing_portal:creating_session', {
+        userId,
+        customerId: user.stripe_customer_id,
+      });
     }
 
     const session = await stripe.billingPortal.sessions.create({
@@ -146,12 +237,26 @@ export async function createBillingPortalSession(
       return_url: returnUrl,
     });
 
+    if (logger) {
+      logger.info('subscription:billing_portal:session_created', {
+        userId,
+        sessionId: session.id,
+      });
+    }
+
     return { url: session.url, error: null };
   } catch (error) {
-    console.error('[subscription.service] Failed to create billing portal session:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (logger) {
+      logger.error('subscription:billing_portal:error', {
+        userId,
+        error: errorMsg,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+    }
     return {
       url: null,
-      error: error instanceof Error ? error.message : 'Failed to create billing portal session',
+      error: errorMsg,
     };
   }
 }

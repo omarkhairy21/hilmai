@@ -1,6 +1,6 @@
 /**
  * Stripe Webhook API Handler
- * 
+ *
  * Handles incoming Stripe webhook events for subscription management
  */
 
@@ -10,7 +10,7 @@ import { handleStripeWebhook as processStripeWebhook } from '../services/subscri
 
 export async function handleStripeWebhook(c: Context, mastra: Mastra) {
   const logger = mastra.getLogger();
-  
+
   try {
     const body = await c.req.text();
     const signature = c.req.header('stripe-signature');
@@ -52,4 +52,3 @@ export async function handleStripeWebhook(c: Context, mastra: Mastra) {
     return c.json({ error: 'Internal server error' }, 500);
   }
 }
-
