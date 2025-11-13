@@ -225,6 +225,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_transaction_id_by_display_id: {
+        Args: {
+          p_user_id: number;
+          p_display_id: number;
+        };
+        Returns: string; // UUID
+      };
       increment_merchant_cache_usage: {
         Args: {
           p_merchant_name: string;

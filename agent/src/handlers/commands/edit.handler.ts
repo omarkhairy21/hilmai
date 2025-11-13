@@ -1,9 +1,7 @@
 import type { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
-import { getUserTimezone } from '../../services/user.service';
 import { messages } from '../../lib/messages';
-import { formatInTimeZone } from 'date-fns-tz';
-import { subDays } from 'date-fns';
+import { buildEditContext } from '../../services/edit-context.service';
 
 /**
  * Register /edit command handler
@@ -49,42 +47,20 @@ export function registerEditCommand(bot: Bot, mastra: Mastra): void {
 
       logger.info('command:edit:parsed', { userId, displayId, changesLength: changes.length });
 
-      // Get user context
-      const userTimezone = await getUserTimezone(userId);
-      const now = new Date();
-      const currentDate = formatInTimeZone(now, userTimezone, 'yyyy-MM-dd');
-      const yesterdayStr = formatInTimeZone(subDays(now, 1), userTimezone, 'yyyy-MM-dd');
+      // Build edit context (resolves display_id → UUID, gets dates, builds prompt)
+      const editContext = await buildEditContext(userId, displayId, changes, ctx);
 
-      const userMetadata = {
-        userId,
-        telegramChatId: userId,
-        username: ctx.from?.username ?? null,
-        firstName: ctx.from?.first_name ?? null,
-        lastName: ctx.from?.last_name ?? null,
-        messageId: ctx.message?.message_id ?? 0,
-      };
+      if (!editContext) {
+        logger.warn('command:edit:transaction_not_found', { userId, displayId });
+        await ctx.reply(messages.edit.invalidTransactionId(), { parse_mode: 'Markdown' });
+        return;
+      }
 
-      // Build context prompt for transaction manager agent
-      const contextPrompt = [
-        `[Current Date: Today is ${currentDate}, Yesterday was ${yesterdayStr}]`,
-        `[User Timezone: ${userTimezone}]`,
-        `[User: ${ctx.from?.first_name || 'Unknown'} (@${ctx.from?.username || 'unknown'})]`,
-        `[User ID: ${userId}]`,
-        `[Message ID: ${ctx.message?.message_id ?? 0}]`,
-        `[User Metadata JSON: ${JSON.stringify(userMetadata)}]`,
-        `[Message Type: edit_command]`,
-        `[Transaction Display ID: ${displayId}]`,
-        '',
-        `User is editing transaction #${displayId}.`,
-        'Apply the requested changes and update the transaction. Respond with the updated transaction details.',
-        'Changes requested:',
-        changes,
-      ].join('\n');
-
-      logger.info('command:edit:building_prompt', {
+      logger.info('command:edit:context_built', {
         userId,
         displayId,
-        promptLength: contextPrompt.length,
+        transactionId: editContext.transactionId,
+        promptLength: editContext.contextPrompt.length,
       });
 
       // Get transaction manager agent
@@ -100,7 +76,7 @@ export function registerEditCommand(bot: Bot, mastra: Mastra): void {
       try {
         // Call transaction manager agent directly
         const startTime = Date.now();
-        const generation = await transactionManagerAgent.generate(contextPrompt, {
+        const generation = await transactionManagerAgent.generate(editContext.contextPrompt, {
           memory: {
             thread: `user-${userId}`,
             resource: userId.toString(),
@@ -111,6 +87,7 @@ export function registerEditCommand(bot: Bot, mastra: Mastra): void {
         logger.info('command:edit:agent_response', {
           userId,
           displayId,
+          transactionId: editContext.transactionId,
           duration,
           responseLength: generation.text?.length || 0,
         });
