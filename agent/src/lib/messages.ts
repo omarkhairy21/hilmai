@@ -4,7 +4,13 @@ export const messages = {
   start: {
     welcome: () => fmt`👋 ${b()}Welcome to HilmAI!
 
-I'm your AI assistant that makes expense tracking effortless.
+I'm your AI personal finance assistant focused on helping you understand spending, set achievable goals, and work toward financial freedom.
+
+${b()}I help you by:
+• Understanding where you're spending money
+• Setting the right and achievable goals
+• Providing tailored financial advice
+• Tracking expenses effortlessly
 
 ${b()}Why HilmAI changes everything:
 
@@ -24,14 +30,8 @@ I'll understand and save it.
 "How much on groceries?"
 Get instant answers, zero effort.
 
-${b()}Choose your mode:
-
-💰 ${b()}Logger - Fastest logging
-💬 ${b()}Chat - Ask me anything (Current)
-📊 ${b()}Query - Financial insights
-
-💡 ${b()}Try it now:
-Say "I spent 100 AED at Carrefour" or /mode_logger for quick logging`,
+${b()} Let's setup your account or keep talking naturally.
+`,
 
     fallback: () =>
       `👋 Welcome to HilmAI!\n\n` +
@@ -41,6 +41,59 @@ Say "I spent 100 AED at Carrefour" or /mode_logger for quick logging`,
       `🎤 Voice messages: Any language\n` +
       `🧠 Get insights: "How much on groceries?"\n\n` +
       `Try it now or use /mode to pick your style!`,
+
+    profileSetup: () => fmt`🔧 ${b()}Let's personalize HilmAI
+
+${b()}Step 1: Lock your default currency
+Use \`/currency <code>\` so every insight stays consistent.
+Examples: \`/currency AED\`, \`/currency USD\`, \`/currency EUR\`
+
+${b()}Step 2: Set your timezone
+Use \`/timezone <city|offset>\` so daily/weekly summaries match reality.
+Examples: \`/timezone Dubai\`, \`/timezone +3\`, \`/timezone Asia/Kolkata\`
+
+${b()}Step 3: Pick how you work
+💰 Logger Mode — fastest capture when you're on the go
+💬 Chat Mode — conversational help with memory
+📊 Query Mode — instant spending breakdowns
+
+Use the shortcuts below to finish setup, then keep logging momentum.`,
+
+    profileCurrencyHelp: () => fmt`💱 ${b()}Default currency tips
+
+Use the command: \`/currency <ISO code>\`
+
+Examples:
+• \`/currency AED\` (UAE Dirham)
+• \`/currency USD\` (US Dollar)
+• \`/currency EUR\` (Euro)
+• \`/currency GBP\` (British Pound)
+
+This keeps every report consistent while we auto-convert other currencies.`,
+
+    profileTimezoneHelp: () => fmt`🌍 ${b()}Timezone setup
+
+Use the command: \`/timezone <city|offset|IANA>\`
+
+Examples:
+• \`/timezone Dubai\` → Asia/Dubai
+• \`/timezone +3\` → UTC+3
+• \`/timezone Asia/Kolkata\`
+
+A correct timezone ensures daily, weekly, and monthly summaries line up with your day.`,
+
+    profileModesHelp: () => fmt`🧭 ${b()}Mode guide
+
+${b()}Logger Mode
+Fastest capture for receipts, voice, or quick text. Use \`/mode_logger\` when you need zero-drift logging.
+
+${b()}Chat Mode
+Conversational and remembers context. Use \`/mode_chat\` to ask questions, get help, or learn features.
+
+${b()}Query Mode
+Purpose-built for insights like "How much on groceries this month?" Use \`/mode_query\` and get instant answers.
+
+Switch anytime with \`/mode\`.`,
   },
 
   help: {

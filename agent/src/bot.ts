@@ -138,10 +138,10 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
 // Cache for bot instance used in webhook mode
 let webhookBotInstance: Bot | null = null;
 
-export function createBotWebhookCallback(mastra: Mastra): (c: HonoContext) => Promise<Response> {
+export function createBotWebhookCallback(mastra: Mastra): (c: HonoContext, body?: unknown) => Promise<Response> {
   const logger = mastra.getLogger();
 
-  return async (c: HonoContext) => {
+  return async (c: HonoContext, body?: unknown) => {
     try {
       // Initialize bot instance once (lazy initialization)
       if (!webhookBotInstance) {
@@ -151,11 +151,11 @@ export function createBotWebhookCallback(mastra: Mastra): (c: HonoContext) => Pr
         logger.info('bot:webhook_bot_initialized');
       }
 
-      // Get the request body
-      const body = await c.req.json();
+      // Get the request body if not provided
+      const updateBody = body ?? await c.req.json();
 
       // Process the update through grammy
-      await webhookBotInstance.handleUpdate(body);
+      await webhookBotInstance.handleUpdate(updateBody);
 
       return c.json({ ok: true });
     } catch (error) {

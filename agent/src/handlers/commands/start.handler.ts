@@ -60,11 +60,10 @@ export function registerStartCommand(bot: Bot, mastra: Mastra): void {
         await ctx.reply(tzPrompt, { parse_mode: 'Markdown' });
       }
 
-      const modeKeyboard = {
+      const onboardingKeyboard = {
         inline_keyboard: [
-          [{ text: '💰 Logger Mode', callback_data: 'set_mode_logger' }],
-          [{ text: '💬 Chat Mode (Current)', callback_data: 'set_mode_chat' }],
-          [{ text: '📊 Query Mode', callback_data: 'set_mode_query' }],
+          [{ text: '⚡ Instant Log', callback_data: 'set_mode_logger' }],
+          [{ text: '🛠 Set Up Profile', callback_data: 'open_profile_setup' }],
         ],
       };
 
@@ -72,7 +71,7 @@ export function registerStartCommand(bot: Bot, mastra: Mastra): void {
 
       await ctx.reply(welcomeMessage.text, {
         entities: welcomeMessage.entities,
-        reply_markup: modeKeyboard,
+        reply_markup: onboardingKeyboard,
       });
     } catch (error) {
       logger.error('command:start:error', {

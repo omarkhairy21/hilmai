@@ -223,6 +223,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      webhook_updates: {
+        Row: {
+          id: string; // UUID
+          update_id: number; // Telegram's update identifier
+          payload: Json; // Raw Telegram update payload
+          status: 'pending' | 'processing' | 'completed' | 'failed';
+          last_error: string | null;
+          processed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string; // UUID, auto-generated
+          update_id: number;
+          payload: Json;
+          status?: 'pending' | 'processing' | 'completed' | 'failed';
+          last_error?: string | null;
+          processed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          update_id?: number;
+          payload?: Json;
+          status?: 'pending' | 'processing' | 'completed' | 'failed';
+          last_error?: string | null;
+          processed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

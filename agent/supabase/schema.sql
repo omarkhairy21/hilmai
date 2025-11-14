@@ -410,5 +410,40 @@ USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
 
 -- ============================================================================
+-- 11. Webhook updates tracking table
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS webhook_updates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  update_id BIGINT UNIQUE NOT NULL, -- Telegram's update identifier for deduplication
+  payload JSONB NOT NULL, -- Raw Telegram update payload
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+  last_error TEXT, -- Last error message if failed
+  processed_at TIMESTAMPTZ, -- When processing completed
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_webhook_updates_update_id ON webhook_updates(update_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_updates_status ON webhook_updates(status);
+CREATE INDEX IF NOT EXISTS idx_webhook_updates_created_at ON webhook_updates(created_at);
+
+-- Trigger to update updated_at timestamp
+CREATE TRIGGER update_webhook_updates_updated_at
+    BEFORE UPDATE ON webhook_updates
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- RLS Policies for webhook_updates
+-- Backend service only (no user access needed)
+ALTER TABLE webhook_updates ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Backend service can manage all webhook updates"
+ON webhook_updates FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- ============================================================================
 -- Done! Schema is ready for agent-v2 with RLS security and subscriptions
 -- ============================================================================

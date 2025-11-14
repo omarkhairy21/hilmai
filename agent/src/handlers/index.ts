@@ -19,6 +19,7 @@ import { registerModeCallbacks } from './callbacks/mode.callback';
 import { registerMenuCallbacks } from './callbacks/menu.callback';
 import { registerTransactionCallbacks } from './callbacks/transaction.callback';
 import { registerSubscriptionCallbacks } from './callbacks/subscription.callback';
+import { registerProfileSetupCallbacks } from './callbacks/profile-setup.callback';
 
 // Message handler
 import { registerMessageHandler } from './messages/message.handler';
@@ -50,6 +51,7 @@ export function registerAllHandlers(bot: Bot, mastra: Mastra): void {
   registerMenuCallbacks(bot, mastra);
   registerTransactionCallbacks(bot, mastra);
   registerSubscriptionCallbacks(bot, mastra);
+  registerProfileSetupCallbacks(bot, mastra);
 
   // Register main message handler (must be last to avoid capturing commands)
   registerMessageHandler(bot, mastra);
