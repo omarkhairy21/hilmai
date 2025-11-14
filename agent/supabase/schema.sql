@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
   stripe_customer_id TEXT UNIQUE,
   stripe_subscription_id TEXT,
   plan_tier TEXT CHECK (plan_tier IN ('monthly', 'annual')),
-  subscription_status TEXT CHECK (subscription_status IN ('trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid')),
+  subscription_status TEXT CHECK (subscription_status IN ('free', 'trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid')),
   trial_started_at TIMESTAMPTZ,
   trial_ends_at TIMESTAMPTZ,
   current_period_end TIMESTAMPTZ,

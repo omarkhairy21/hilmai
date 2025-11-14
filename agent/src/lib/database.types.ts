@@ -146,6 +146,7 @@ export type Database = {
           stripe_subscription_id: string | null;
           plan_tier: 'monthly' | 'annual' | null;
           subscription_status:
+            | 'free'
             | 'trialing'
             | 'active'
             | 'past_due'
@@ -175,6 +176,7 @@ export type Database = {
           stripe_subscription_id?: string | null;
           plan_tier?: 'monthly' | 'annual' | null;
           subscription_status?:
+            | 'free'
             | 'trialing'
             | 'active'
             | 'past_due'
@@ -204,6 +206,7 @@ export type Database = {
           stripe_subscription_id?: string | null;
           plan_tier?: 'monthly' | 'annual' | null;
           subscription_status?:
+            | 'free'
             | 'trialing'
             | 'active'
             | 'past_due'

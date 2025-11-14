@@ -49,10 +49,8 @@ export async function createOrGetUser(
       return { error: null, created: false, user: updatedUser || existingUser };
     }
 
-    // User doesn't exist, create new user with 7-day trial
+    // User doesn't exist, create new user with free status
     const now = new Date();
-    const trialEnds = new Date(now);
-    trialEnds.setDate(trialEnds.getDate() + 7); // 7-day trial
 
     const { error: createError, data: newUser } = await supabaseService
       .from('users')
@@ -63,10 +61,8 @@ export async function createOrGetUser(
         first_name: userData.first_name || null,
         last_name: userData.last_name || null,
         current_mode: 'chat', // Default to chat mode
-        default_currency: 'AED', // Default currency
-        subscription_status: 'trialing',
-        trial_started_at: now.toISOString(),
-        trial_ends_at: trialEnds.toISOString(),
+        default_currency: 'USD', // Default currency
+        subscription_status: 'free',
         created_at: now.toISOString(),
         updated_at: now.toISOString(),
       })
@@ -120,6 +116,7 @@ export async function updateUserSubscription(
     stripe_subscription_id?: string;
     plan_tier?: 'monthly' | 'annual';
     subscription_status?:
+      | 'free'
       | 'trialing'
       | 'active'
       | 'past_due'
