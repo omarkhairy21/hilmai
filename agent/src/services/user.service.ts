@@ -49,8 +49,10 @@ export async function createOrGetUser(
       return { error: null, created: false, user: updatedUser || existingUser };
     }
 
-    // User doesn't exist, create new user with free status
+    // User doesn't exist, create new user with free status and auto-start trial
     const now = new Date();
+    const trialStart = now;
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
 
     const { error: createError, data: newUser } = await supabaseService
       .from('users')
@@ -63,6 +65,9 @@ export async function createOrGetUser(
         current_mode: 'chat', // Default to chat mode
         default_currency: 'USD', // Default currency
         subscription_status: 'free',
+        trial_started_at: trialStart.toISOString(), // Start hidden trial automatically
+        trial_ends_at: trialEnd.toISOString(),
+        trial_messages_used: 0, // Initialize message counter to 0
         created_at: now.toISOString(),
         updated_at: now.toISOString(),
       })
@@ -179,6 +184,104 @@ export async function hasActiveAccess(userId: number): Promise<boolean> {
     return false;
   } catch (error) {
     console.error('[user.service] Failed to check access:', error);
+    return false;
+  }
+}
+
+/**
+ * Check if user has messages remaining in their hidden free trial
+ * Returns { canUse: boolean, remaining: number, isTrialActive: boolean }
+ */
+export async function checkTrialMessageLimit(userId: number): Promise<{
+  canUse: boolean;
+  remaining: number;
+  isTrialActive: boolean;
+  messagesUsed: number;
+}> {
+  const TRIAL_MESSAGE_LIMIT = 5;
+
+  try {
+    const { data: user, error } = await supabaseService
+      .from('users')
+      .select('subscription_status, trial_started_at, trial_ends_at, trial_messages_used')
+      .eq('id', userId)
+      .single();
+
+    if (error || !user) {
+      console.error('[user.service] Failed to fetch trial status:', error);
+      // Default to allowing if we can't check (safer fallback)
+      return { canUse: true, remaining: 5, isTrialActive: true, messagesUsed: 0 };
+    }
+
+    // Only applies to 'free' status users
+    if (user.subscription_status !== 'free') {
+      // Non-free users have unlimited access in their plan
+      return { canUse: true, remaining: -1, isTrialActive: false, messagesUsed: 0 };
+    }
+
+    // Check if trial has expired
+    const now = new Date();
+    const trialEnded = user.trial_ends_at ? new Date(user.trial_ends_at) < now : false;
+
+    if (trialEnded) {
+      return { canUse: false, remaining: 0, isTrialActive: false, messagesUsed: user.trial_messages_used };
+    }
+
+    // Trial is active, check message limit
+    const messagesUsed = user.trial_messages_used || 0;
+    const remaining = Math.max(0, TRIAL_MESSAGE_LIMIT - messagesUsed);
+    const canUse = remaining > 0;
+
+    return {
+      canUse,
+      remaining,
+      isTrialActive: true,
+      messagesUsed,
+    };
+  } catch (error) {
+    console.error('[user.service] Error checking trial message limit:', error);
+    // Default to allowing if we can't check
+    return { canUse: true, remaining: 5, isTrialActive: true, messagesUsed: 0 };
+  }
+}
+
+/**
+ * Increment user's trial message counter
+ */
+export async function incrementTrialMessageCount(userId: number): Promise<boolean> {
+  try {
+    // First, get current count
+    const { data: user, error: fetchError } = await supabaseService
+      .from('users')
+      .select('trial_messages_used')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !user) {
+      console.error('[user.service] Failed to fetch trial messages:', fetchError);
+      return false;
+    }
+
+    const currentCount = user.trial_messages_used || 0;
+    const newCount = currentCount + 1;
+
+    // Update with new count
+    const { error: updateError } = await supabaseService
+      .from('users')
+      .update({
+        trial_messages_used: newCount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('[user.service] Failed to increment trial messages:', updateError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[user.service] Error incrementing trial message count:', error);
     return false;
   }
 }

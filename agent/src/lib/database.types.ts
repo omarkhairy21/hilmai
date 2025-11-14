@@ -157,6 +157,7 @@ export type Database = {
             | null;
           trial_started_at: string | null;
           trial_ends_at: string | null;
+          trial_messages_used: number;
           current_period_end: string | null;
           created_at: string;
           updated_at: string;
@@ -187,6 +188,7 @@ export type Database = {
             | null;
           trial_started_at?: string | null;
           trial_ends_at?: string | null;
+          trial_messages_used?: number;
           current_period_end?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -217,6 +219,7 @@ export type Database = {
             | null;
           trial_started_at?: string | null;
           trial_ends_at?: string | null;
+          trial_messages_used?: number;
           current_period_end?: string | null;
           created_at?: string;
           updated_at?: string;

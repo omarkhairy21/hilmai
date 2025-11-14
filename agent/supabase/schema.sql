@@ -31,8 +31,9 @@ CREATE TABLE IF NOT EXISTS users (
   subscription_status TEXT CHECK (subscription_status IN ('free', 'trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid')),
   trial_started_at TIMESTAMPTZ,
   trial_ends_at TIMESTAMPTZ,
+  trial_messages_used INT DEFAULT 0, -- Tracks API calls in hidden free trial (max 5)
   current_period_end TIMESTAMPTZ,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

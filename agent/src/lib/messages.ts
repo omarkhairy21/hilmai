@@ -454,6 +454,26 @@ Use /timezone to see more options.`,
       `• Choose monthly ($20) or annual ($200)\n\n` +
       `Ready to continue? Use /subscribe to pick a plan.`,
 
+    limitReached: () =>
+      `❌ *You've reached your feature limit*\n\n` +
+      `To unlock unlimited access and continue tracking, subscribe to HilmAI.\n\n` +
+      `✨ *What you'll get:*\n` +
+      `• Unlimited expense tracking\n` +
+      `• Voice messages & receipt scanning\n` +
+      `• AI-powered categorization\n` +
+      `• Multi-currency support\n` +
+      `• 3 specialized tracking modes\n\n` +
+      `💰 *Plans starting at $20/month*\n\n` +
+      `Choose below to get started:`,
+
+    subscriptionOptions: () =>
+      `Which option works best for you?\n\n` +
+      `📅 *Try 7 Days Free* — Then $20/month\n` +
+      `Perfect to test all features\n\n` +
+      `💳 *Subscribe Now* — $20/month\n` +
+      `Immediate unlimited access\n\n` +
+      `Choose below:`,
+
     accessDenied: () =>
       `🔒 *Subscription Required*\n\n` +
       `To use HilmAI, you need an active subscription.\n\n` +

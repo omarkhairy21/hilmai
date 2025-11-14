@@ -2,7 +2,7 @@ import type { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
 import { RuntimeContext } from '@mastra/core/runtime-context';
 import { downloadFile, getTempFilePath } from '../../lib/file-utils';
-import { hasActiveAccess, getUserTimezone } from '../../services/user.service';
+import { hasActiveAccess, getUserTimezone, checkTrialMessageLimit, incrementTrialMessageCount } from '../../services/user.service';
 import { createProgressController, type ProgressStage } from '../../services/progress.service';
 import { getUserMode, type UserMode } from '../../lib/user-mode';
 import { messages } from '../../lib/messages';
@@ -36,7 +36,7 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
       return;
     }
 
-    // Check subscription access
+    // Check subscription access (paid subscribers and Stripe trial users)
     const hasAccess = await hasActiveAccess(userId);
     if (!hasAccess) {
       logger.info('message:access_denied', {
@@ -54,6 +54,29 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
       };
 
       await ctx.reply(messages.subscription.accessDenied(), {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+      return;
+    }
+
+    // Check hidden free trial message limit (for free users only)
+    const trialStatus = await checkTrialMessageLimit(userId);
+    if (!trialStatus.canUse) {
+      logger.info('message:trial_limit_reached', {
+        userId,
+        event: 'trial_limit_exceeded',
+        conversionOpportunity: 'subscribe_prompt_shown',
+      });
+
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📅 Try 7 Days Free', callback_data: 'subscribe_monthly_trial' }],
+          [{ text: '💳 Subscribe Now', callback_data: 'subscribe_monthly_notrial' }],
+        ],
+      };
+
+      await ctx.reply(messages.subscription.limitReached(), {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
       });
@@ -275,6 +298,15 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
         hasMarkup: Boolean(telegramMarkup),
         response: JSON.stringify(response, null, 2),
       });
+
+      // Increment hidden trial message counter (for free users only)
+      const incrementSuccess = await incrementTrialMessageCount(userId);
+      if (incrementSuccess) {
+        logger.info('message:trial_counter_incremented', {
+          userId,
+          event: 'trial_message_used',
+        });
+      }
 
       // Step 7: Update processing message with final response
       const replyOptions: any = { parse_mode: 'Markdown' };
