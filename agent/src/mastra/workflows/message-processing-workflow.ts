@@ -289,7 +289,31 @@ const extractFromPhotoStep = createStep({
           content: [
             {
               type: 'text',
-              text: 'Extract the text and transaction details from this image.',
+              text: `CRITICAL INSTRUCTION: This receipt represents ONE SINGLE TRANSACTION with a SINGLE TOTAL AMOUNT.
+
+Extract ONLY the following information and format as shown:
+
+**RECEIPT (SINGLE TRANSACTION)**
+Merchant: [store name]
+Total: [TOTAL AMOUNT ONLY - the sum at the bottom]
+Date: [date on receipt]
+Category: [inferred category]
+Items: [brief list of items purchased, separated by commas]
+
+RULES:
+- Extract ONLY the grand total/total amount (NOT individual item prices)
+- The total is the ONLY amount that should be saved as a transaction
+- Do NOT list item prices separately
+- Do NOT create multiple transactions
+- Keep items as a simple comma-separated list
+
+Example format:
+**RECEIPT (SINGLE TRANSACTION)**
+Merchant: 7-Eleven
+Total: 96,900 ₫
+Date: 2025-11-04
+Category: Groceries
+Items: Aquafina water (qty 3), Gumi tissues, Mentos candy`,
             },
             {
               type: 'image_url',
