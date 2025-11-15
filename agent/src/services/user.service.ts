@@ -165,7 +165,7 @@ export async function hasActiveAccess(userId: number): Promise<boolean> {
       return false;
     }
 
-    // Check if in trial and trial hasn't expired
+    // Check if in Stripe trial and trial hasn't expired
     if (subscription.subscription_status === 'trialing' && subscription.trial_ends_at) {
       const trialEnds = new Date(subscription.trial_ends_at);
       if (trialEnds > new Date()) {
@@ -177,6 +177,14 @@ export async function hasActiveAccess(userId: number): Promise<boolean> {
     if (subscription.subscription_status === 'active' && subscription.current_period_end) {
       const periodEnd = new Date(subscription.current_period_end);
       if (periodEnd > new Date()) {
+        return true;
+      }
+    }
+
+    // Check if free user is within their hidden trial period
+    if (subscription.subscription_status === 'free' && subscription.trial_ends_at) {
+      const trialEnds = new Date(subscription.trial_ends_at);
+      if (trialEnds > new Date()) {
         return true;
       }
     }

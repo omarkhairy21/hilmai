@@ -258,7 +258,9 @@ export async function searchTransactionsSQL(params: {
       query = query.lte('amount', maxAmount);
     }
 
-    query = query.order('transaction_date', { ascending: false }).limit(limit);
+    // Order by created_at DESC to show most recently logged transactions first
+    // This ensures if user logs multiple transactions from same date, they appear in logging order
+    query = query.order('created_at', { ascending: false }).limit(limit);
 
     const { data, error } = await query;
 
