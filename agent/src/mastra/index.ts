@@ -169,11 +169,18 @@ try {
 
 // Bot instance (will be initialized lazily)
 let bot: any | null = null;
+let isShuttingDown = false;
 
 // Health check logging
 const logger = mastra.getLogger();
+
 // Function to start bot in polling mode (for development)
 export async function startPollingBot() {
+  // Don't restart if already shutting down
+  if (isShuttingDown || bot) {
+    return;
+  }
+
   const usePolling = config.telegram.polling;
 
   logger.debug('startPollingBot:check', {
@@ -184,10 +191,38 @@ export async function startPollingBot() {
   });
 
   if (usePolling && !bot) {
-    const { createBot } = await import('../bot.js');
-    bot = createBot(mastra);
-    await bot.start();
-    logger.info('🤖 Bot started in polling mode');
+    try {
+      const { createBot } = await import('../bot.js');
+      bot = createBot(mastra);
+      await bot.start();
+      logger.info('🤖 Bot started in polling mode');
+
+      // Handle graceful shutdown
+      const shutdownHandler = async () => {
+        if (!isShuttingDown && bot) {
+          isShuttingDown = true;
+          logger.info('🛑 Stopping polling bot gracefully...');
+          try {
+            await bot.stop();
+            bot = null;
+            logger.info('✅ Bot stopped');
+          } catch (error) {
+            logger.error('Error stopping bot', {
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
+      };
+
+      process.on('SIGINT', shutdownHandler);
+      process.on('SIGTERM', shutdownHandler);
+    } catch (error) {
+      logger.error('Failed to start polling bot', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      bot = null;
+    }
   } else if (!usePolling) {
     logger.debug('startPollingBot:skipped', {
       reason: 'TELEGRAM_POLLING not set to true',
@@ -195,10 +230,14 @@ export async function startPollingBot() {
   }
 }
 
-// Auto-start polling bot in development mode
-startPollingBot().catch((error) => {
-  logger.error('Failed to start polling bot', {
-    error: error instanceof Error ? error.message : String(error),
-    stack: error instanceof Error ? error.stack : undefined,
+// Start polling bot asynchronously but don't block Mastra initialization
+if (config.telegram.polling) {
+  // Defer bot startup to avoid blocking server initialization
+  setImmediate(() => {
+    startPollingBot().catch((error) => {
+      logger.error('Deferred polling bot startup failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
   });
-});
+}

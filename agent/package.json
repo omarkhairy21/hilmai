@@ -5,7 +5,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "dev": "mastra dev",
+    "dev": "node scripts/dev.js",
     "build": "mastra build",
     "start": "mastra start",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
