@@ -7,6 +7,7 @@
 
 import { Agent } from '@mastra/core/agent';
 import { openai } from '@ai-sdk/openai';
+import { getAgentMemory } from '../../lib/memory-factory';
 import { editTransactionTool } from '../tools/edit-transaction-tool';
 import { deleteTransactionTool } from '../tools/delete-transaction-tool';
 
@@ -85,6 +86,9 @@ export const transactionManagerAgent = new Agent({
   instructions: transactionManagerInstructions,
 
   model: openai('gpt-4o-mini'), // Fast and cost-effective
+
+  // Role-based memory: Minimal memory (3 messages) for edit context
+  memory: getAgentMemory('transactionManager'),
 
   tools: {
     editTransaction: editTransactionTool,

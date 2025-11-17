@@ -264,3 +264,208 @@ export function getChatMemory(): Memory | undefined {
     },
   });
 }
+
+// ============================================================================
+// ROLE-BASED MEMORY CONFIGURATIONS (Per-Agent Strategy)
+// ============================================================================
+
+/**
+ * Agent role types for memory configuration
+ */
+export type AgentRole = 'conversation' | 'query' | 'logger' | 'transactionManager';
+
+/**
+ * Cached memory instances per role (singleton pattern for performance)
+ * These are shared across all users but isolated by thread/resource IDs at runtime
+ */
+const roleMemoryCache: Partial<Record<AgentRole, Memory | undefined>> = {};
+
+/**
+ * Maximum acceptable memory initialization time (ms)
+ * If memory initialization exceeds this, we log a warning
+ */
+const MEMORY_INIT_TIMEOUT_MS = 2000;
+
+/**
+ * Maximum acceptable memory lookup time (ms) per operation
+ * Used for latency monitoring in workflow steps
+ */
+export const MEMORY_LOOKUP_TIMEOUT_MS = 500;
+
+/**
+ * Get memory instance for a specific agent role
+ *
+ * This implements the per-agent memory strategy:
+ * - Conversation agent: Extended context (12 messages) + semantic recall for better context
+ * - Query agent: Lightweight (4 messages) + optional semantic recall for follow-ups
+ * - Logger agent: No memory (fastest, no context needed)
+ * - Transaction Manager: Minimal memory (3 messages) for edit context
+ *
+ * Memory instances are cached (singleton per role) to avoid connection overhead.
+ * User isolation is achieved via thread/resource IDs passed at runtime.
+ *
+ * Latency considerations:
+ * - Memory initialization is cached (one-time cost per role)
+ * - Memory lookups are logged in workflow steps for monitoring
+ * - If memory operations exceed thresholds, consider reducing lastMessages or disabling semantic recall
+ *
+ * @param role - Agent role identifier
+ * @returns Memory instance or undefined (for logger role)
+ */
+export function getAgentMemory(role: AgentRole): Memory | undefined {
+  const initStartTime = Date.now();
+
+  // Check cache first
+  if (roleMemoryCache[role] !== undefined) {
+    return roleMemoryCache[role];
+  }
+
+  const databaseUrl = getDatabaseUrl();
+  if (!databaseUrl) {
+    roleMemoryCache[role] = undefined;
+    return undefined;
+  }
+
+  let memoryInstance: Memory | undefined;
+
+  switch (role) {
+    case 'conversation':
+      // Extended context for conversation agent - needs more history for context-aware responses
+      memoryInstance = new Memory({
+        storage: new PostgresStore({
+          connectionString: databaseUrl,
+          ...PG_CONNECTION_POOL,
+        }),
+        vector: new PgVector({
+          connectionString: databaseUrl,
+          ...PG_CONNECTION_POOL,
+        }),
+        embedder: OPENAI_EMBEDDER_MODEL_ID,
+        options: {
+          lastMessages: 12, // Extended window for conversation context
+          semanticRecall: {
+            topK: DEFAULT_SEMANTIC_RECALL.topK,
+            messageRange: {
+              ...DEFAULT_SEMANTIC_RECALL.messageRange,
+            },
+            scope: DEFAULT_SEMANTIC_RECALL.scope,
+            indexConfig: {
+              ...DEFAULT_SEMANTIC_RECALL.indexConfig,
+              hnsw: {
+                ...DEFAULT_SEMANTIC_RECALL.indexConfig.hnsw,
+              },
+            },
+          },
+          workingMemory: {
+            enabled: false,
+          },
+        },
+      });
+      break;
+
+    case 'query':
+      // Lightweight memory for query agent - minimal context for follow-up questions
+      memoryInstance = new Memory({
+        storage: new PostgresStore({
+          connectionString: databaseUrl,
+          ...PG_CONNECTION_POOL,
+        }),
+        vector: new PgVector({
+          connectionString: databaseUrl,
+          ...PG_CONNECTION_POOL,
+        }),
+        embedder: OPENAI_EMBEDDER_MODEL_ID,
+        options: {
+          lastMessages: 4, // Lightweight window for follow-ups
+          semanticRecall: {
+            topK: 2, // Reduced semantic recall for queries (less overhead)
+            messageRange: {
+              before: 1,
+              after: 1,
+            },
+            scope: DEFAULT_SEMANTIC_RECALL.scope,
+            indexConfig: {
+              ...DEFAULT_SEMANTIC_RECALL.indexConfig,
+              hnsw: {
+                ...DEFAULT_SEMANTIC_RECALL.indexConfig.hnsw,
+              },
+            },
+          },
+          workingMemory: {
+            enabled: false,
+          },
+        },
+      });
+      break;
+
+    case 'logger':
+      // No memory for logger agent - fastest performance, no context needed
+      memoryInstance = undefined;
+      break;
+
+    case 'transactionManager':
+      // Minimal memory for transaction manager - just enough for edit context
+      memoryInstance = new Memory({
+        storage: new PostgresStore({
+          connectionString: databaseUrl,
+          ...PG_CONNECTION_POOL,
+        }),
+        vector: new PgVector({
+          connectionString: databaseUrl,
+          ...PG_CONNECTION_POOL,
+        }),
+        embedder: OPENAI_EMBEDDER_MODEL_ID,
+        options: {
+          lastMessages: 3, // Minimal context for edit operations
+          semanticRecall: false, // No semantic recall needed for edits
+          workingMemory: {
+            enabled: false,
+          },
+        },
+      });
+      break;
+
+    default:
+      // Fallback: no memory
+      memoryInstance = undefined;
+  }
+
+  // Cache the instance
+  roleMemoryCache[role] = memoryInstance;
+
+  // Log initialization time for monitoring
+  const initDuration = Date.now() - initStartTime;
+  if (initDuration > MEMORY_INIT_TIMEOUT_MS) {
+    // Log warning if initialization is slow (should only happen once per role)
+    console.warn(`[memory-factory] Slow memory initialization for role "${role}": ${initDuration}ms`);
+  }
+
+  return memoryInstance;
+}
+
+/**
+ * Build standardized thread and resource IDs for user-scoped memory
+ *
+ * This ensures consistent memory isolation across webhook instances behind Traefik.
+ * Both instances will use the same thread/resource IDs, so they share the same
+ * Postgres-backed memory rows per user.
+ *
+ * IMPORTANT: We use `user-${userId}` (not role-specific) to allow conversation history
+ * to be shared across all agents for the same user. This provides better context
+ * when users switch between modes (logger → query → chat).
+ *
+ * @param userId - Telegram user ID
+ * @param agentRole - Optional agent role (for logging/debugging, doesn't affect thread ID)
+ * @returns Object with thread and resource IDs
+ */
+export function buildMemoryThreadIds(
+  userId: number,
+  agentRole?: AgentRole
+): { thread: string; resource: string } {
+  // Standard format: user-{userId} for thread, userId as string for resource
+  // Shared thread ID across all agents for the same user enables cross-agent context
+  const thread = `user-${userId}`;
+  const resource = userId.toString();
+
+  return { thread, resource };
+}

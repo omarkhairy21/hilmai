@@ -6,6 +6,7 @@
 
 import { Agent } from '@mastra/core/agent';
 import { openai } from '@ai-sdk/openai';
+import { getAgentMemory } from '../../lib/memory-factory';
 import { saveTransactionTool } from '../tools/save-transaction-tool';
 
 const transactionLoggerInstructions = [
@@ -267,6 +268,10 @@ export const transactionLoggerAgent = new Agent({
   name: 'transactionLogger',
   instructions: transactionLoggerInstructions,
   model: openai('gpt-4o-mini'), // Optimized: Faster and cheaper while maintaining quality
+
+  // Role-based memory: No memory (fastest, no context needed for transaction logging)
+  memory: getAgentMemory('logger'),
+
   tools: {
     saveTransaction: saveTransactionTool,
   },

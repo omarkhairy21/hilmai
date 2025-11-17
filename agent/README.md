@@ -295,7 +295,36 @@ yarn dev
 
 ## Key Features
 
-### 1. Unified Input Processing
+### 1. Per-Agent Memory Strategy
+
+Each agent has a role-specific memory configuration optimized for its use case:
+
+| Agent Role | Memory Configuration | Use Case | Performance Impact |
+|------------|---------------------|----------|-------------------|
+| **Conversation** | 12 messages + semantic recall | General chat, help, context-aware responses | ~200-400ms overhead |
+| **Query** | 4 messages + semantic recall (reduced) | Financial queries, follow-up questions | ~100-200ms overhead |
+| **Logger** | No memory | Transaction logging (fastest) | ~0ms overhead |
+| **Transaction Manager** | 3 messages, no semantic recall | Edit/delete operations | ~50-100ms overhead |
+
+**Key Design Decisions:**
+
+1. **User-Scoped Memory**: All agents share the same thread ID (`user-${userId}`) to enable cross-agent context. When a user switches from logger → query → chat, conversation history is preserved.
+
+2. **Singleton Pattern**: Memory instances are cached per role (not per user) to avoid connection overhead. User isolation is achieved via thread/resource IDs at runtime.
+
+3. **Traefik Load Balancing**: Both webhook instances use the same Postgres-backed memory, so they share the same conversation history per user. Thread IDs are standardized via `buildMemoryThreadIds()` helper.
+
+4. **Latency Monitoring**: Memory operations are logged with timing information. If memory lookups exceed 500ms, consider reducing `lastMessages` or disabling semantic recall.
+
+5. **Performance Targets**: Current latency is 5-8 seconds per response. Memory overhead is kept minimal (<500ms) to preserve UX.
+
+**Implementation:**
+- Memory configuration: `src/lib/memory-factory.ts` → `getAgentMemory(role)`
+- Thread ID standardization: `src/lib/memory-factory.ts` → `buildMemoryThreadIds(userId, role)`
+- Agent definitions: Each agent imports and uses `getAgentMemory()` at definition level
+- Workflow usage: Agents receive thread/resource IDs in `generate()` calls
+
+### 2. Unified Input Processing
 
 All input types (text/voice/photo) go through the same normalization:
 

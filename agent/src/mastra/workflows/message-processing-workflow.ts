@@ -31,7 +31,7 @@ import { AgentResponseCache } from '../../lib/prompt-cache';
 import { shouldCacheResponse } from '../../lib/input-normalization';
 import { getUserDefaultCurrency } from '../../lib/currency';
 import { getUserMode, type UserMode } from '../../lib/user-mode';
-import { getLoggerMemory, getQueryMemory, getChatMemory } from '../../lib/memory-factory';
+import { buildMemoryThreadIds } from '../../lib/memory-factory';
 
 /**
  * Shared schemas and types
@@ -805,8 +805,18 @@ const invokeLoggerAgentStep = createStep({
       inputType: inputData.inputType,
     });
 
-    // Logger mode: NO memory (fastest)
+    // Logger mode: NO memory (fastest) - agent configured with undefined memory
+    // No memory overhead for transaction logging
+    const memoryStartTime = Date.now();
     const genResult = await agent.generate(inputData.prompt);
+
+    const memoryDuration = Date.now() - memoryStartTime;
+    logger.info('[workflow:memory]', {
+      operation: 'logger_agent_memory',
+      duration: memoryDuration,
+      userId: inputData.userId,
+      hasMemory: false,
+    });
 
     const duration = Date.now() - stepStartTime;
     logger.info('[workflow:performance]', {
@@ -889,12 +899,25 @@ const invokeQueryAgentStep = createStep({
       inputType: inputData.inputType,
     });
 
-    // Query mode: Minimal memory (3 messages, no semantic recall)
+    // Query mode: Use role-based memory (configured at agent definition level)
+    // Just pass thread/resource IDs for user-scoped memory isolation
+    const threadIds = buildMemoryThreadIds(inputData.userId, 'query');
+
+    const memoryStartTime = Date.now();
     const genResult = await agent.generate(inputData.prompt, {
       memory: {
-        thread: `user-${inputData.userId}`,
-        resource: inputData.userId.toString(),
+        thread: threadIds.thread,
+        resource: threadIds.resource,
       },
+    });
+
+    const memoryDuration = Date.now() - memoryStartTime;
+    logger.info('[workflow:memory]', {
+      operation: 'query_agent_memory',
+      duration: memoryDuration,
+      userId: inputData.userId,
+      thread: threadIds.thread,
+      resource: threadIds.resource,
     });
 
     const duration = Date.now() - stepStartTime;
@@ -1032,12 +1055,25 @@ const invokeChatAgentStep = createStep({
       inputType: inputData.inputType,
     });
 
-    // Chat mode: Minimal memory (3 messages, no semantic recall)
+    // Chat mode: Use role-based memory (configured at agent definition level)
+    // Just pass thread/resource IDs for user-scoped memory isolation
+    const threadIds = buildMemoryThreadIds(inputData.userId, 'conversation');
+
+    const memoryStartTime = Date.now();
     const genResult = await agent.generate(inputData.prompt, {
       memory: {
-        thread: `user-${inputData.userId}`,
-        resource: inputData.userId.toString(),
+        thread: threadIds.thread,
+        resource: threadIds.resource,
       },
+    });
+
+    const memoryDuration = Date.now() - memoryStartTime;
+    logger.info('[workflow:memory]', {
+      operation: 'chat_agent_memory',
+      duration: memoryDuration,
+      userId: inputData.userId,
+      thread: threadIds.thread,
+      resource: threadIds.resource,
     });
 
     const duration = Date.now() - stepStartTime;

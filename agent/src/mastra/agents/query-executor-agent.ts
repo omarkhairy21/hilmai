@@ -7,6 +7,7 @@
 
 import { Agent } from '@mastra/core/agent';
 import { openai } from '@ai-sdk/openai';
+import { getAgentMemory } from '../../lib/memory-factory';
 import { hybridQueryTool } from '../tools/hybrid-query-tool';
 
 const queryExecutorInstructions = [
@@ -317,6 +318,9 @@ export const queryExecutorAgent = new Agent({
   instructions: queryExecutorInstructions,
 
   model: openai('gpt-4o-mini'), // Fast enough for queries, cost-effective
+
+  // Role-based memory: Lightweight (4 messages) + semantic recall for follow-up questions
+  memory: getAgentMemory('query'),
 
   tools: {
     hybridQuery: hybridQueryTool,

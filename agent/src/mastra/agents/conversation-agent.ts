@@ -7,6 +7,7 @@
 
 import { Agent } from '@mastra/core/agent';
 import { openai } from '@ai-sdk/openai';
+import { getAgentMemory } from '../../lib/memory-factory';
 
 export const conversationAgent = new Agent({
   name: 'conversation',
@@ -193,6 +194,9 @@ Use /mode to switch anytime. What would you like to do?"
 **You**: "I'm doing great, thanks for asking! I'm in Chat Mode helping you get started. Want to switch to Logger Mode (/mode_logger) to track expenses, or Query Mode (/mode_query) to analyze your spending?"`,
 
   model: openai('gpt-4o-mini'), // Fast and cost-effective for conversation
+
+  // Role-based memory: Extended context (12 messages) + semantic recall for conversation context
+  memory: getAgentMemory('conversation'),
 
   // No tools needed - pure conversation
 });

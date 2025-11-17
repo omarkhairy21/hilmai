@@ -2,6 +2,7 @@ import type { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
 import { messages } from '../../lib/messages';
 import { buildEditContext } from '../../services/edit-context.service';
+import { buildMemoryThreadIds } from '../../lib/memory-factory';
 
 /**
  * Register /edit command handler
@@ -75,11 +76,13 @@ export function registerEditCommand(bot: Bot, mastra: Mastra): void {
 
       try {
         // Call transaction manager agent directly
+        // Agent has role-based memory configured at definition level
+        const threadIds = buildMemoryThreadIds(userId, 'transactionManager');
         const startTime = Date.now();
         const generation = await transactionManagerAgent.generate(editContext.contextPrompt, {
           memory: {
-            thread: `user-${userId}`,
-            resource: userId.toString(),
+            thread: threadIds.thread,
+            resource: threadIds.resource,
           },
         });
 
