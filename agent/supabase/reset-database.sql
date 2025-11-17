@@ -14,6 +14,7 @@ DROP TRIGGER IF EXISTS update_merchant_cache_updated_at ON merchant_embeddings_c
 DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 DROP TRIGGER IF EXISTS update_subscription_usage_updated_at ON subscription_usage;
 DROP TRIGGER IF EXISTS set_transaction_display_id ON transactions;
+DROP TRIGGER IF EXISTS update_webhook_updates_updated_at ON webhook_updates;
 
 -- Step 2: Drop all RLS policies
 -- ============================================================================
@@ -40,6 +41,9 @@ DROP POLICY IF EXISTS "Backend service can delete merchant cache" ON merchant_em
 DROP POLICY IF EXISTS "Users can view own usage" ON subscription_usage;
 DROP POLICY IF EXISTS "Backend service can manage all usage" ON subscription_usage;
 
+-- Webhook updates table policies
+DROP POLICY IF EXISTS "Backend service can manage all webhook updates" ON webhook_updates;
+
 -- Step 3: Drop all functions
 -- ============================================================================
 
@@ -65,6 +69,7 @@ DROP FUNCTION IF EXISTS increment_usage_tokens(BIGINT, TIMESTAMPTZ, BIGINT);
 -- Step 4: Drop all tables (in reverse dependency order)
 -- ============================================================================
 
+DROP TABLE IF EXISTS webhook_updates CASCADE;
 DROP TABLE IF EXISTS subscription_usage CASCADE;
 DROP TABLE IF EXISTS transactions CASCADE;
 DROP TABLE IF EXISTS merchant_embeddings_cache CASCADE;
