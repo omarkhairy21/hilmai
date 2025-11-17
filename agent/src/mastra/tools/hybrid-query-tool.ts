@@ -47,6 +47,11 @@ export const hybridQueryTool = createTool({
         description: z.string().nullable(),
         transaction_date: z.string(),
         similarity: z.number(),
+        original_amount: z.number().nullable().optional(),
+        original_currency: z.string().nullable().optional(),
+        converted_amount: z.number().nullable().optional(),
+        conversion_rate: z.number().nullable().optional(),
+        converted_at: z.string().nullable().optional(),
       })
     ),
     searchMethod: z.enum(['sql', 'fuzzy']),

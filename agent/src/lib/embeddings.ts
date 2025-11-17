@@ -152,6 +152,11 @@ export interface TransactionResult {
   description: string | null;
   transaction_date: string;
   similarity: number;
+  original_amount?: number | null;
+  original_currency?: string | null;
+  converted_amount?: number | null;
+  conversion_rate?: number | null;
+  converted_at?: string | null;
 }
 
 /**
@@ -235,7 +240,7 @@ export async function searchTransactionsSQL(params: {
   try {
     let query = supabaseService
       .from('transactions')
-      .select('id, display_id, amount, currency, merchant, category, description, transaction_date')
+      .select('id, display_id, amount, currency, merchant, category, description, transaction_date, original_amount, original_currency, converted_amount, conversion_rate, converted_at')
       .eq('user_id', userId);
 
     // Apply filters
@@ -282,6 +287,11 @@ export async function searchTransactionsSQL(params: {
       description: tx.description,
       transaction_date: tx.transaction_date,
       similarity: 1.0,
+      original_amount: tx.original_amount,
+      original_currency: tx.original_currency,
+      converted_amount: tx.converted_amount,
+      conversion_rate: tx.conversion_rate,
+      converted_at: tx.converted_at,
     }));
   } catch (error) {
     console.error('[embeddings] Error in SQL search:', error);

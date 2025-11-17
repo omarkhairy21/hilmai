@@ -166,7 +166,12 @@ RETURNS TABLE (
   category TEXT,
   description TEXT,
   transaction_date DATE,
-  similarity FLOAT
+  similarity FLOAT,
+  original_amount DECIMAL,
+  original_currency TEXT,
+  converted_amount DECIMAL,
+  conversion_rate DECIMAL,
+  converted_at TIMESTAMPTZ
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -179,7 +184,12 @@ BEGIN
     t.category,
     t.description,
     t.transaction_date,
-    (1 - (t.merchant_embedding <=> p_query_embedding))::FLOAT as similarity
+    (1 - (t.merchant_embedding <=> p_query_embedding))::FLOAT as similarity,
+    t.original_amount,
+    t.original_currency,
+    t.converted_amount,
+    t.conversion_rate,
+    t.converted_at
   FROM transactions t
   WHERE t.user_id = p_user_id
     AND t.merchant_embedding IS NOT NULL
