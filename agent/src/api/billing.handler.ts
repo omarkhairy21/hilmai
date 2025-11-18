@@ -9,6 +9,7 @@ import type { Mastra } from '@mastra/core/mastra';
 import {
   createCheckoutSession,
   createBillingPortalSession,
+  generateActivationCodeForSession,
 } from '../services/subscription.service';
 
 /**
@@ -19,7 +20,7 @@ export async function handleCheckout(c: Context, mastra: Mastra) {
 
   try {
     const body = await c.req.json();
-    const { userId, planTier, successUrl, cancelUrl, includeTrial } = body;
+    const { userId, planTier, successUrl, cancelUrl, includeTrial, customerEmail } = body;
 
     logger.info('[api:billing:checkout]', {
       event: 'checkout_request',
@@ -28,13 +29,13 @@ export async function handleCheckout(c: Context, mastra: Mastra) {
       includeTrial: includeTrial ?? false,
     });
 
-    if (!userId || !planTier || !successUrl || !cancelUrl) {
+    // userId is optional for web checkout (user not logged in yet)
+    if (!planTier || !successUrl || !cancelUrl) {
       logger.warn('[api:billing:checkout]', {
         event: 'checkout_invalid_request',
         userId,
         planTier,
         missingFields: {
-          userId: !userId,
           planTier: !planTier,
           successUrl: !successUrl,
           cancelUrl: !cancelUrl,
@@ -43,12 +44,16 @@ export async function handleCheckout(c: Context, mastra: Mastra) {
       return c.json({ error: 'Missing required fields' }, 400);
     }
 
+    // Add session ID placeholder to success URL so Stripe will include it
+    const successUrlWithPlaceholder = `${successUrl}?session_id={CHECKOUT_SESSION_ID}`;
+
     const result = await createCheckoutSession(
       userId,
       planTier,
-      successUrl,
+      successUrlWithPlaceholder,
       cancelUrl,
-      includeTrial ?? false
+      includeTrial ?? false,
+      customerEmail
     );
 
     if (result.error) {
@@ -127,6 +132,61 @@ export async function handleBillingPortal(c: Context, mastra: Mastra) {
   } catch (error) {
     logger.error('[api:billing:portal]', {
       event: 'portal_exception',
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+}
+
+/**
+ * Handle activation code generation for Stripe checkout sessions
+ * Called by web after user completes Stripe payment
+ */
+export async function handleActivationCode(c: Context, mastra: Mastra) {
+  const logger = mastra.getLogger();
+
+  try {
+    const body = await c.req.json();
+    const { sessionId } = body;
+
+    logger.info('[api:billing:activation-code]', {
+      event: 'activation_code_request',
+      sessionId,
+    });
+
+    if (!sessionId) {
+      logger.warn('[api:billing:activation-code]', {
+        event: 'activation_code_invalid_request',
+        missingFields: { sessionId: !sessionId },
+      });
+      return c.json({ error: 'Missing sessionId' }, 400);
+    }
+
+    const result = await generateActivationCodeForSession(sessionId);
+
+    if (result.error) {
+      logger.error('[api:billing:activation-code]', {
+        event: 'activation_code_failed',
+        sessionId,
+        error: result.error,
+      });
+      return c.json({ error: result.error }, 400);
+    }
+
+    logger.info('[api:billing:activation-code]', {
+      event: 'activation_code_success',
+      sessionId,
+      hasCode: !!result.linkCode,
+    });
+
+    return c.json({
+      linkCode: result.linkCode,
+      deepLink: result.deepLink,
+    });
+  } catch (error) {
+    logger.error('[api:billing:activation-code]', {
+      event: 'activation_code_exception',
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });

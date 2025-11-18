@@ -1,0 +1,183 @@
+---
+interface Props {
+  tier: 'monthly' | 'annual';
+  price: number;
+  period: 'month' | 'year';
+  savingsText?: string;
+  isPopular?: boolean;
+}
+
+const { tier, price, period, savingsText, isPopular = false } = Astro.props;
+
+const features = [
+  '✓ Unlimited expense tracking',
+  '✓ Voice messages & receipt scanning',
+  '✓ AI-powered insights (all 3 modes)',
+  '✓ Multi-currency support',
+  '✓ Transaction categorization',
+  '✓ Spending analytics'
+];
+---
+
+<div class={`group relative rounded-2xl border transition-all duration-300 ${isPopular ? 'border-[#d4ff2a] bg-gray-900/80 shadow-xl shadow-[#d4ff2a]/20' : 'border-gray-800 bg-gray-900/50 hover:border-[#d4ff2a]/50'} ${tier === 'annual' ? 'hidden' : ''}`} id={`pricing-card-${tier}`}>
+  <!-- Hover glow effect -->
+  <div class={`absolute inset-0 rounded-2xl transition-opacity ${isPopular ? 'bg-[#d4ff2a]/10 opacity-100' : 'bg-[#d4ff2a]/5 opacity-0 group-hover:opacity-100'}`}></div>
+
+  <!-- Popular badge -->
+  {isPopular && (
+    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-[#d4ff2a] text-black text-xs font-bold px-4 py-1 rounded-full">
+      Best Value
+    </div>
+  )}
+
+  <div class="relative p-8 md:p-10">
+    <!-- Tier name -->
+    <h3 class={`text-2xl font-bold mb-2 ${isPopular ? 'text-[#d4ff2a]' : 'text-white'}`}>
+      {tier === 'monthly' ? 'Monthly Pro' : 'Annual Pro'}
+    </h3>
+
+    <!-- Savings text -->
+    {savingsText && (
+      <p class="text-sm text-green-400 mb-6 font-semibold">
+        {savingsText}
+      </p>
+    )}
+
+    <!-- Price -->
+    <div class="mb-8">
+      <div class="flex items-baseline gap-2">
+        <span class="text-5xl md:text-6xl font-bold text-white">
+          ${price}
+        </span>
+        <span class="text-gray-400">/{period}</span>
+      </div>
+      <p class="text-gray-400 mt-2 text-sm">
+        {tier === 'monthly'
+          ? 'Billed monthly, cancel anytime'
+          : 'Billed once yearly (save $40!)'}
+      </p>
+    </div>
+
+    <!-- Trial info -->
+    <div class="mb-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+      <p class="text-sm text-gray-300">
+        <span class="font-semibold">Start free:</span> 7-day trial with full access
+      </p>
+    </div>
+
+    <!-- Features list -->
+    <ul class="space-y-3 mb-8">
+      {features.map((feature) => (
+        <li class="text-gray-300 text-sm flex items-start gap-3">
+          <span class={`flex-shrink-0 ${isPopular ? 'text-[#d4ff2a]' : 'text-green-400'}`}>
+            {feature.substring(0, 1)}
+          </span>
+          <span>{feature.substring(2)}</span>
+        </li>
+      ))}
+    </ul>
+
+    <!-- CTA buttons -->
+    <div class="space-y-3 flex flex-col">
+      <button
+        class="w-full py-3 px-4 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+        data-plan={tier}
+        data-action="trial"
+        id={`trial-btn-${tier}`}
+      >
+        <span>Start 7-Day Free Trial</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="group-hover:translate-x-1 transition-transform">
+          <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button
+        class="w-full py-3 px-4 bg-gray-800/50 text-white font-semibold rounded-lg border border-gray-700 hover:bg-gray-800 hover:border-[#d4ff2a]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        data-plan={tier}
+        data-action="subscribe"
+        id={`subscribe-btn-${tier}`}
+      >
+        Subscribe Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  interface CheckoutResponse {
+    url?: string;
+    error?: string;
+  }
+
+  // Handle pricing card button clicks
+  function attachPricingButtonListeners() {
+    const buttons = document.querySelectorAll('button[data-plan]');
+    buttons.forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const plan = button.getAttribute('data-plan') as 'monthly' | 'annual' | null;
+        const action = button.getAttribute('data-action') as string | null;
+
+        if (!plan || !action) {
+          console.error('Missing plan or action on button', button);
+          alert('Error: Missing plan or action');
+          return;
+        }
+
+        // Disable button and show loading state
+        button.disabled = true;
+        const originalText = button.textContent;
+        button.textContent = 'Processing...';
+
+        try {
+          const baseUrl = window.location.origin;
+          const checkoutRequest: Omit<CheckoutRequest, 'telegramUsername'> = {
+            planTier: plan,
+            includeTrial: action === 'trial',
+            successUrl: `${baseUrl}/success`, // Will be overridden by backend with session_id
+            cancelUrl: `${baseUrl}/pricing?cancelled=true`,
+          };
+
+          // Call agent backend to create Stripe checkout session
+          // Note: Telegram username will be collected in Stripe checkout custom field
+          const response = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(checkoutRequest),
+          });
+
+          const data = (await response.json()) as CheckoutResponse;
+
+          if (!response.ok || !data.url) {
+            throw new Error(data.error || 'Failed to create checkout session');
+          }
+
+          // Redirect to Stripe checkout where user will enter Telegram username
+          window.location.href = data.url;
+        } catch (error) {
+          console.error('Checkout error:', error);
+          alert(
+            `Error: ${error instanceof Error ? error.message : 'Failed to process checkout'}`
+          );
+
+          // Re-enable button
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      });
+    });
+  }
+
+  // Run when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachPricingButtonListeners);
+  } else {
+    attachPricingButtonListeners();
+  }
+
+  // Also run on Astro navigation
+  document.addEventListener('astro:before-swap', attachPricingButtonListeners);
+  document.addEventListener('astro:after-swap', attachPricingButtonListeners);
+</script>

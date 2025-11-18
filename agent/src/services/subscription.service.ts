@@ -9,8 +9,20 @@ import type { Api } from 'grammy';
 import type { IMastraLogger } from '@mastra/core/logger';
 import { stripe, STRIPE_PRICES, STRIPE_WEBHOOK_SECRET } from '../lib/stripe';
 import { supabaseService } from '../lib/supabase';
-import { updateUserSubscription, getUserSubscription } from './user.service';
+import { updateUserSubscription, getUserSubscription, createOrGetUser } from './user.service';
 import { messages } from '../lib/messages';
+import {
+  generateActivationCode,
+  generateDeepLink,
+  isValidActivationCodeFormat,
+  extractCodeFromStartParam,
+} from '../lib/activation-codes';
+import type { Database } from '../lib/database.types';
+
+// Type aliases for activation codes
+type ActivationCodeRow = Database['public']['Tables']['activation_codes']['Row'];
+type ActivationCodeInsert = Database['public']['Tables']['activation_codes']['Insert'];
+type ActivationCodeUpdate = Database['public']['Tables']['activation_codes']['Update'];
 
 // Global reference to Telegram API for sending messages
 let telegramApi: Api | null = null;
@@ -32,18 +44,20 @@ export function initializeLogger(loggerInstance: IMastraLogger): void {
 
 /**
  * Create a Stripe checkout session for a user
- * @param userId - The user's ID
+ * @param userId - The user's ID (optional for web checkout)
  * @param planTier - The subscription plan tier ('monthly' or 'annual')
  * @param successUrl - URL to redirect to on successful checkout
  * @param cancelUrl - URL to redirect to on canceled checkout
  * @param includeTrial - Whether to include a 7-day free trial (only for monthly plan, default: false)
+ * @param customerEmail - Email for checkout (used when userId not provided)
  */
 export async function createCheckoutSession(
-  userId: number,
+  userId: number | undefined,
   planTier: 'monthly' | 'annual',
   successUrl: string,
   cancelUrl: string,
-  includeTrial = false
+  includeTrial = false,
+  customerEmail?: string
 ): Promise<{ url: string | null; error: string | null }> {
   try {
     // Validate price ID is configured FIRST
@@ -61,84 +75,90 @@ export async function createCheckoutSession(
       return { url: null, error: errorMsg };
     }
 
-    // Get or create Stripe customer
-    const { data: user, error: userError } = await supabaseService
-      .from('users')
-      .select('stripe_customer_id, telegram_username, first_name, email')
-      .eq('id', userId)
-      .single();
+    let customerId: string | undefined;
+    const metadata: Record<string, string> = {
+      plan_tier: planTier,
+    };
 
-    if (userError || !user) {
-      const errorMsg = 'User not found';
-      if (logger) {
-        logger.error('subscription:checkout:user_not_found', {
-          userId,
-          error: userError?.message || errorMsg,
-        });
-      }
-      return { url: null, error: errorMsg };
-    }
+    // If userId provided, get or create Stripe customer from user record
+    if (userId) {
+      const { data: user, error: userError } = await supabaseService
+        .from('users')
+        .select('stripe_customer_id, telegram_username, first_name, email')
+        .eq('id', userId)
+        .single();
 
-    let customerId = user.stripe_customer_id;
-
-    // Create Stripe customer if doesn't exist
-    if (!customerId) {
-      try {
-        const customerData: Stripe.CustomerCreateParams = {
-          metadata: {
-            telegram_user_id: userId.toString(),
-          },
-          name: user.first_name || user.telegram_username || `User ${userId}`,
-        };
-
-        // Add email if available
-        if (user.email) {
-          customerData.email = user.email;
+      if (userError || !user) {
+        const errorMsg = 'User not found';
+        if (logger) {
+          logger.error('subscription:checkout:user_not_found', {
+            userId,
+            error: userError?.message || errorMsg,
+          });
         }
+        return { url: null, error: errorMsg };
+      }
 
-        const customer = await stripe.customers.create(customerData);
+      customerId = user.stripe_customer_id || undefined;
 
-        customerId = customer.id;
+      // Create Stripe customer if doesn't exist
+      if (!customerId) {
+        try {
+          const customerData: Stripe.CustomerCreateParams = {
+            metadata: {
+              telegram_user_id: userId.toString(),
+            },
+            name: user.first_name || user.telegram_username || `User ${userId}`,
+          };
 
-        // Update user with Stripe customer ID
-        const { error: updateError } = await supabaseService
-          .from('users')
-          .update({ stripe_customer_id: customerId })
-          .eq('id', userId);
+          // Add email if available
+          if (user.email) {
+            customerData.email = user.email;
+          }
 
-        if (updateError) {
-          if (logger) {
-            logger.warn('subscription:checkout:failed_to_save_customer_id', {
+          const customer = await stripe.customers.create(customerData);
+
+          customerId = customer.id;
+
+          // Update user with Stripe customer ID
+          const { error: updateError } = await supabaseService
+            .from('users')
+            .update({ stripe_customer_id: customerId })
+            .eq('id', userId);
+
+          if (updateError) {
+            if (logger) {
+              logger.warn('subscription:checkout:failed_to_save_customer_id', {
+                userId,
+                customerId,
+                error: updateError.message,
+              });
+            }
+          } else if (logger) {
+            logger.info('subscription:checkout:customer_created', {
               userId,
               customerId,
-              error: updateError.message,
             });
           }
-        } else if (logger) {
-          logger.info('subscription:checkout:customer_created', {
-            userId,
-            customerId,
-          });
+        } catch (customerError) {
+          const errorMsg =
+            customerError instanceof Error ? customerError.message : String(customerError);
+          if (logger) {
+            logger.error('subscription:checkout:customer_creation_failed', {
+              userId,
+              error: errorMsg,
+            });
+          }
+          return { url: null, error: 'Failed to create Stripe customer' };
         }
-      } catch (customerError) {
-        const errorMsg =
-          customerError instanceof Error ? customerError.message : String(customerError);
-        if (logger) {
-          logger.error('subscription:checkout:customer_creation_failed', {
-            userId,
-            error: errorMsg,
-          });
-        }
-        return { url: null, error: 'Failed to create Stripe customer' };
       }
+
+      metadata.telegram_user_id = userId.toString();
     }
 
     // Create checkout session
     const subscriptionData: Stripe.Checkout.SessionCreateParams.SubscriptionData = {
-      metadata: {
-        telegram_user_id: userId.toString(),
-        plan_tier: planTier,
-      },
+      metadata,
     };
 
     // Only add trial for monthly plan if includeTrial is true
@@ -153,11 +173,11 @@ export async function createCheckoutSession(
         planTier,
         priceId,
         includeTrial,
+        isWeb: !userId,
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       line_items: [
         {
@@ -168,11 +188,17 @@ export async function createCheckoutSession(
       success_url: successUrl,
       cancel_url: cancelUrl,
       subscription_data: subscriptionData,
-      metadata: {
-        telegram_user_id: userId.toString(),
-        plan_tier: planTier,
-      },
-    });
+      metadata,
+    };
+
+    // Add customer ID if available, otherwise use email for guest checkout
+    if (customerId) {
+      sessionParams.customer = customerId;
+    } else if (customerEmail) {
+      sessionParams.customer_email = customerEmail;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     if (logger) {
       logger.info('subscription:checkout:session_created', {
@@ -688,5 +714,294 @@ export async function getCurrentUsage(userId: number): Promise<{ total_tokens: n
   } catch (error) {
     console.error('[subscription.service] Error getting current usage:', error);
     return null;
+  }
+}
+
+/**
+ * Generate activation code for a Stripe checkout session
+ * This is called after successful payment to create a bridge between web checkout and bot activation
+ * @param sessionId - Stripe checkout session ID
+ * @returns Activation code and deep link, or error
+ */
+export async function generateActivationCodeForSession(
+  sessionId: string
+): Promise<{ linkCode?: string; deepLink?: string; error?: string }> {
+  try {
+    if (!sessionId) {
+      return { error: 'Missing session ID' };
+    }
+
+    // Retrieve session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (!session) {
+      return { error: 'Session not found' };
+    }
+
+    // Verify session is completed
+    if (session.status !== 'complete') {
+      return {
+        error: `Session is not complete. Status: ${session.status}`,
+      };
+    }
+
+    // Get customer email from session
+    const customerEmail = session.customer_email || session.customer_details?.email;
+    if (!customerEmail) {
+      return { error: 'No email found in session' };
+    }
+
+    // Get plan tier from session metadata
+    const planTier = session.metadata?.plan_tier || 'monthly';
+
+    // Check if activation code already exists for this session
+    let existingCode: Pick<ActivationCodeRow, 'code' | 'expires_at' | 'used_at'> | null = null;
+    try {
+      const { data, error } = await supabaseService
+        .from('activation_codes' as any)
+        .select('code, expires_at, used_at')
+        .eq('stripe_session_id', sessionId)
+        .single();
+
+      if (!error && data) {
+        existingCode = data as unknown as Pick<ActivationCodeRow, 'code' | 'expires_at' | 'used_at'>;
+      }
+    } catch (err) {
+      console.warn('[subscription.service] Error fetching existing code:', err);
+    }
+
+    if (existingCode) {
+      // If code exists and not expired, return it
+      if (!existingCode.used_at && new Date(existingCode.expires_at) > new Date()) {
+        const deepLink = generateDeepLink(existingCode.code);
+        if (logger) {
+          logger.info('subscription:activation:code_reused', {
+            sessionId,
+            code: existingCode.code,
+          });
+        }
+        return { linkCode: existingCode.code, deepLink };
+      }
+    }
+
+    // Generate new activation code
+    const linkCode = generateActivationCode();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 48); // Code expires in 48 hours
+
+    // Store in database
+    try {
+      const insertData: ActivationCodeInsert = {
+        code: linkCode,
+        stripe_session_id: sessionId,
+        stripe_customer_email: customerEmail,
+        plan_tier: planTier as 'monthly' | 'annual' | null,
+        expires_at: expiresAt.toISOString(),
+      };
+
+      const { error: insertError } = await supabaseService
+        .from('activation_codes' as any)
+        .insert(insertData);
+
+      if (insertError) {
+        console.error('[subscription.service] Failed to save activation code:', insertError);
+        return { error: 'Failed to create activation code' };
+      }
+    } catch (err) {
+      console.error('[subscription.service] Error creating activation code:', err);
+      return { error: 'Failed to create activation code' };
+    }
+
+    const deepLink = generateDeepLink(linkCode);
+
+    if (logger) {
+      logger.info('subscription:activation:code_generated', {
+        sessionId,
+        linkCode,
+        planTier,
+      });
+    }
+
+    return { linkCode, deepLink };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[subscription.service] Error generating activation code:', errorMsg);
+    if (logger) {
+      logger.error('subscription:activation:code_generation_failed', {
+        sessionId,
+        error: errorMsg,
+      });
+    }
+    return { error: errorMsg };
+  }
+}
+
+/**
+ * Activate subscription using activation code
+ * Called when user sends the code to the bot
+ * @param activationCode - The activation code (e.g., LINK-ABC123)
+ * @param telegramUserId - The Telegram user ID activating the subscription
+ * @returns Success status and message
+ */
+export async function activateFromActivationCode(
+  activationCode: string,
+  telegramUserId: number
+): Promise<{ success: boolean; message: string; planTier?: string }> {
+  try {
+    // Validate code format
+    if (!isValidActivationCodeFormat(activationCode)) {
+      return {
+        success: false,
+        message: 'Invalid code format. Code should be like: LINK-ABC123',
+      };
+    }
+
+    // Find activation code in database
+    const { data: codeData, error: fetchError } = await supabaseService
+      .from('activation_codes' as any)
+      .select('*')
+      .eq('code', activationCode)
+      .single();
+
+    if (fetchError || !codeData) {
+      return {
+        success: false,
+        message: 'Code not found. Please check and try again.',
+      };
+    }
+
+    // Type-safe cast through unknown
+    const codeRecord = codeData as unknown as ActivationCodeRow;
+
+    // Check if code is expired
+    if (new Date(codeRecord.expires_at) < new Date()) {
+      return {
+        success: false,
+        message: 'Code has expired. Please purchase a new subscription.',
+      };
+    }
+
+    // Check if code already used
+    if (codeRecord.used_at) {
+      return {
+        success: false,
+        message: 'Code has already been used.',
+      };
+    }
+
+    // Retrieve Stripe session to get subscription details
+    const session = await stripe.checkout.sessions.retrieve(codeRecord.stripe_session_id);
+    if (!session || !session.subscription) {
+      return {
+        success: false,
+        message: 'Could not retrieve subscription details. Please contact support.',
+      };
+    }
+
+    // Get subscription from Stripe
+    const subscriptionId =
+      typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+    // Create or update user with Telegram ID and subscription info
+    const { error: userError } = await supabaseService
+      .from('users')
+      .upsert(
+        {
+          id: telegramUserId,
+          telegram_chat_id: telegramUserId,
+          email: codeRecord.stripe_customer_email,
+          stripe_customer_id: subscription.customer as string,
+          stripe_subscription_id: subscription.id,
+          plan_tier: (codeRecord.plan_tier as 'monthly' | 'annual') || 'monthly',
+          subscription_status: subscription.status as
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'incomplete'
+            | 'incomplete_expired'
+            | 'unpaid',
+          trial_started_at: subscription.trial_start
+            ? new Date(subscription.trial_start * 1000).toISOString()
+            : null,
+          trial_ends_at: subscription.trial_end
+            ? new Date(subscription.trial_end * 1000).toISOString()
+            : null,
+          current_period_end:
+            'current_period_end' in subscription && (subscription as any).current_period_end
+              ? new Date((subscription as any).current_period_end * 1000).toISOString()
+              : null,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'id',
+        }
+      );
+
+    if (userError) {
+      console.error('[subscription.service] Failed to create/update user:', userError);
+      return {
+        success: false,
+        message: 'Failed to activate subscription. Please try again.',
+      };
+    }
+
+    // Mark code as used
+    const updateData: ActivationCodeUpdate = {
+      used_at: new Date().toISOString(),
+    };
+
+    const { error: updateError } = await supabaseService
+      .from('activation_codes' as any)
+      .update(updateData)
+      .eq('code', activationCode);
+
+    if (updateError) {
+      console.warn('[subscription.service] Failed to mark code as used:', updateError);
+      // Don't fail - code is already activated
+    }
+
+    // Send confirmation message
+    if (telegramApi) {
+      try {
+        const message = messages.subscription.subscriptionConfirmed(codeRecord.plan_tier);
+        await telegramApi.sendMessage(telegramUserId, message.text, {
+          parse_mode: 'HTML',
+          entities: message.entities,
+        });
+      } catch (error) {
+        console.warn('[subscription.service] Failed to send confirmation message:', error);
+        // Don't fail - subscription is activated
+      }
+    }
+
+    if (logger) {
+      logger.info('subscription:activation:code_used', {
+        telegramUserId,
+        activationCode,
+        planTier: codeRecord.plan_tier,
+      });
+    }
+
+    return {
+      success: true,
+      message: `✅ Subscription activated! Your ${codeRecord.plan_tier || 'monthly'} plan is now active.`,
+      planTier: codeRecord.plan_tier || 'monthly',
+    };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[subscription.service] Error activating from code:', errorMsg);
+    if (logger) {
+      logger.error('subscription:activation:activation_failed', {
+        telegramUserId,
+        activationCode,
+        error: errorMsg,
+      });
+    }
+    return {
+      success: false,
+      message: 'An error occurred during activation. Please contact support.',
+    };
   }
 }

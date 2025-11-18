@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
 
 interface Props {
   title: string;
@@ -19,6 +20,7 @@ const { title, description = 'Be amongst the first to experience Wait and launch
     <title>{title}</title>
   </head>
   <body>
+    <Navbar />
     <slot />
   </body>
 </html>

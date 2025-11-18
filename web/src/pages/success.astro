@@ -1,0 +1,268 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Payment Successful - hilm.ai">
+  <section class="relative min-h-screen py-20 px-4 bg-gradient-to-b from-black to-gray-900">
+    <!-- Background elements -->
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    </div>
+
+    <div class="relative max-w-2xl mx-auto z-10">
+      <!-- Success Message -->
+      <div class="text-center mb-12">
+        <div class="text-6xl mb-6">✅</div>
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Payment Successful!</h1>
+        <p class="text-lg text-gray-300">Your subscription is ready to activate</p>
+      </div>
+
+      <!-- Main Card -->
+      <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-8 md:p-12 mb-12">
+        <!-- Activation Instructions Header -->
+        <h2 class="text-2xl font-bold text-white mb-8 text-center">Choose Your Activation Method</h2>
+
+        <!-- METHOD 1: Auto-Activate (Deep Link) -->
+        <div class="mb-8">
+          <div class="flex items-start gap-4 mb-6">
+            <div class="flex-shrink-0">
+              <div class="flex items-center justify-center h-10 w-10 rounded-full bg-[#d4ff2a] text-black font-bold">
+                1
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-semibold text-white mb-2">⚡ Fastest: Open Bot & Activate</h3>
+              <p class="text-gray-300 text-sm mb-4">
+                One click to activate your subscription. This is the quickest way!
+              </p>
+              <button
+                id="open-bot-btn"
+                class="w-full py-3 px-4 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20 flex items-center justify-center gap-2"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-13c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
+                </svg>
+                <span>Open Telegram Bot</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent my-8"></div>
+
+        <!-- METHOD 2: Manual Code -->
+        <div class="mb-8">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <div class="flex items-center justify-center h-10 w-10 rounded-full bg-purple-500 text-white font-bold">
+                2
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-semibold text-white mb-2">📋 Manual Code Entry</h3>
+              <p class="text-gray-300 text-sm mb-4">
+                Copy your activation code and send it to the bot if you prefer to do it manually.
+              </p>
+
+              <!-- Code Display Box -->
+              <div class="bg-gray-900/50 border border-gray-600 rounded-lg p-4 mb-4">
+                <p class="text-xs text-gray-400 mb-2">Your Activation Code:</p>
+                <div class="flex items-center justify-between gap-3">
+                  <code id="activation-code-text" class="text-xl font-mono font-bold text-[#d4ff2a] break-all">
+                    Loading...
+                  </code>
+                  <button
+                    id="copy-code-btn"
+                    class="flex-shrink-0 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-sm font-semibold transition-colors"
+                    title="Copy to clipboard"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              <!-- Instructions -->
+              <ol class="text-sm text-gray-300 space-y-2 ml-4">
+                <li class="flex gap-2">
+                  <span class="text-[#d4ff2a]">1.</span>
+                  <span>Open the hilm.ai bot (<a href="https://t.me/hilmaibot" target="_blank" rel="noopener noreferrer" class="text-[#d4ff2a] hover:underline">@hilmaibot</a>)</span>
+                </li>
+                <li class="flex gap-2">
+                  <span class="text-[#d4ff2a]">2.</span>
+                  <span>Send the code in a message</span>
+                </li>
+                <li class="flex gap-2">
+                  <span class="text-[#d4ff2a]">3.</span>
+                  <span>Your subscription will be activated instantly</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Messages -->
+      <div id="status-message" class="hidden mb-6 p-4 rounded-lg border"></div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="hidden text-center">
+        <div class="inline-flex items-center gap-3 px-6 py-3 bg-gray-800/50 border border-gray-700 rounded-lg">
+          <div class="w-4 h-4 border-2 border-[#d4ff2a] border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-gray-300">Preparing your activation code...</span>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="hidden mb-6">
+        <div class="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
+          <p class="text-red-400 text-sm mb-3" id="error-message"></p>
+          <a href="https://t.me/hilmaibot" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-md transition-colors">
+            <span>Contact Support</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Help Section -->
+      <div class="bg-gray-900/30 border border-gray-700 rounded-lg p-6 text-center">
+        <p class="text-gray-400 text-sm mb-4">
+          Having trouble? Both activation methods work perfectly. Choose whichever is easiest for you.
+        </p>
+        <a href="https://t.me/hilmaibot" target="_blank" rel="noopener noreferrer" class="text-[#d4ff2a] hover:underline text-sm font-semibold">
+          Message support in the bot →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Styles -->
+  <style>
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .animate-pulse {
+      animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .delay-1000 {
+      animation-delay: 1s;
+    }
+  </style>
+
+  <!-- Script -->
+  <script>
+    interface ActivationResponse {
+      linkCode?: string;
+      deepLink?: string;
+      error?: string;
+    }
+
+    async function initializeActivation() {
+      // Get session_id from URL query parameters
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+
+      const statusMessage = document.getElementById('status-message');
+      const loadingState = document.getElementById('loading-state');
+      const errorState = document.getElementById('error-state');
+      const codeText = document.getElementById('activation-code-text');
+      const openBotBtn = document.getElementById('open-bot-btn');
+      const copyCodeBtn = document.getElementById('copy-code-btn');
+
+      console.log('[success] Initializing activation with sessionId:', sessionId);
+      console.log('[success] URL search params:', window.location.search);
+
+      if (!sessionId) {
+        console.error('[success] No session ID found in URL query parameters');
+        showError('No session ID found. Please contact support.');
+        return;
+      }
+
+      // Show loading state
+      if (loadingState) loadingState.classList.remove('hidden');
+
+      try {
+        // Fetch activation code from backend
+        const response = await fetch('/api/activation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ sessionId }),
+        });
+
+        if (!response.ok) {
+          const errorData = (await response.json()) as ActivationResponse;
+          throw new Error(errorData.error || 'Failed to create activation code');
+        }
+
+        const data = (await response.json()) as ActivationResponse;
+
+        if (!data.linkCode || !data.deepLink) {
+          throw new Error('Invalid response from server');
+        }
+
+        // Hide loading, show content
+        if (loadingState) loadingState.classList.add('hidden');
+
+        // Update code display
+        if (codeText) codeText.textContent = data.linkCode;
+
+        // Setup Open Bot button
+        if (openBotBtn) {
+          openBotBtn.addEventListener('click', () => {
+            window.location.href = data.deepLink!;
+          });
+        }
+
+        // Setup Copy button
+        if (copyCodeBtn) {
+          copyCodeBtn.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(data.linkCode!);
+              const originalText = copyCodeBtn.textContent;
+              copyCodeBtn.textContent = '✓ Copied!';
+              setTimeout(() => {
+                copyCodeBtn.textContent = originalText;
+              }, 2000);
+            } catch (err) {
+              console.error('Failed to copy:', err);
+            }
+          });
+        }
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'An error occurred');
+      }
+    }
+
+    function showError(message: string) {
+      const errorState = document.getElementById('error-state');
+      const errorMessage = document.getElementById('error-message');
+      const loadingState = document.getElementById('loading-state');
+
+      if (loadingState) loadingState.classList.add('hidden');
+      if (errorState) errorState.classList.remove('hidden');
+      if (errorMessage) errorMessage.textContent = message;
+    }
+
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeActivation);
+    } else {
+      initializeActivation();
+    }
+
+    // Handle Astro navigation
+    document.addEventListener('astro:before-swap', initializeActivation);
+  </script>
+</Layout>

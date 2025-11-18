@@ -258,6 +258,102 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- ============================================================================
+-- Activation codes helper functions
+-- ============================================================================
+
+-- Get activation code by Stripe session ID
+CREATE OR REPLACE FUNCTION get_activation_code_by_session(p_session_id TEXT)
+RETURNS TABLE (
+  id UUID,
+  code VARCHAR,
+  stripe_session_id VARCHAR,
+  stripe_customer_email VARCHAR,
+  plan_tier VARCHAR,
+  used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    ac.id,
+    ac.code,
+    ac.stripe_session_id,
+    ac.stripe_customer_email,
+    ac.plan_tier,
+    ac.used_at,
+    ac.expires_at,
+    ac.created_at
+  FROM activation_codes ac
+  WHERE ac.stripe_session_id = p_session_id
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create activation code
+CREATE OR REPLACE FUNCTION create_activation_code(
+  p_code VARCHAR,
+  p_stripe_session_id VARCHAR,
+  p_stripe_customer_email VARCHAR,
+  p_plan_tier VARCHAR,
+  p_expires_at TIMESTAMPTZ
+)
+RETURNS TABLE (
+  id UUID,
+  code VARCHAR
+) AS $$
+DECLARE
+  v_id UUID;
+BEGIN
+  INSERT INTO activation_codes (code, stripe_session_id, stripe_customer_email, plan_tier, expires_at)
+  VALUES (p_code, p_stripe_session_id, p_stripe_customer_email, p_plan_tier, p_expires_at)
+  RETURNING activation_codes.id INTO v_id;
+
+  RETURN QUERY SELECT activation_codes.id, activation_codes.code FROM activation_codes WHERE activation_codes.id = v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get activation code by code
+CREATE OR REPLACE FUNCTION get_activation_code_by_code(p_code VARCHAR)
+RETURNS TABLE (
+  id UUID,
+  code VARCHAR,
+  stripe_session_id VARCHAR,
+  stripe_customer_email VARCHAR,
+  plan_tier VARCHAR,
+  used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    ac.id,
+    ac.code,
+    ac.stripe_session_id,
+    ac.stripe_customer_email,
+    ac.plan_tier,
+    ac.used_at,
+    ac.expires_at,
+    ac.created_at
+  FROM activation_codes ac
+  WHERE ac.code = p_code
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Mark activation code as used
+CREATE OR REPLACE FUNCTION mark_activation_code_used(p_code VARCHAR)
+RETURNS void AS $$
+BEGIN
+  UPDATE activation_codes
+  SET used_at = NOW(),
+      updated_at = NOW()
+  WHERE code = p_code;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Increment usage tokens for a billing period
 CREATE OR REPLACE FUNCTION increment_usage_tokens(
   p_user_id BIGINT,
@@ -454,6 +550,117 @@ CREATE POLICY "Backend service can manage all webhook updates"
 ON webhook_updates FOR ALL
 USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
+
+-- ============================================================================
+-- 12. Activation Codes Table for Stripe Checkout Linking
+-- ============================================================================
+-- This table bridges Stripe checkout sessions to bot users
+-- Allows web users who pay via Stripe to activate their subscription via link code
+
+CREATE TABLE IF NOT EXISTS activation_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code VARCHAR(20) UNIQUE NOT NULL,                    -- Format: LINK-ABC123
+  stripe_session_id VARCHAR(255) UNIQUE NOT NULL,     -- Stripe checkout session ID
+  stripe_customer_email VARCHAR(255),                  -- Customer email from Stripe session
+  plan_tier VARCHAR(50),                               -- 'monthly' or 'annual'
+  used_at TIMESTAMPTZ NULL,                            -- When code was used for activation
+  expires_at TIMESTAMPTZ NOT NULL,                     -- Code expiration time
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_activation_code ON activation_codes(code);
+CREATE INDEX IF NOT EXISTS idx_activation_session ON activation_codes(stripe_session_id);
+CREATE INDEX IF NOT EXISTS idx_activation_expires ON activation_codes(expires_at);
+CREATE INDEX IF NOT EXISTS idx_activation_used ON activation_codes(used_at);
+
+-- Trigger to update updated_at timestamp
+CREATE TRIGGER update_activation_codes_updated_at
+    BEFORE UPDATE ON activation_codes
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- RLS Policies
+ALTER TABLE activation_codes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Backend service can manage all activation codes"
+ON activation_codes FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- ============================================================================
+-- 13. Activation codes helper functions
+-- ============================================================================
+
+-- Get activation code by Stripe session ID
+CREATE OR REPLACE FUNCTION get_activation_code_by_session(p_session_id TEXT)
+RETURNS TABLE (
+  id UUID,
+  code VARCHAR,
+  stripe_session_id VARCHAR,
+  stripe_customer_email VARCHAR,
+  plan_tier VARCHAR,
+  used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    ac.id,
+    ac.code,
+    ac.stripe_session_id,
+    ac.stripe_customer_email,
+    ac.plan_tier,
+    ac.used_at,
+    ac.expires_at,
+    ac.created_at
+  FROM activation_codes ac
+  WHERE ac.stripe_session_id = p_session_id
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get activation code by code
+CREATE OR REPLACE FUNCTION get_activation_code_by_code(p_code VARCHAR)
+RETURNS TABLE (
+  id UUID,
+  code VARCHAR,
+  stripe_session_id VARCHAR,
+  stripe_customer_email VARCHAR,
+  plan_tier VARCHAR,
+  used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    ac.id,
+    ac.code,
+    ac.stripe_session_id,
+    ac.stripe_customer_email,
+    ac.plan_tier,
+    ac.used_at,
+    ac.expires_at,
+    ac.created_at
+  FROM activation_codes ac
+  WHERE ac.code = p_code
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Mark activation code as used
+CREATE OR REPLACE FUNCTION mark_activation_code_used(p_code VARCHAR)
+RETURNS void AS $$
+BEGIN
+  UPDATE activation_codes
+  SET used_at = NOW(),
+      updated_at = NOW()
+  WHERE code = p_code;
+END;
+$$ LANGUAGE plpgsql;
 
 -- ============================================================================
 -- Done! Schema is ready for agent-v2 with RLS security and subscriptions

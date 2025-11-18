@@ -1,0 +1,59 @@
+---
+// Navbar component with logo and navigation
+const currentPath = Astro.url.pathname;
+
+interface NavLink {
+  label: string;
+  href: string;
+}
+
+const navLinks: NavLink[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'Blog', href: '/blog' },
+];
+---
+
+<nav class="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+      <img src="/logo.png" alt="hilm.ai" class="h-8 w-auto" />
+      <span class="text-xl font-bold text-white hidden sm:inline">hilm.ai</span>
+    </a>
+
+    <!-- Navigation Links -->
+    <div class="flex items-center gap-8">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class={`text-sm font-medium transition-colors ${
+            currentPath === link.href
+              ? 'text-[#d4ff2a]'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+
+    <!-- CTA Button -->
+    <a
+      href="https://t.me/hilmaibot"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="px-4 py-2 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20 text-sm"
+    >
+      Open Bot
+    </a>
+  </div>
+</nav>
+
+<style>
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+</style>

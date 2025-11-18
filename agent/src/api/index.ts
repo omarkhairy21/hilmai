@@ -5,6 +5,6 @@
  */
 
 export { handleHealthCheck } from './health.handler';
-export { handleCheckout, handleBillingPortal } from './billing.handler';
+export { handleCheckout, handleBillingPortal, handleActivationCode } from './billing.handler';
 export { handleStripeWebhook } from './stripe-webhook.handler';
 export { handleTelegramWebhook } from './telegram-webhook.handler';

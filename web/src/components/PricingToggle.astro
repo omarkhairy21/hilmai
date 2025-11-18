@@ -1,0 +1,133 @@
+---
+// Pricing toggle component with monthly/annual switch
+---
+
+<div class="flex justify-center items-center mb-8 gap-4">
+  <div class="relative inline-flex items-center bg-gray-800/50 border border-gray-700 rounded-full p-1">
+    <!-- Monthly Option -->
+    <button
+      id="monthly-toggle"
+      class="pricing-toggle-btn relative z-10 px-4 py-2 rounded-full font-semibold text-white transition-all duration-300 whitespace-nowrap"
+      data-period="monthly"
+    >
+      Monthly
+    </button>
+
+    <!-- Annual Option -->
+    <button
+      id="annual-toggle"
+      class="pricing-toggle-btn relative z-10 px-4 py-2 rounded-full font-semibold text-white transition-all duration-300 whitespace-nowrap"
+      data-period="annual"
+    >
+      Annual
+    </button>
+
+    <!-- Sliding background indicator -->
+    <div
+      id="toggle-indicator"
+      class="absolute left-1 z-0 bg-[#d4ff2a]/20 border border-[#d4ff2a]/40 rounded-full transition-all duration-300"
+      style="width: calc(50% - 4px); height: calc(100% - 8px); top: 4px;"
+    ></div>
+  </div>
+
+  <!-- Save badge for annual -->
+  <span class="hidden annual-save-badge bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+    Save $40
+  </span>
+</div>
+
+<script>
+  const monthlyBtn = document.getElementById('monthly-toggle') as HTMLButtonElement;
+  const annualBtn = document.getElementById('annual-toggle') as HTMLButtonElement;
+  const indicator = document.getElementById('toggle-indicator') as HTMLElement;
+  const saveBadges = document.querySelectorAll('.annual-save-badge') as NodeListOf<HTMLElement>;
+
+  // Store current selection
+  let currentPeriod = 'monthly';
+
+  // Update pricing cards based on selected period
+  function updatePricing(period: 'monthly' | 'annual') {
+    currentPeriod = period;
+
+    // Update cards visibility
+    const monthlyCard = document.getElementById('pricing-card-monthly');
+    const annualCard = document.getElementById('pricing-card-annual');
+
+    if (monthlyCard && annualCard) {
+      if (period === 'monthly') {
+        monthlyCard.classList.remove('hidden');
+        annualCard.classList.add('hidden');
+      } else {
+        monthlyCard.classList.add('hidden');
+        annualCard.classList.remove('hidden');
+      }
+    }
+
+    // Update button styles
+    updateButtonStyles();
+
+    // Update save badge visibility
+    saveBadges.forEach((badge) => {
+      if (period === 'annual') {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    });
+
+    // Move indicator
+    if (period === 'annual') {
+      indicator.style.left = `calc(50% + 4px)`;
+    } else {
+      indicator.style.left = `4px`;
+    }
+  }
+
+  function updateButtonStyles() {
+    if (currentPeriod === 'monthly') {
+      monthlyBtn.classList.add('text-[#d4ff2a]');
+      monthlyBtn.classList.remove('text-white');
+      annualBtn.classList.remove('text-[#d4ff2a]');
+      annualBtn.classList.add('text-white');
+    } else {
+      monthlyBtn.classList.remove('text-[#d4ff2a]');
+      monthlyBtn.classList.add('text-white');
+      annualBtn.classList.add('text-[#d4ff2a]');
+      annualBtn.classList.remove('text-white');
+    }
+  }
+
+  // Event listeners
+  monthlyBtn.addEventListener('click', () => updatePricing('monthly'));
+  annualBtn.addEventListener('click', () => updatePricing('annual'));
+
+  // Initialize - hide annual card on page load
+  updatePricing('monthly');
+
+  // Handle Astro navigation
+  document.addEventListener('astro:after-swap', () => {
+    // Re-attach event listeners after page swap
+    const monthlyBtn = document.getElementById('monthly-toggle') as HTMLButtonElement;
+    const annualBtn = document.getElementById('annual-toggle') as HTMLButtonElement;
+
+    if (monthlyBtn && annualBtn) {
+      monthlyBtn.addEventListener('click', () => updatePricing('monthly'));
+      annualBtn.addEventListener('click', () => updatePricing('annual'));
+      updatePricing(currentPeriod);
+    }
+  });
+</script>
+
+<style>
+  .pricing-toggle-btn {
+    min-width: auto;
+  }
+
+  @media (max-width: 768px) {
+    .pricing-toggle-btn {
+      min-width: auto;
+      padding: 0.375rem 0.875rem;
+      font-size: 0.8125rem;
+    }
+  }
+</style>

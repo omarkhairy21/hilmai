@@ -1,6 +1,8 @@
 import type { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
 import { createOrGetUser } from '../../services/user.service';
+import { activateFromActivationCode } from '../../services/subscription.service';
+import { extractCodeFromStartParam } from '../../lib/activation-codes';
 import { messages } from '../../lib/messages';
 
 /**
@@ -20,6 +22,9 @@ export function registerStartCommand(bot: Bot, mastra: Mastra): void {
     logger.info('command:start', { userId });
 
     try {
+      // Check if this is an activation deep link (e.g., /start LINK-ABC123)
+      const startParam = ctx.match?.toString().trim();
+
       // Create or get user record with complete Telegram information
       const { error, created } = await createOrGetUser(userId, {
         telegram_username: ctx.from?.username || null,
@@ -44,22 +49,7 @@ export function registerStartCommand(bot: Bot, mastra: Mastra): void {
         });
       }
 
-      // Prompt new users to set their timezone
-      if (created) {
-        const tzPrompt =
-          '🌍 *Please set your timezone* so transactions are logged with the correct date!\n\n' +
-          'Use `/timezone` command with one of these formats:\n' +
-          '• City name: `/timezone Bangkok` or `/timezone New York`\n' +
-          '• GMT offset: `/timezone +7` or `/timezone -5`\n' +
-          '• IANA timezone: `/timezone Asia/Bangkok` or `/timezone America/New_York`\n\n' +
-          'Examples:\n' +
-          '`/timezone Bangkok` → Asia/Bangkok (UTC+7)\n' +
-          '`/timezone +7` → UTC+7\n' +
-          '`/timezone Asia/Kolkata` → India (UTC+5:30)';
-
-        await ctx.reply(tzPrompt, { parse_mode: 'Markdown' });
-      }
-
+      // Define onboarding UI (used for both activation and normal flow)
       const onboardingKeyboard = {
         inline_keyboard: [
           [{ text: '⚡ Instant Log', callback_data: 'set_mode_logger' }],
@@ -69,6 +59,28 @@ export function registerStartCommand(bot: Bot, mastra: Mastra): void {
 
       const welcomeMessage = messages.start.welcome();
 
+      // Handle activation code if present in start parameter
+      if (startParam) {
+        const activationCode = extractCodeFromStartParam(startParam);
+        if (activationCode) {
+          logger.info('command:start:activation_code_detected', {
+            userId,
+            code: activationCode,
+          });
+
+          const activationResult = await activateFromActivationCode(activationCode, userId);
+
+          if (activationResult.success) {
+            // Send subscription confirmation message
+            await ctx.reply(activationResult.message, { parse_mode: 'HTML' });
+          } else {
+            // If activation failed, show error message
+            await ctx.reply(activationResult.message, { parse_mode: 'HTML' });
+          }
+        }
+      }
+
+      // Show welcome message with onboarding buttons (for both activation and normal flow)
       await ctx.reply(welcomeMessage.text, {
         entities: welcomeMessage.entities,
         reply_markup: onboardingKeyboard,

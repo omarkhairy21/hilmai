@@ -259,6 +259,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      activation_codes: {
+        Row: {
+          id: string; // UUID
+          code: string; // Format: LINK-ABC123
+          stripe_session_id: string; // Stripe checkout session ID
+          stripe_customer_email: string | null; // Customer email from Stripe
+          plan_tier: string | null; // 'monthly' or 'annual'
+          used_at: string | null; // When code was used for activation
+          expires_at: string; // Code expiration time
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string; // UUID, auto-generated
+          code: string;
+          stripe_session_id: string;
+          stripe_customer_email?: string | null;
+          plan_tier?: string | null;
+          used_at?: string | null;
+          expires_at: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          stripe_session_id?: string;
+          stripe_customer_email?: string | null;
+          plan_tier?: string | null;
+          used_at?: string | null;
+          expires_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -282,6 +318,42 @@ export type Database = {
           p_user_id: number;
           p_period_start: string;
           p_tokens: number;
+        };
+        Returns: undefined;
+      };
+      get_activation_code_by_session: {
+        Args: {
+          p_session_id: string;
+        };
+        Returns: {
+          id: string;
+          code: string;
+          stripe_session_id: string;
+          stripe_customer_email: string | null;
+          plan_tier: string | null;
+          used_at: string | null;
+          expires_at: string;
+          created_at: string;
+        }[];
+      };
+      get_activation_code_by_code: {
+        Args: {
+          p_code: string;
+        };
+        Returns: {
+          id: string;
+          code: string;
+          stripe_session_id: string;
+          stripe_customer_email: string | null;
+          plan_tier: string | null;
+          used_at: string | null;
+          expires_at: string;
+          created_at: string;
+        }[];
+      };
+      mark_activation_code_used: {
+        Args: {
+          p_code: string;
         };
         Returns: undefined;
       };

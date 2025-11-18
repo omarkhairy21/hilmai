@@ -39,6 +39,7 @@ import {
   handleHealthCheck,
   handleCheckout,
   handleBillingPortal,
+  handleActivationCode,
   handleStripeWebhook,
   handleTelegramWebhook,
 } from '../api';
@@ -139,6 +140,12 @@ export const mastra = new Mastra({
       registerApiRoute('/billing/portal', {
         method: 'POST',
         handler: async (c: Context) => handleBillingPortal(c, mastra),
+      }),
+
+      // Activation code generation endpoint (called after Stripe checkout)
+      registerApiRoute('/billing/activation-code', {
+        method: 'POST',
+        handler: async (c: Context) => handleActivationCode(c, mastra),
       }),
 
       // Stripe webhook endpoint

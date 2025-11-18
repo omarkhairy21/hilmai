@@ -15,6 +15,7 @@ DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 DROP TRIGGER IF EXISTS update_subscription_usage_updated_at ON subscription_usage;
 DROP TRIGGER IF EXISTS set_transaction_display_id ON transactions;
 DROP TRIGGER IF EXISTS update_webhook_updates_updated_at ON webhook_updates;
+DROP TRIGGER IF EXISTS update_activation_codes_updated_at ON activation_codes;
 
 -- Step 2: Drop all RLS policies
 -- ============================================================================
@@ -44,6 +45,9 @@ DROP POLICY IF EXISTS "Backend service can manage all usage" ON subscription_usa
 -- Webhook updates table policies
 DROP POLICY IF EXISTS "Backend service can manage all webhook updates" ON webhook_updates;
 
+-- Activation codes table policies
+DROP POLICY IF EXISTS "Backend service can manage all activation codes" ON activation_codes;
+
 -- Step 3: Drop all functions
 -- ============================================================================
 
@@ -65,11 +69,15 @@ DROP FUNCTION IF EXISTS get_current_user_id();
 DROP FUNCTION IF EXISTS set_next_display_id();
 DROP FUNCTION IF EXISTS get_transaction_id_by_display_id(BIGINT, INT);
 DROP FUNCTION IF EXISTS increment_usage_tokens(BIGINT, TIMESTAMPTZ, BIGINT);
+DROP FUNCTION IF EXISTS get_activation_code_by_session(TEXT);
+DROP FUNCTION IF EXISTS get_activation_code_by_code(VARCHAR);
+DROP FUNCTION IF EXISTS mark_activation_code_used(VARCHAR);
 
 -- Step 4: Drop all tables (in reverse dependency order)
 -- ============================================================================
 
 DROP TABLE IF EXISTS webhook_updates CASCADE;
+DROP TABLE IF EXISTS activation_codes CASCADE;
 DROP TABLE IF EXISTS subscription_usage CASCADE;
 DROP TABLE IF EXISTS transactions CASCADE;
 DROP TABLE IF EXISTS merchant_embeddings_cache CASCADE;
