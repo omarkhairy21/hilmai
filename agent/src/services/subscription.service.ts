@@ -788,15 +788,25 @@ export async function generateActivationCodeForSession(
         .from('activation_codes')
         .select('code, expires_at, used_at')
         .eq('stripe_session_id', sessionId)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single() to handle no results gracefully
 
       if (!error && data) {
         existingCode = data;
+      } else if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" which is fine, log other errors
+        const errorMsg = error.message || String(error);
+        if (logger) {
+          logger.warn('subscription:activation:fetch_existing_code_error', {
+            sessionId,
+            error: errorMsg,
+            errorCode: error.code,
+          });
+        }
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       if (logger) {
-        logger.warn('subscription:activation:fetch_existing_code_error', {
+        logger.warn('subscription:activation:fetch_existing_code_exception', {
           sessionId,
           error: errorMsg,
         });
@@ -814,6 +824,16 @@ export async function generateActivationCodeForSession(
           });
         }
         return { linkCode: existingCode.code, deepLink };
+      } else {
+        // Code exists but is expired or used - log for debugging
+        if (logger) {
+          logger.warn('subscription:activation:existing_code_invalid', {
+            sessionId,
+            used: !!existingCode.used_at,
+            expired: new Date(existingCode.expires_at) <= new Date(),
+            expiresAt: existingCode.expires_at,
+          });
+        }
       }
     }
 
@@ -851,19 +871,88 @@ export async function generateActivationCodeForSession(
             }
             continue; // Retry with new code
           }
-          console.error('[subscription.service] Failed to save activation code:', insertError);
-          return { error: 'Failed to create activation code' };
+          
+          // Log detailed error for debugging
+          const errorDetails = {
+            code: insertError.code,
+            message: insertError.message,
+            details: insertError.details,
+            hint: insertError.hint,
+          };
+          
+          console.error('[subscription.service] Failed to save activation code:', errorDetails);
+          
+          if (logger) {
+            logger.error('subscription:activation:database_insert_failed', {
+              sessionId,
+              error: errorDetails,
+              attempt: attempts + 1,
+            });
+          }
+          
+          // Check if it's a duplicate session_id (should reuse existing code)
+          if (insertError.code === '23505' && insertError.message?.includes('stripe_session_id')) {
+            // Session already has a code, try to fetch it
+            const { data: existing } = await supabaseService
+              .from('activation_codes')
+              .select('code, expires_at, used_at')
+              .eq('stripe_session_id', sessionId)
+              .single();
+            
+            if (existing && !existing.used_at && new Date(existing.expires_at) > new Date()) {
+              const deepLink = generateDeepLink(existing.code);
+              if (logger) {
+                logger.info('subscription:activation:code_found_for_session', {
+                  sessionId,
+                  code: existing.code,
+                });
+              }
+              return { linkCode: existing.code, deepLink };
+            }
+          }
+          
+          return { 
+            error: `Failed to create activation code: ${insertError.message || 'Database error'}` 
+          };
         }
 
         // Success - break out of retry loop
         break;
       } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        const errorStack = err instanceof Error ? err.stack : undefined;
+        
         if (attempts < maxAttempts - 1) {
           attempts++;
+          if (logger) {
+            logger.warn('subscription:activation:retry_after_exception', {
+              sessionId,
+              attempt: attempts,
+              error: errorMsg,
+            });
+          }
           continue;
         }
-        console.error('[subscription.service] Error creating activation code:', err);
-        return { error: 'Failed to create activation code' };
+        
+        console.error('[subscription.service] Error creating activation code:', {
+          error: errorMsg,
+          stack: errorStack,
+          sessionId,
+          attempts,
+        });
+        
+        if (logger) {
+          logger.error('subscription:activation:max_retries_exceeded', {
+            sessionId,
+            error: errorMsg,
+            stack: errorStack,
+            attempts,
+          });
+        }
+        
+        return { 
+          error: `Failed to create activation code after ${maxAttempts} attempts: ${errorMsg}` 
+        };
       }
     }
 
