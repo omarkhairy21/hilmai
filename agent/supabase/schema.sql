@@ -662,6 +662,109 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Atomic activation: Create/update user and mark code as used in a single transaction
+-- This ensures data consistency and prevents code reuse
+CREATE OR REPLACE FUNCTION activate_subscription_from_code(
+  p_code VARCHAR,
+  p_telegram_user_id BIGINT,
+  p_telegram_chat_id BIGINT,
+  p_email VARCHAR,
+  p_stripe_customer_id VARCHAR,
+  p_stripe_subscription_id VARCHAR,
+  p_plan_tier VARCHAR,
+  p_subscription_status VARCHAR,
+  p_trial_started_at TIMESTAMPTZ DEFAULT NULL,
+  p_trial_ends_at TIMESTAMPTZ DEFAULT NULL,
+  p_current_period_end TIMESTAMPTZ DEFAULT NULL
+)
+RETURNS TABLE (
+  success BOOLEAN,
+  error_message TEXT
+) AS $$
+DECLARE
+  v_code_record activation_codes%ROWTYPE;
+  v_error_message TEXT;
+BEGIN
+  -- Start transaction (implicit in function)
+  
+  -- Step 1: Lock and validate activation code
+  SELECT * INTO v_code_record
+  FROM activation_codes
+  WHERE code = p_code
+  FOR UPDATE; -- Lock row to prevent concurrent activation
+  
+  -- Check if code exists
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, 'Code not found'::TEXT;
+    RETURN;
+  END IF;
+  
+  -- Check if code is expired
+  IF v_code_record.expires_at < NOW() THEN
+    RETURN QUERY SELECT FALSE, 'Code has expired'::TEXT;
+    RETURN;
+  END IF;
+  
+  -- Check if code already used
+  IF v_code_record.used_at IS NOT NULL THEN
+    RETURN QUERY SELECT FALSE, 'Code has already been used'::TEXT;
+    RETURN;
+  END IF;
+  
+  -- Step 2: Create or update user (upsert)
+  INSERT INTO users (
+    id,
+    telegram_chat_id,
+    email,
+    stripe_customer_id,
+    stripe_subscription_id,
+    plan_tier,
+    subscription_status,
+    trial_started_at,
+    trial_ends_at,
+    current_period_end,
+    updated_at
+  ) VALUES (
+    p_telegram_user_id,
+    p_telegram_chat_id,
+    p_email,
+    p_stripe_customer_id,
+    p_stripe_subscription_id,
+    p_plan_tier::TEXT,
+    p_subscription_status::TEXT,
+    p_trial_started_at,
+    p_trial_ends_at,
+    p_current_period_end,
+    NOW()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    telegram_chat_id = EXCLUDED.telegram_chat_id,
+    email = EXCLUDED.email,
+    stripe_customer_id = EXCLUDED.stripe_customer_id,
+    stripe_subscription_id = EXCLUDED.stripe_subscription_id,
+    plan_tier = EXCLUDED.plan_tier,
+    subscription_status = EXCLUDED.subscription_status,
+    trial_started_at = EXCLUDED.trial_started_at,
+    trial_ends_at = EXCLUDED.trial_ends_at,
+    current_period_end = EXCLUDED.current_period_end,
+    updated_at = NOW();
+  
+  -- Step 3: Mark code as used (atomic with user creation)
+  UPDATE activation_codes
+  SET used_at = NOW(),
+      updated_at = NOW()
+  WHERE code = p_code;
+  
+  -- Success
+  RETURN QUERY SELECT TRUE, NULL::TEXT;
+  
+EXCEPTION WHEN OTHERS THEN
+  -- Rollback happens automatically
+  v_error_message := SQLERRM;
+  RETURN QUERY SELECT FALSE, v_error_message;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ============================================================================
 -- Done! Schema is ready for agent-v2 with RLS security and subscriptions
 -- ============================================================================

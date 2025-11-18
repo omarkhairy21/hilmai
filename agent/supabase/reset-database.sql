@@ -70,8 +70,22 @@ DROP FUNCTION IF EXISTS set_next_display_id();
 DROP FUNCTION IF EXISTS get_transaction_id_by_display_id(BIGINT, INT);
 DROP FUNCTION IF EXISTS increment_usage_tokens(BIGINT, TIMESTAMPTZ, BIGINT);
 DROP FUNCTION IF EXISTS get_activation_code_by_session(TEXT);
+DROP FUNCTION IF EXISTS create_activation_code(VARCHAR, VARCHAR, VARCHAR, VARCHAR, TIMESTAMPTZ);
 DROP FUNCTION IF EXISTS get_activation_code_by_code(VARCHAR);
 DROP FUNCTION IF EXISTS mark_activation_code_used(VARCHAR);
+DROP FUNCTION IF EXISTS activate_subscription_from_code(
+  VARCHAR,
+  BIGINT,
+  BIGINT,
+  VARCHAR,
+  VARCHAR,
+  VARCHAR,
+  VARCHAR,
+  VARCHAR,
+  TIMESTAMPTZ,
+  TIMESTAMPTZ,
+  TIMESTAMPTZ
+);
 
 -- Step 4: Drop all tables (in reverse dependency order)
 -- ============================================================================

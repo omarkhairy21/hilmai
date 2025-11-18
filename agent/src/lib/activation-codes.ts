@@ -34,13 +34,11 @@ export function isValidActivationCodeFormat(code: string): boolean {
 
 /**
  * Generate Telegram deep link for activation
- * Format: https://t.me/hilmaibot?start=LINK123
+ * Format: https://t.me/hilmaibot?start=LINK-ABC123
  *
- * When user opens this link, Telegram passes LINK123 to bot's /start handler
+ * When user opens this link, Telegram passes LINK-ABC123 to bot's /start handler
  */
 export function generateDeepLink(activationCode: string): string {
-  // Remove 'LINK-' prefix and create deep link parameter
-  const codeOnly = activationCode.replace('LINK-', '');
   return `https://t.me/hilmaibot?start=${activationCode}`;
 }
 

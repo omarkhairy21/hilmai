@@ -188,8 +188,9 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
 
-      // Show loading state
+      // Show loading state and hide error state
       if (loadingState) loadingState.classList.remove('hidden');
+      if (errorState) errorState.classList.add('hidden');
 
       try {
         // Fetch activation code from backend
@@ -201,12 +202,18 @@ import Layout from '../layouts/Layout.astro';
           body: JSON.stringify({ sessionId }),
         });
 
-        if (!response.ok) {
-          const errorData = (await response.json()) as ActivationResponse;
-          throw new Error(errorData.error || 'Failed to create activation code');
+        // Parse response once
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.includes('application/json')) {
+          const text = await response.text();
+          throw new Error(`Invalid response format: ${text.substring(0, 100)}`);
         }
 
         const data = (await response.json()) as ActivationResponse;
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create activation code');
+        }
 
         if (!data.linkCode || !data.deepLink) {
           throw new Error('Invalid response from server');

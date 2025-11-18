@@ -357,6 +357,25 @@ export type Database = {
         };
         Returns: undefined;
       };
+      activate_subscription_from_code: {
+        Args: {
+          p_code: string;
+          p_telegram_user_id: number;
+          p_telegram_chat_id: number;
+          p_email: string;
+          p_stripe_customer_id: string;
+          p_stripe_subscription_id: string;
+          p_plan_tier: string;
+          p_subscription_status: string;
+          p_trial_started_at?: string | null;
+          p_trial_ends_at?: string | null;
+          p_current_period_end?: string | null;
+        };
+        Returns: {
+          success: boolean;
+          error_message: string | null;
+        }[];
+      };
       search_transactions_hybrid: {
         Args: {
           p_query_embedding: number[];

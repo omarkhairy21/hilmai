@@ -19,10 +19,13 @@ import {
 } from '../lib/activation-codes';
 import type { Database } from '../lib/database.types';
 
-// Type aliases for activation codes
+// Type aliases for activation codes - fully typed
 type ActivationCodeRow = Database['public']['Tables']['activation_codes']['Row'];
 type ActivationCodeInsert = Database['public']['Tables']['activation_codes']['Insert'];
 type ActivationCodeUpdate = Database['public']['Tables']['activation_codes']['Update'];
+
+// Type for RPC function result
+type ActivateSubscriptionResult = Database['public']['Functions']['activate_subscription_from_code']['Returns'][0];
 
 // Global reference to Telegram API for sending messages
 let telegramApi: Api | null = null;
@@ -361,7 +364,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription): Prom
   const updateData: Parameters<typeof updateUserSubscription>[1] = {
     stripe_subscription_id: subscription.id,
     plan_tier: planTier,
-    subscription_status: subscription.status as any,
+    subscription_status: (subscription.status as Database['public']['Tables']['users']['Row']['subscription_status']) || undefined,
   };
 
   // Add trial period dates if subscription is trialing
@@ -738,17 +741,41 @@ export async function generateActivationCodeForSession(
       return { error: 'Session not found' };
     }
 
-    // Verify session is completed
+    // Verify session is completed or payment succeeded
     if (session.status !== 'complete') {
-      return {
-        error: `Session is not complete. Status: ${session.status}`,
-      };
+      // Check if payment actually succeeded via payment_status
+      if (session.payment_status === 'paid') {
+        // Allow this case - payment succeeded even if session status is unexpected
+        if (logger) {
+          logger.warn('subscription:activation:unexpected_session_status', {
+            sessionId,
+            status: session.status,
+            paymentStatus: session.payment_status,
+          });
+        }
+      } else {
+        return {
+          error: `Session is not complete. Status: ${session.status}, Payment: ${session.payment_status}`,
+        };
+      }
     }
 
     // Get customer email from session
     const customerEmail = session.customer_email || session.customer_details?.email;
     if (!customerEmail) {
       return { error: 'No email found in session' };
+    }
+
+    // Basic email validation (defensive programming)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerEmail)) {
+      if (logger) {
+        logger.warn('subscription:activation:invalid_email_format', {
+          sessionId,
+          email: customerEmail,
+        });
+      }
+      return { error: 'Invalid email format in session' };
     }
 
     // Get plan tier from session metadata
@@ -758,16 +785,22 @@ export async function generateActivationCodeForSession(
     let existingCode: Pick<ActivationCodeRow, 'code' | 'expires_at' | 'used_at'> | null = null;
     try {
       const { data, error } = await supabaseService
-        .from('activation_codes' as any)
+        .from('activation_codes')
         .select('code, expires_at, used_at')
         .eq('stripe_session_id', sessionId)
         .single();
 
       if (!error && data) {
-        existingCode = data as unknown as Pick<ActivationCodeRow, 'code' | 'expires_at' | 'used_at'>;
+        existingCode = data;
       }
     } catch (err) {
-      console.warn('[subscription.service] Error fetching existing code:', err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      if (logger) {
+        logger.warn('subscription:activation:fetch_existing_code_error', {
+          sessionId,
+          error: errorMsg,
+        });
+      }
     }
 
     if (existingCode) {
@@ -784,32 +817,58 @@ export async function generateActivationCodeForSession(
       }
     }
 
-    // Generate new activation code
-    const linkCode = generateActivationCode();
+    // Generate new activation code with retry logic for collision handling
+    let linkCode: string | undefined;
+    let attempts = 0;
+    const maxAttempts = 5;
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 48); // Code expires in 48 hours
 
-    // Store in database
-    try {
-      const insertData: ActivationCodeInsert = {
-        code: linkCode,
-        stripe_session_id: sessionId,
-        stripe_customer_email: customerEmail,
-        plan_tier: planTier as 'monthly' | 'annual' | null,
-        expires_at: expiresAt.toISOString(),
-      };
+    while (attempts < maxAttempts) {
+      try {
+        linkCode = generateActivationCode();
+        const insertData: ActivationCodeInsert = {
+          code: linkCode,
+          stripe_session_id: sessionId,
+          stripe_customer_email: customerEmail,
+          plan_tier: planTier as 'monthly' | 'annual' | null,
+          expires_at: expiresAt.toISOString(),
+        };
 
-      const { error: insertError } = await supabaseService
-        .from('activation_codes' as any)
-        .insert(insertData);
+        const { error: insertError } = await supabaseService
+          .from('activation_codes')
+          .insert(insertData);
 
-      if (insertError) {
-        console.error('[subscription.service] Failed to save activation code:', insertError);
+        if (insertError) {
+          // Check if it's a unique constraint violation (code collision)
+          if (insertError.code === '23505' && attempts < maxAttempts - 1) {
+            attempts++;
+            if (logger) {
+              logger.warn('subscription:activation:code_collision', {
+                sessionId,
+                attempt: attempts,
+              });
+            }
+            continue; // Retry with new code
+          }
+          console.error('[subscription.service] Failed to save activation code:', insertError);
+          return { error: 'Failed to create activation code' };
+        }
+
+        // Success - break out of retry loop
+        break;
+      } catch (err) {
+        if (attempts < maxAttempts - 1) {
+          attempts++;
+          continue;
+        }
+        console.error('[subscription.service] Error creating activation code:', err);
         return { error: 'Failed to create activation code' };
       }
-    } catch (err) {
-      console.error('[subscription.service] Error creating activation code:', err);
-      return { error: 'Failed to create activation code' };
+    }
+
+    if (!linkCode) {
+      return { error: 'Failed to generate unique activation code after multiple attempts' };
     }
 
     const deepLink = generateDeepLink(linkCode);
@@ -856,33 +915,52 @@ export async function activateFromActivationCode(
       };
     }
 
-    // Find activation code in database
+    // Find activation code in database (for validation before RPC call)
     const { data: codeData, error: fetchError } = await supabaseService
-      .from('activation_codes' as any)
+      .from('activation_codes')
       .select('*')
       .eq('code', activationCode)
       .single();
 
     if (fetchError || !codeData) {
+      if (logger) {
+        logger.warn('subscription:activation:code_not_found', {
+          telegramUserId,
+          activationCode,
+          error: fetchError?.message,
+        });
+      }
       return {
         success: false,
         message: 'Code not found. Please check and try again.',
       };
     }
 
-    // Type-safe cast through unknown
-    const codeRecord = codeData as unknown as ActivationCodeRow;
+    const codeRecord: ActivationCodeRow = codeData;
 
-    // Check if code is expired
+    // Pre-validate code (RPC function also validates, but this provides better error messages)
     if (new Date(codeRecord.expires_at) < new Date()) {
+      if (logger) {
+        logger.warn('subscription:activation:code_expired', {
+          telegramUserId,
+          activationCode,
+          expiresAt: codeRecord.expires_at,
+        });
+      }
       return {
         success: false,
         message: 'Code has expired. Please purchase a new subscription.',
       };
     }
 
-    // Check if code already used
     if (codeRecord.used_at) {
+      if (logger) {
+        logger.warn('subscription:activation:code_already_used', {
+          telegramUserId,
+          activationCode,
+          usedAt: codeRecord.used_at,
+        });
+      }
       return {
         success: false,
         message: 'Code has already been used.',
@@ -903,91 +981,142 @@ export async function activateFromActivationCode(
       typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-    // Create or update user with Telegram ID and subscription info
-    const { error: userError } = await supabaseService
-      .from('users')
-      .upsert(
-        {
-          id: telegramUserId,
-          telegram_chat_id: telegramUserId,
-          email: codeRecord.stripe_customer_email,
-          stripe_customer_id: subscription.customer as string,
-          stripe_subscription_id: subscription.id,
-          plan_tier: (codeRecord.plan_tier as 'monthly' | 'annual') || 'monthly',
-          subscription_status: subscription.status as
-            | 'trialing'
-            | 'active'
-            | 'past_due'
-            | 'canceled'
-            | 'incomplete'
-            | 'incomplete_expired'
-            | 'unpaid',
-          trial_started_at: subscription.trial_start
-            ? new Date(subscription.trial_start * 1000).toISOString()
-            : null,
-          trial_ends_at: subscription.trial_end
-            ? new Date(subscription.trial_end * 1000).toISOString()
-            : null,
-          current_period_end:
-            'current_period_end' in subscription && (subscription as any).current_period_end
-              ? new Date((subscription as any).current_period_end * 1000).toISOString()
-              : null,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'id',
-        }
-      );
+    // Validate subscription is in a valid state
+    const validStatuses = ['active', 'trialing'];
+    if (!validStatuses.includes(subscription.status)) {
+      if (logger) {
+        logger.warn('subscription:activation:invalid_subscription_status', {
+          telegramUserId,
+          activationCode,
+          subscriptionStatus: subscription.status,
+          subscriptionId: subscription.id,
+        });
+      }
+      return {
+        success: false,
+        message: `Subscription is ${subscription.status}. Please contact support.`,
+      };
+    }
 
-    if (userError) {
-      console.error('[subscription.service] Failed to create/update user:', userError);
+    // Extract subscription data with proper types
+    const stripeCustomerId = typeof subscription.customer === 'string' 
+      ? subscription.customer 
+      : subscription.customer.id;
+    
+    const planTier = (codeRecord.plan_tier as 'monthly' | 'annual') || 'monthly';
+    const subscriptionStatus = subscription.status as Database['public']['Tables']['users']['Row']['subscription_status'];
+    
+    // Type-safe current_period_end extraction
+    // Note: Stripe Subscription type has current_period_end as a number (Unix timestamp)
+    const currentPeriodEnd = 'current_period_end' in subscription && typeof subscription.current_period_end === 'number'
+      ? new Date(subscription.current_period_end * 1000).toISOString()
+      : null;
+
+    // Use atomic RPC function for transaction safety
+    if (logger) {
+      logger.info('subscription:activation:starting_atomic_activation', {
+        telegramUserId,
+        activationCode,
+        subscriptionId: subscription.id,
+        planTier,
+      });
+    }
+
+    const { data: rpcResult, error: rpcError } = await supabaseService.rpc(
+      'activate_subscription_from_code',
+      {
+        p_code: activationCode,
+        p_telegram_user_id: telegramUserId,
+        p_telegram_chat_id: telegramUserId,
+        p_email: codeRecord.stripe_customer_email || '',
+        p_stripe_customer_id: stripeCustomerId,
+        p_stripe_subscription_id: subscription.id,
+        p_plan_tier: planTier,
+        p_subscription_status: subscriptionStatus || 'active',
+        p_trial_started_at: subscription.trial_start
+          ? new Date(subscription.trial_start * 1000).toISOString()
+          : null,
+        p_trial_ends_at: subscription.trial_end
+          ? new Date(subscription.trial_end * 1000).toISOString()
+          : null,
+        p_current_period_end: currentPeriodEnd,
+      }
+    );
+
+    if (rpcError || !rpcResult || rpcResult.length === 0) {
+      const errorMsg = rpcError?.message || 'Unknown error during activation';
+      if (logger) {
+        logger.error('subscription:activation:rpc_failed', {
+          telegramUserId,
+          activationCode,
+          error: errorMsg,
+          rpcError,
+        });
+      }
       return {
         success: false,
         message: 'Failed to activate subscription. Please try again.',
       };
     }
 
-    // Mark code as used
-    const updateData: ActivationCodeUpdate = {
-      used_at: new Date().toISOString(),
-    };
-
-    const { error: updateError } = await supabaseService
-      .from('activation_codes' as any)
-      .update(updateData)
-      .eq('code', activationCode);
-
-    if (updateError) {
-      console.warn('[subscription.service] Failed to mark code as used:', updateError);
-      // Don't fail - code is already activated
+    const result: ActivateSubscriptionResult = rpcResult[0];
+    
+    if (!result.success) {
+      if (logger) {
+        logger.error('subscription:activation:rpc_returned_failure', {
+          telegramUserId,
+          activationCode,
+          errorMessage: result.error_message,
+        });
+      }
+      return {
+        success: false,
+        message: result.error_message || 'Failed to activate subscription.',
+      };
     }
 
     // Send confirmation message
     if (telegramApi) {
       try {
-        const message = messages.subscription.subscriptionConfirmed(codeRecord.plan_tier);
+        const message = messages.subscription.subscriptionConfirmed(planTier);
         await telegramApi.sendMessage(telegramUserId, message.text, {
           parse_mode: 'HTML',
           entities: message.entities,
         });
+        if (logger) {
+          logger.info('subscription:activation:confirmation_sent', {
+            telegramUserId,
+            activationCode,
+          });
+        }
       } catch (error) {
-        console.warn('[subscription.service] Failed to send confirmation message:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        if (logger) {
+          logger.warn('subscription:activation:confirmation_failed', {
+            telegramUserId,
+            activationCode,
+            error: errorMsg,
+          });
+        }
         // Don't fail - subscription is activated
       }
     }
 
     if (logger) {
-      logger.info('subscription:activation:code_used', {
+      logger.info('subscription:activation:success', {
         telegramUserId,
         activationCode,
-        planTier: codeRecord.plan_tier,
+        planTier,
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        event: 'subscription_activated',
       });
     }
 
     return {
       success: true,
-      message: `✅ Subscription activated! Your ${codeRecord.plan_tier || 'monthly'} plan is now active.`,
-      planTier: codeRecord.plan_tier || 'monthly',
+      message: `✅ Subscription activated! Your ${planTier} plan is now active.`,
+      planTier,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
