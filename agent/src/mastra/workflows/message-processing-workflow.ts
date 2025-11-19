@@ -330,13 +330,13 @@ Items: Aquafina water (qty 3), Gumi tissues, Mentos candy`,
     });
 
     const extractedText = response.choices[0]?.message?.content;
-  
+
     logger.info('[workflow:photo-extract]', {
       event: 'response',
       userId: inputData.userId,
       response: extractedText,
     });
-  
+
     if (!extractedText) {
       throw new Error('No text extracted from the provided image');
     }

@@ -437,7 +437,9 @@ export function getAgentMemory(role: AgentRole): Memory | undefined {
   const initDuration = Date.now() - initStartTime;
   if (initDuration > MEMORY_INIT_TIMEOUT_MS) {
     // Log warning if initialization is slow (should only happen once per role)
-    console.warn(`[memory-factory] Slow memory initialization for role "${role}": ${initDuration}ms`);
+    console.warn(
+      `[memory-factory] Slow memory initialization for role "${role}": ${initDuration}ms`
+    );
   }
 
   return memoryInstance;

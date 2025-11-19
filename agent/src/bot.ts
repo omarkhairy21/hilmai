@@ -138,7 +138,9 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
 // Cache for bot instance used in webhook mode
 let webhookBotInstance: Bot | null = null;
 
-export function createBotWebhookCallback(mastra: Mastra): (c: HonoContext, body?: unknown) => Promise<Response> {
+export function createBotWebhookCallback(
+  mastra: Mastra
+): (c: HonoContext, body?: unknown) => Promise<Response> {
   const logger = mastra.getLogger();
 
   return async (c: HonoContext, body?: unknown) => {
@@ -152,7 +154,7 @@ export function createBotWebhookCallback(mastra: Mastra): (c: HonoContext, body?
       }
 
       // Get the request body if not provided
-      const updateBody = body ?? await c.req.json();
+      const updateBody = body ?? (await c.req.json());
 
       // Process the update through grammy
       await webhookBotInstance.handleUpdate(updateBody);

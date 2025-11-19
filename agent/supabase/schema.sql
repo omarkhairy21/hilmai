@@ -3,15 +3,20 @@
 -- Run this in Supabase SQL editor to set up the database
 
 -- ============================================================================
--- 1. Enable pgvector extension
+-- PART 1: EXTENSIONS, TABLE CREATION, AND INDEXES
 -- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- 1.1 Extensions
+-- ----------------------------------------------------------------------------
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- ============================================================================
--- 2. Users table (Telegram profile + preferences)
--- ============================================================================
+-- ----------------------------------------------------------------------------
+-- 1.2 Table Creation
+-- ----------------------------------------------------------------------------
 
+-- Users table (Telegram profile + preferences)
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY, -- Telegram user ID
   telegram_chat_id BIGINT UNIQUE,
@@ -38,10 +43,7 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================================================
--- 3. Transactions table with vector embeddings
--- ============================================================================
-
+-- Transactions table with vector embeddings
 CREATE TABLE IF NOT EXISTS transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Secure UUID primary key (internal use)
   display_id INT NOT NULL, -- Sequential number for user-friendly display (e.g., 1, 2, 3)
@@ -74,15 +76,66 @@ CREATE TABLE IF NOT EXISTS transactions (
   CONSTRAINT unique_user_display_id UNIQUE(user_id, display_id)
 );
 
--- ============================================================================
--- 4. Indexes for performance
--- ============================================================================
+-- Merchant embeddings cache table
+CREATE TABLE IF NOT EXISTS merchant_embeddings_cache (
+  id BIGSERIAL PRIMARY KEY,
+  merchant_name TEXT UNIQUE NOT NULL,
+  embedding vector(1536) NOT NULL,
+  usage_count INTEGER DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Subscription usage tracking table
+CREATE TABLE IF NOT EXISTS subscription_usage (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  billing_period_start TIMESTAMPTZ NOT NULL,
+  billing_period_end TIMESTAMPTZ NOT NULL,
+  total_tokens BIGINT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  -- Ensure one row per user per billing period
+  UNIQUE(user_id, billing_period_start)
+);
+
+-- Webhook updates tracking table
+CREATE TABLE IF NOT EXISTS webhook_updates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  update_id BIGINT UNIQUE NOT NULL, -- Telegram's update identifier for deduplication
+  payload JSONB NOT NULL, -- Raw Telegram update payload
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+  last_error TEXT, -- Last error message if failed
+  processed_at TIMESTAMPTZ, -- When processing completed
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Activation Codes Table for Stripe Checkout Linking
+-- This table bridges Stripe checkout sessions to bot users
+-- Allows web users who pay via Stripe to activate their subscription via link code
+CREATE TABLE IF NOT EXISTS activation_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code VARCHAR(20) UNIQUE NOT NULL,                    -- Format: LINK-ABC123
+  stripe_session_id VARCHAR(255) UNIQUE NOT NULL,     -- Stripe checkout session ID
+  stripe_customer_email VARCHAR(255),                  -- Customer email from Stripe session
+  plan_tier VARCHAR(50),                               -- 'monthly' or 'annual'
+  used_at TIMESTAMPTZ NULL,                            -- When code was used for activation
+  expires_at TIMESTAMPTZ NOT NULL,                     -- Code expiration time
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ----------------------------------------------------------------------------
+-- 1.3 Indexes
+-- ----------------------------------------------------------------------------
 
 -- Users indexes
 CREATE INDEX IF NOT EXISTS idx_users_chat_id ON users(telegram_chat_id);
 CREATE INDEX IF NOT EXISTS idx_users_mode ON users(current_mode);
 
--- Standard indexes for frequent queries
+-- Transactions indexes
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(transaction_date);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
@@ -99,53 +152,245 @@ ON transactions
 USING ivfflat (description_embedding vector_cosine_ops)
 WITH (lists = 100);
 
--- ============================================================================
--- 5. Merchant embeddings cache table
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS merchant_embeddings_cache (
-  id BIGSERIAL PRIMARY KEY,
-  merchant_name TEXT UNIQUE NOT NULL,
-  embedding vector(1536) NOT NULL,
-  usage_count INTEGER DEFAULT 1,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Index for cache lookups
+-- Merchant embeddings cache indexes
 CREATE INDEX IF NOT EXISTS idx_merchant_cache_name ON merchant_embeddings_cache(merchant_name);
-
--- Vector index for merchant cache
 CREATE INDEX IF NOT EXISTS idx_merchant_cache_embedding
 ON merchant_embeddings_cache
 USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 50);
 
--- ============================================================================
--- 6. Subscription usage tracking table
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS subscription_usage (
-  id BIGSERIAL PRIMARY KEY,
-  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  billing_period_start TIMESTAMPTZ NOT NULL,
-  billing_period_end TIMESTAMPTZ NOT NULL,
-  total_tokens BIGINT NOT NULL DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  -- Ensure one row per user per billing period
-  UNIQUE(user_id, billing_period_start)
-);
-
--- Index for fast lookups
+-- Subscription usage indexes
 CREATE INDEX IF NOT EXISTS idx_subscription_usage_user_period 
 ON subscription_usage(user_id, billing_period_start);
 
+-- Webhook updates indexes
+CREATE INDEX IF NOT EXISTS idx_webhook_updates_update_id ON webhook_updates(update_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_updates_status ON webhook_updates(status);
+CREATE INDEX IF NOT EXISTS idx_webhook_updates_created_at ON webhook_updates(created_at);
+
+-- Activation codes indexes
+CREATE INDEX IF NOT EXISTS idx_activation_code ON activation_codes(code);
+CREATE INDEX IF NOT EXISTS idx_activation_session ON activation_codes(stripe_session_id);
+CREATE INDEX IF NOT EXISTS idx_activation_expires ON activation_codes(expires_at);
+CREATE INDEX IF NOT EXISTS idx_activation_used ON activation_codes(used_at);
+
 -- ============================================================================
--- 7. Hybrid search RPC function
+-- PART 2: ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
 
+-- ----------------------------------------------------------------------------
+-- 2.1 Enable RLS on Tables
+-- ----------------------------------------------------------------------------
+
+-- Enable RLS on application tables only (user data isolation)
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE merchant_embeddings_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscription_usage ENABLE ROW LEVEL SECURITY;
+ALTER TABLE webhook_updates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activation_codes ENABLE ROW LEVEL SECURITY;
+
+-- NOTE: Mastra system tables (mastra_*, etc.) intentionally have NO RLS
+-- They are framework system tables, not user data
+-- Mastra backend (service role) needs unrestricted access
+
+-- ----------------------------------------------------------------------------
+-- 2.2 Helper Function for RLS Policies
+-- ----------------------------------------------------------------------------
+
+-- Helper function: Get current user ID from JWT claims
+-- NOTE: This function is for future client-side RLS enforcement.
+-- When using service_role key (backend operations), this function returns NULL
+-- because service_role bypasses RLS and doesn't use JWT claims.
+-- Backend operations should validate user_id in application code instead.
+--
+-- This function will be useful if you implement:
+-- - Client-side API access with JWT tokens
+-- - Direct anon key access with user authentication
+-- - Web dashboard with Supabase Auth integration
+CREATE OR REPLACE FUNCTION get_current_user_id()
+RETURNS BIGINT AS $$
+BEGIN
+  RETURN (auth.jwt() ->> 'user_id')::BIGINT;
+EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- ----------------------------------------------------------------------------
+-- 2.3 Users Table - RLS Policies
+-- ----------------------------------------------------------------------------
+
+CREATE POLICY "Users can view own profile"
+ON users FOR SELECT
+USING (id = get_current_user_id());
+
+CREATE POLICY "Users can update own profile"
+ON users FOR UPDATE
+USING (id = get_current_user_id())
+WITH CHECK (id = get_current_user_id());
+
+CREATE POLICY "Backend service can manage all users"
+ON users FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- ----------------------------------------------------------------------------
+-- 2.4 Transactions Table - RLS Policies
+-- ----------------------------------------------------------------------------
+
+CREATE POLICY "Users can view own transactions"
+ON transactions FOR SELECT
+USING (user_id = get_current_user_id());
+
+CREATE POLICY "Users can insert own transactions"
+ON transactions FOR INSERT
+WITH CHECK (user_id = get_current_user_id());
+
+CREATE POLICY "Users can update own transactions"
+ON transactions FOR UPDATE
+USING (user_id = get_current_user_id())
+WITH CHECK (user_id = get_current_user_id());
+
+CREATE POLICY "Users can delete own transactions"
+ON transactions FOR DELETE
+USING (user_id = get_current_user_id());
+
+CREATE POLICY "Backend service can access all transactions"
+ON transactions FOR ALL
+USING (auth.role() = 'service_role');
+
+-- ----------------------------------------------------------------------------
+-- 2.5 Merchant Embeddings Cache - RLS Policies
+-- ----------------------------------------------------------------------------
+
+-- Public read access (cache is shared reference data)
+CREATE POLICY "Anyone can read merchant cache"
+ON merchant_embeddings_cache FOR SELECT
+USING (true);
+
+-- Backend-only write access
+CREATE POLICY "Backend service can insert merchant cache"
+ON merchant_embeddings_cache FOR INSERT
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "Backend service can update merchant cache"
+ON merchant_embeddings_cache FOR UPDATE
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "Backend service can delete merchant cache"
+ON merchant_embeddings_cache FOR DELETE
+USING (auth.role() = 'service_role');
+
+-- ----------------------------------------------------------------------------
+-- 2.6 Subscription Usage Table - RLS Policies
+-- ----------------------------------------------------------------------------
+
+CREATE POLICY "Users can view own usage"
+ON subscription_usage FOR SELECT
+USING (user_id = get_current_user_id());
+
+CREATE POLICY "Backend service can manage all usage"
+ON subscription_usage FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- ----------------------------------------------------------------------------
+-- 2.7 Webhook Updates Table - RLS Policies
+-- ----------------------------------------------------------------------------
+
+-- Backend service only (no user access needed)
+CREATE POLICY "Backend service can manage all webhook updates"
+ON webhook_updates FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- ----------------------------------------------------------------------------
+-- 2.8 Activation Codes Table - RLS Policies
+-- ----------------------------------------------------------------------------
+
+CREATE POLICY "Backend service can manage all activation codes"
+ON activation_codes FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- ============================================================================
+-- PART 3: TRIGGERS, RPC FUNCTIONS, AND HELPER FUNCTIONS
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- 3.1 Trigger Functions
+-- ----------------------------------------------------------------------------
+
+-- Auto-increment display_id per user on transaction insert
+CREATE OR REPLACE FUNCTION set_next_display_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Get the next display_id for this user (max existing + 1, or 1 if none exist)
+  SELECT COALESCE(MAX(display_id), 0) + 1
+  INTO NEW.display_id
+  FROM transactions
+  WHERE user_id = NEW.user_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update updated_at timestamp trigger function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ----------------------------------------------------------------------------
+-- 3.2 Triggers
+-- ----------------------------------------------------------------------------
+
+-- Trigger to auto-set display_id before insert
+CREATE TRIGGER set_transaction_display_id
+BEFORE INSERT ON transactions
+FOR EACH ROW
+EXECUTE FUNCTION set_next_display_id();
+
+-- Triggers to update updated_at timestamp
+CREATE TRIGGER update_transactions_updated_at
+    BEFORE UPDATE ON transactions
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_merchant_cache_updated_at
+    BEFORE UPDATE ON merchant_embeddings_cache
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_subscription_usage_updated_at
+    BEFORE UPDATE ON subscription_usage
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_webhook_updates_updated_at
+    BEFORE UPDATE ON webhook_updates
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_activation_codes_updated_at
+    BEFORE UPDATE ON activation_codes
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- ----------------------------------------------------------------------------
+-- 3.3 RPC Functions
+-- ----------------------------------------------------------------------------
+
+-- Hybrid search RPC function
 CREATE OR REPLACE FUNCTION search_transactions_hybrid(
   p_query_embedding vector(1536),
   p_user_id BIGINT,
@@ -204,29 +449,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE;
 
--- ============================================================================
--- 8. Helper functions
--- ============================================================================
-
--- Auto-increment display_id per user on transaction insert
-CREATE OR REPLACE FUNCTION set_next_display_id()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Get the next display_id for this user (max existing + 1, or 1 if none exist)
-  SELECT COALESCE(MAX(display_id), 0) + 1
-  INTO NEW.display_id
-  FROM transactions
-  WHERE user_id = NEW.user_id;
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create trigger to auto-set display_id before insert
-CREATE TRIGGER set_transaction_display_id
-BEFORE INSERT ON transactions
-FOR EACH ROW
-EXECUTE FUNCTION set_next_display_id();
+-- ----------------------------------------------------------------------------
+-- 3.4 Helper Functions
+-- ----------------------------------------------------------------------------
 
 -- Helper function: Get transaction ID (UUID) by display_id and user_id
 CREATE OR REPLACE FUNCTION get_transaction_id_by_display_id(
@@ -258,9 +483,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ============================================================================
--- Activation codes helper functions
--- ============================================================================
+-- Increment usage tokens for a billing period
+CREATE OR REPLACE FUNCTION increment_usage_tokens(
+  p_user_id BIGINT,
+  p_period_start TIMESTAMPTZ,
+  p_tokens BIGINT
+)
+RETURNS void AS $$
+BEGIN
+  UPDATE subscription_usage
+  SET total_tokens = total_tokens + p_tokens,
+      updated_at = NOW()
+  WHERE user_id = p_user_id
+    AND billing_period_start = p_period_start;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ----------------------------------------------------------------------------
+-- 3.5 Activation Codes Functions
+-- ----------------------------------------------------------------------------
 
 -- Get activation code by Stripe session ID
 CREATE OR REPLACE FUNCTION get_activation_code_by_session(p_session_id TEXT)
@@ -287,6 +528,35 @@ BEGIN
     ac.created_at
   FROM activation_codes ac
   WHERE ac.stripe_session_id = p_session_id
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get activation code by code
+CREATE OR REPLACE FUNCTION get_activation_code_by_code(p_code VARCHAR)
+RETURNS TABLE (
+  id UUID,
+  code VARCHAR,
+  stripe_session_id VARCHAR,
+  stripe_customer_email VARCHAR,
+  plan_tier VARCHAR,
+  used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    ac.id,
+    ac.code,
+    ac.stripe_session_id,
+    ac.stripe_customer_email,
+    ac.plan_tier,
+    ac.used_at,
+    ac.expires_at,
+    ac.created_at
+  FROM activation_codes ac
+  WHERE ac.code = p_code
   LIMIT 1;
 END;
 $$ LANGUAGE plpgsql;
@@ -311,343 +581,6 @@ BEGIN
   RETURNING activation_codes.id INTO v_id;
 
   RETURN QUERY SELECT activation_codes.id, activation_codes.code FROM activation_codes WHERE activation_codes.id = v_id;
-END;
-$$ LANGUAGE plpgsql;
-
--- Get activation code by code
-CREATE OR REPLACE FUNCTION get_activation_code_by_code(p_code VARCHAR)
-RETURNS TABLE (
-  id UUID,
-  code VARCHAR,
-  stripe_session_id VARCHAR,
-  stripe_customer_email VARCHAR,
-  plan_tier VARCHAR,
-  used_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    ac.id,
-    ac.code,
-    ac.stripe_session_id,
-    ac.stripe_customer_email,
-    ac.plan_tier,
-    ac.used_at,
-    ac.expires_at,
-    ac.created_at
-  FROM activation_codes ac
-  WHERE ac.code = p_code
-  LIMIT 1;
-END;
-$$ LANGUAGE plpgsql;
-
--- Mark activation code as used
-CREATE OR REPLACE FUNCTION mark_activation_code_used(p_code VARCHAR)
-RETURNS void AS $$
-BEGIN
-  UPDATE activation_codes
-  SET used_at = NOW(),
-      updated_at = NOW()
-  WHERE code = p_code;
-END;
-$$ LANGUAGE plpgsql;
-
--- Increment usage tokens for a billing period
-CREATE OR REPLACE FUNCTION increment_usage_tokens(
-  p_user_id BIGINT,
-  p_period_start TIMESTAMPTZ,
-  p_tokens BIGINT
-)
-RETURNS void AS $$
-BEGIN
-  UPDATE subscription_usage
-  SET total_tokens = total_tokens + p_tokens,
-      updated_at = NOW()
-  WHERE user_id = p_user_id
-    AND billing_period_start = p_period_start;
-END;
-$$ LANGUAGE plpgsql;
-
--- ============================================================================
--- 9. Trigger to update updated_at timestamp
--- ============================================================================
-
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_transactions_updated_at
-    BEFORE UPDATE ON transactions
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_merchant_cache_updated_at
-    BEFORE UPDATE ON merchant_embeddings_cache
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_subscription_usage_updated_at
-    BEFORE UPDATE ON subscription_usage
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- ============================================================================
--- 10. Row Level Security (RLS) Setup for Telegram Bot
--- ============================================================================
-
--- Enable RLS on application tables only (user data isolation)
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE merchant_embeddings_cache ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscription_usage ENABLE ROW LEVEL SECURITY;
-
--- NOTE: Mastra system tables (mastra_*, etc.) intentionally have NO RLS
--- They are framework system tables, not user data
--- Mastra backend (service role) needs unrestricted access
-
--- ============================================================================
--- Helper function: Get current user ID from JWT claims
--- ============================================================================
--- NOTE: This function is for future client-side RLS enforcement.
--- When using service_role key (backend operations), this function returns NULL
--- because service_role bypasses RLS and doesn't use JWT claims.
--- Backend operations should validate user_id in application code instead.
---
--- This function will be useful if you implement:
--- - Client-side API access with JWT tokens
--- - Direct anon key access with user authentication
--- - Web dashboard with Supabase Auth integration
-
-CREATE OR REPLACE FUNCTION get_current_user_id()
-RETURNS BIGINT AS $$
-BEGIN
-  RETURN (auth.jwt() ->> 'user_id')::BIGINT;
-EXCEPTION WHEN OTHERS THEN
-  RETURN NULL;
-END;
-$$ LANGUAGE plpgsql STABLE;
-
--- ============================================================================
--- Users Table - RLS Policies
--- ============================================================================
-
-CREATE POLICY "Users can view own profile"
-ON users FOR SELECT
-USING (id = get_current_user_id());
-
-CREATE POLICY "Users can update own profile"
-ON users FOR UPDATE
-USING (id = get_current_user_id())
-WITH CHECK (id = get_current_user_id());
-
-CREATE POLICY "Backend service can manage all users"
-ON users FOR ALL
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
-
--- ============================================================================
--- Transactions Table - RLS Policies
--- ============================================================================
-
-CREATE POLICY "Users can view own transactions"
-ON transactions FOR SELECT
-USING (user_id = get_current_user_id());
-
-CREATE POLICY "Users can insert own transactions"
-ON transactions FOR INSERT
-WITH CHECK (user_id = get_current_user_id());
-
-CREATE POLICY "Users can update own transactions"
-ON transactions FOR UPDATE
-USING (user_id = get_current_user_id())
-WITH CHECK (user_id = get_current_user_id());
-
-CREATE POLICY "Users can delete own transactions"
-ON transactions FOR DELETE
-USING (user_id = get_current_user_id());
-
-CREATE POLICY "Backend service can access all transactions"
-ON transactions FOR ALL
-USING (auth.role() = 'service_role');
-
--- ============================================================================
--- Merchant Embeddings Cache - RLS Policies
--- ============================================================================
-
--- Public read access (cache is shared reference data)
-CREATE POLICY "Anyone can read merchant cache"
-ON merchant_embeddings_cache FOR SELECT
-USING (true);
-
--- Backend-only write access
-CREATE POLICY "Backend service can insert merchant cache"
-ON merchant_embeddings_cache FOR INSERT
-WITH CHECK (auth.role() = 'service_role');
-
-CREATE POLICY "Backend service can update merchant cache"
-ON merchant_embeddings_cache FOR UPDATE
-WITH CHECK (auth.role() = 'service_role');
-
-CREATE POLICY "Backend service can delete merchant cache"
-ON merchant_embeddings_cache FOR DELETE
-USING (auth.role() = 'service_role');
-
--- ============================================================================
--- Subscription Usage Table - RLS Policies
--- ============================================================================
-
-CREATE POLICY "Users can view own usage"
-ON subscription_usage FOR SELECT
-USING (user_id = get_current_user_id());
-
-CREATE POLICY "Backend service can manage all usage"
-ON subscription_usage FOR ALL
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
-
--- ============================================================================
--- 11. Webhook updates tracking table
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS webhook_updates (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  update_id BIGINT UNIQUE NOT NULL, -- Telegram's update identifier for deduplication
-  payload JSONB NOT NULL, -- Raw Telegram update payload
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
-  last_error TEXT, -- Last error message if failed
-  processed_at TIMESTAMPTZ, -- When processing completed
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_webhook_updates_update_id ON webhook_updates(update_id);
-CREATE INDEX IF NOT EXISTS idx_webhook_updates_status ON webhook_updates(status);
-CREATE INDEX IF NOT EXISTS idx_webhook_updates_created_at ON webhook_updates(created_at);
-
--- Trigger to update updated_at timestamp
-CREATE TRIGGER update_webhook_updates_updated_at
-    BEFORE UPDATE ON webhook_updates
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- RLS Policies for webhook_updates
--- Backend service only (no user access needed)
-ALTER TABLE webhook_updates ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Backend service can manage all webhook updates"
-ON webhook_updates FOR ALL
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
-
--- ============================================================================
--- 12. Activation Codes Table for Stripe Checkout Linking
--- ============================================================================
--- This table bridges Stripe checkout sessions to bot users
--- Allows web users who pay via Stripe to activate their subscription via link code
-
-CREATE TABLE IF NOT EXISTS activation_codes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  code VARCHAR(20) UNIQUE NOT NULL,                    -- Format: LINK-ABC123
-  stripe_session_id VARCHAR(255) UNIQUE NOT NULL,     -- Stripe checkout session ID
-  stripe_customer_email VARCHAR(255),                  -- Customer email from Stripe session
-  plan_tier VARCHAR(50),                               -- 'monthly' or 'annual'
-  used_at TIMESTAMPTZ NULL,                            -- When code was used for activation
-  expires_at TIMESTAMPTZ NOT NULL,                     -- Code expiration time
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_activation_code ON activation_codes(code);
-CREATE INDEX IF NOT EXISTS idx_activation_session ON activation_codes(stripe_session_id);
-CREATE INDEX IF NOT EXISTS idx_activation_expires ON activation_codes(expires_at);
-CREATE INDEX IF NOT EXISTS idx_activation_used ON activation_codes(used_at);
-
--- Trigger to update updated_at timestamp
-CREATE TRIGGER update_activation_codes_updated_at
-    BEFORE UPDATE ON activation_codes
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- RLS Policies
-ALTER TABLE activation_codes ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Backend service can manage all activation codes"
-ON activation_codes FOR ALL
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
-
--- ============================================================================
--- 13. Activation codes helper functions
--- ============================================================================
-
--- Get activation code by Stripe session ID
-CREATE OR REPLACE FUNCTION get_activation_code_by_session(p_session_id TEXT)
-RETURNS TABLE (
-  id UUID,
-  code VARCHAR,
-  stripe_session_id VARCHAR,
-  stripe_customer_email VARCHAR,
-  plan_tier VARCHAR,
-  used_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    ac.id,
-    ac.code,
-    ac.stripe_session_id,
-    ac.stripe_customer_email,
-    ac.plan_tier,
-    ac.used_at,
-    ac.expires_at,
-    ac.created_at
-  FROM activation_codes ac
-  WHERE ac.stripe_session_id = p_session_id
-  LIMIT 1;
-END;
-$$ LANGUAGE plpgsql;
-
--- Get activation code by code
-CREATE OR REPLACE FUNCTION get_activation_code_by_code(p_code VARCHAR)
-RETURNS TABLE (
-  id UUID,
-  code VARCHAR,
-  stripe_session_id VARCHAR,
-  stripe_customer_email VARCHAR,
-  plan_tier VARCHAR,
-  used_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    ac.id,
-    ac.code,
-    ac.stripe_session_id,
-    ac.stripe_customer_email,
-    ac.plan_tier,
-    ac.used_at,
-    ac.expires_at,
-    ac.created_at
-  FROM activation_codes ac
-  WHERE ac.code = p_code
-  LIMIT 1;
 END;
 $$ LANGUAGE plpgsql;
 

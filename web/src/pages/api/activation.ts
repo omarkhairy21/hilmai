@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { getAgentUrl } from '../../lib/agent-config';
 
 export const prerender = false;
 
@@ -23,25 +24,25 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
-    const text = await context.request.text();
-    if (!text) {
-      return new Response(
-        JSON.stringify({ error: 'Request body is empty' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    let body: unknown;
+    // Use .json() directly to avoid body consumption issues
+    let body: ActivationRequest;
     try {
-      body = JSON.parse(text);
-    } catch {
+      body = await context.request.json();
+    } catch (parseError) {
       return new Response(
         JSON.stringify({ error: 'Invalid JSON in request body' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    const { sessionId } = body as ActivationRequest;
+    if (!body) {
+      return new Response(
+        JSON.stringify({ error: 'Request body is empty' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { sessionId } = body;
 
     // Validate required fields
     if (!sessionId) {
@@ -54,7 +55,7 @@ export const POST: APIRoute = async (context) => {
     console.log('[api:activation] Request received:', { sessionId });
 
     // Call agent backend to generate activation code
-    const agentUrl = import.meta.env.AGENT_API_URL || 'http://localhost:4111';
+    const agentUrl = getAgentUrl();
 
     let response: Response;
     try {

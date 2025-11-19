@@ -16,18 +16,13 @@ export type WebhookUpdateStatus = 'pending' | 'processing' | 'completed' | 'fail
  * @param payload - Raw Telegram update payload (JSON)
  * @returns Promise resolving to true if stored successfully, false otherwise
  */
-export async function storeWebhookUpdate(
-  updateId: number,
-  payload: unknown
-): Promise<boolean> {
+export async function storeWebhookUpdate(updateId: number, payload: unknown): Promise<boolean> {
   try {
-    const { error } = await supabaseService
-      .from('webhook_updates')
-      .insert({
-        update_id: updateId,
-        payload: payload as any,
-        status: 'pending',
-      });
+    const { error } = await supabaseService.from('webhook_updates').insert({
+      update_id: updateId,
+      payload: payload as any,
+      status: 'pending',
+    });
 
     if (error) {
       // If duplicate update_id, that's okay - just log and return false
@@ -173,4 +168,3 @@ export async function markAsFailed(updateId: number, error: string | Error): Pro
     return false;
   }
 }
-

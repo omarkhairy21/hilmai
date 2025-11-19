@@ -240,7 +240,9 @@ export async function searchTransactionsSQL(params: {
   try {
     let query = supabaseService
       .from('transactions')
-      .select('id, display_id, amount, currency, merchant, category, description, transaction_date, original_amount, original_currency, converted_amount, conversion_rate, converted_at')
+      .select(
+        'id, display_id, amount, currency, merchant, category, description, transaction_date, original_amount, original_currency, converted_amount, conversion_rate, converted_at'
+      )
       .eq('user_id', userId);
 
     // Apply filters

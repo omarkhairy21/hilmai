@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { getAgentUrl } from '../../lib/agent-config';
 
 export const prerender = false;
 
@@ -20,7 +21,7 @@ function isValidPlanTier(planTier: string): planTier is 'monthly' | 'annual' {
 
 export const POST: APIRoute = async (context) => {
   try {
-    // Get request body safely
+    // Get request body safely - use .json() directly to avoid body consumption issues
     const contentType = context.request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       return new Response(
@@ -29,25 +30,24 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
-    const text = await context.request.text();
-    if (!text) {
-      return new Response(
-        JSON.stringify({ error: 'Request body is empty' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    let body: unknown;
+    let body: CheckoutRequest;
     try {
-      body = JSON.parse(text);
-    } catch {
+      body = await context.request.json();
+    } catch (parseError) {
       return new Response(
         JSON.stringify({ error: 'Invalid JSON in request body' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    const { planTier, successUrl: _successUrl, cancelUrl, includeTrial } = body as CheckoutRequest;
+    if (!body) {
+      return new Response(
+        JSON.stringify({ error: 'Request body is empty' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { planTier, successUrl: _successUrl, cancelUrl, includeTrial } = body;
 
     // Override successUrl to always redirect to success page
     // The session_id will be appended by Stripe as query param
@@ -86,7 +86,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     // Call agent backend
-    const agentUrl = import.meta.env.AGENT_API_URL || 'http://localhost:4111';
+    const agentUrl = getAgentUrl();
 
     let response: Response;
     try {

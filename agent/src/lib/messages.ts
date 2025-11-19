@@ -389,8 +389,7 @@ Use /timezone to see more options.`,
       `This action cannot be undone.\n\n` +
       `Use the button below to confirm deletion.`,
 
-    deleteSuccess: (displayId: number) =>
-      `✅ *Transaction #${displayId} deleted successfully*`,
+    deleteSuccess: (displayId: number) => `✅ *Transaction #${displayId} deleted successfully*`,
 
     deleteFailed: (displayId: number) =>
       `❌ *Failed to delete transaction #${displayId}*\n\n` +

@@ -232,7 +232,12 @@ export async function checkTrialMessageLimit(userId: number): Promise<{
     const trialEnded = user.trial_ends_at ? new Date(user.trial_ends_at) < now : false;
 
     if (trialEnded) {
-      return { canUse: false, remaining: 0, isTrialActive: false, messagesUsed: user.trial_messages_used };
+      return {
+        canUse: false,
+        remaining: 0,
+        isTrialActive: false,
+        messagesUsed: user.trial_messages_used,
+      };
     }
 
     // Trial is active, check message limit

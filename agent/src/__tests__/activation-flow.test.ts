@@ -1,6 +1,6 @@
 /**
  * Integration tests for activation flow
- * 
+ *
  * Tests the complete activation flow including:
  * - Code generation
  * - Code validation
@@ -9,7 +9,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { generateActivationCode, isValidActivationCodeFormat, extractCodeFromStartParam } from '../lib/activation-codes';
+import {
+  generateActivationCode,
+  isValidActivationCodeFormat,
+  extractCodeFromStartParam,
+} from '../lib/activation-codes';
 import type { Database } from '../lib/database.types';
 
 // Mock Supabase client
@@ -42,7 +46,7 @@ describe('Activation Flow Integration Tests', () => {
   describe('Activation Code Generation', () => {
     it('should generate valid activation code format', () => {
       const code = generateActivationCode();
-      
+
       expect(code).toMatch(/^LINK-[A-Z0-9]{6}$/);
       expect(isValidActivationCodeFormat(code)).toBe(true);
     });
@@ -50,12 +54,12 @@ describe('Activation Flow Integration Tests', () => {
     it('should generate unique codes', () => {
       const codes = new Set<string>();
       const iterations = 100;
-      
+
       for (let i = 0; i < iterations; i++) {
         const code = generateActivationCode();
         codes.add(code);
       }
-      
+
       // Very unlikely to have collisions with 100 codes
       expect(codes.size).toBe(iterations);
     });
@@ -64,7 +68,7 @@ describe('Activation Flow Integration Tests', () => {
       expect(isValidActivationCodeFormat('LINK-ABC123')).toBe(true);
       expect(isValidActivationCodeFormat('LINK-123456')).toBe(true);
       expect(isValidActivationCodeFormat('LINK-ABCDEF')).toBe(true);
-      
+
       expect(isValidActivationCodeFormat('LINK-abc123')).toBe(false); // lowercase
       expect(isValidActivationCodeFormat('link-ABC123')).toBe(false); // lowercase prefix
       expect(isValidActivationCodeFormat('LINK-ABC12')).toBe(false); // too short
@@ -86,7 +90,7 @@ describe('Activation Flow Integration Tests', () => {
     it('should handle expired codes', () => {
       const expiredDate = new Date();
       expiredDate.setHours(expiredDate.getHours() - 49); // 49 hours ago (expired)
-      
+
       const codeRecord: Database['public']['Tables']['activation_codes']['Row'] = {
         id: 'test-id',
         code: 'LINK-ABC123',
@@ -140,20 +144,20 @@ describe('Activation Flow Integration Tests', () => {
     it('should prevent double activation of same code', async () => {
       // This test simulates the RPC function's FOR UPDATE lock
       // In real scenario, the database lock prevents concurrent activation
-      
+
       const code = 'LINK-ABC123';
       const activationAttempts: Promise<boolean>[] = [];
-      
+
       // Simulate 5 concurrent activation attempts
       for (let i = 0; i < 5; i++) {
         activationAttempts.push(
           Promise.resolve(false) // Simulate: only first succeeds, others fail
         );
       }
-      
+
       const results = await Promise.all(activationAttempts);
-      const successCount = results.filter(r => r === true).length;
-      
+      const successCount = results.filter((r) => r === true).length;
+
       // Only one should succeed (in real scenario, enforced by database lock)
       expect(successCount).toBeLessThanOrEqual(1);
     });
@@ -169,8 +173,8 @@ describe('Activation Flow Integration Tests', () => {
     it('should reject invalid subscription statuses', () => {
       const validStatuses = ['active', 'trialing'];
       const invalidStatuses = ['canceled', 'past_due', 'incomplete', 'unpaid'];
-      
-      invalidStatuses.forEach(status => {
+
+      invalidStatuses.forEach((status) => {
         expect(validStatuses.includes(status)).toBe(false);
       });
     });
@@ -185,8 +189,8 @@ describe('Activation Flow Integration Tests', () => {
 
     it('should handle invalid code format gracefully', () => {
       const invalidCodes = ['', 'INVALID', 'LINK-', 'LINK-ABC', 'link-ABC123'];
-      
-      invalidCodes.forEach(code => {
+
+      invalidCodes.forEach((code) => {
         expect(isValidActivationCodeFormat(code)).toBe(false);
       });
     });
@@ -195,7 +199,7 @@ describe('Activation Flow Integration Tests', () => {
       // Simulate network error
       const mockError = new Error('Network error');
       mockStripe.checkout.sessions.retrieve.mockRejectedValueOnce(mockError);
-      
+
       try {
         await mockStripe.checkout.sessions.retrieve('cs_test_123');
       } catch (error) {
@@ -208,7 +212,7 @@ describe('Activation Flow Integration Tests', () => {
     it('should enforce correct plan tier types', () => {
       const validPlanTiers: ('monthly' | 'annual')[] = ['monthly', 'annual'];
       const invalidPlanTier = 'yearly' as any;
-      
+
       expect(validPlanTiers.includes(invalidPlanTier)).toBe(false);
       expect(validPlanTiers.includes('monthly')).toBe(true);
       expect(validPlanTiers.includes('annual')).toBe(true);
@@ -225,7 +229,7 @@ describe('Activation Flow Integration Tests', () => {
         'incomplete_expired',
         'unpaid',
       ];
-      
+
       expect(validStatuses.includes('active')).toBe(true);
       expect(validStatuses.includes('trialing')).toBe(true);
       expect(validStatuses.includes('invalid' as any)).toBe(false);
@@ -235,10 +239,10 @@ describe('Activation Flow Integration Tests', () => {
   describe('Email Validation', () => {
     it('should validate email format', () => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      
+
       expect(emailRegex.test('user@example.com')).toBe(true);
       expect(emailRegex.test('test.email@domain.co.uk')).toBe(true);
-      
+
       expect(emailRegex.test('invalid')).toBe(false);
       expect(emailRegex.test('@example.com')).toBe(false);
       expect(emailRegex.test('user@')).toBe(false);
@@ -251,7 +255,7 @@ describe('Activation Flow Integration Tests', () => {
       const now = new Date();
       const expiresAt = new Date(now);
       expiresAt.setHours(expiresAt.getHours() + 48);
-      
+
       const hoursUntilExpiry = (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60);
       expect(hoursUntilExpiry).toBeCloseTo(48, 1);
     });
@@ -259,7 +263,7 @@ describe('Activation Flow Integration Tests', () => {
     it('should detect expired codes', () => {
       const expiredDate = new Date();
       expiredDate.setHours(expiredDate.getHours() - 1);
-      
+
       const isExpired = expiredDate < new Date();
       expect(isExpired).toBe(true);
     });
@@ -267,10 +271,9 @@ describe('Activation Flow Integration Tests', () => {
     it('should detect valid (not expired) codes', () => {
       const futureDate = new Date();
       futureDate.setHours(futureDate.getHours() + 1);
-      
+
       const isExpired = futureDate < new Date();
       expect(isExpired).toBe(false);
     });
   });
 });
-

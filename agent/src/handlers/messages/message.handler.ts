@@ -2,7 +2,12 @@ import type { Bot } from 'grammy';
 import type { Mastra } from '@mastra/core/mastra';
 import { RuntimeContext } from '@mastra/core/runtime-context';
 import { downloadFile, getTempFilePath } from '../../lib/file-utils';
-import { hasActiveAccess, getUserTimezone, checkTrialMessageLimit, incrementTrialMessageCount } from '../../services/user.service';
+import {
+  hasActiveAccess,
+  getUserTimezone,
+  checkTrialMessageLimit,
+  incrementTrialMessageCount,
+} from '../../services/user.service';
 import { createProgressController, type ProgressStage } from '../../services/progress.service';
 import { getUserMode, type UserMode } from '../../lib/user-mode';
 import { messages } from '../../lib/messages';
