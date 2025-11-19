@@ -945,39 +945,7 @@ const invokeQueryAgentStep = createStep({
         });
       }
     } catch {
-      // Not JSON - try to extract transaction IDs from response
-      const transactionIdPattern = /\[ID:\s*(\d+)\]/gi;
-      const matches = Array.from(rawResponse.matchAll(transactionIdPattern));
-
-      const hasTransactionList =
-        /\d+\.\s+.*-.*\d+.*\(.*\d{4}-\d{2}-\d{2}\)/i.test(rawResponse) ||
-        (rawResponse.match(/\d{4}-\d{2}-\d{2}/g)?.length ?? 0) > 1 ||
-        matches.length > 0;
-
-      if (hasTransactionList && matches.length > 0) {
-        const transactionIds: number[] = [];
-        for (const match of matches) {
-          const id = parseInt(match[1], 10);
-          if (!isNaN(id) && !transactionIds.includes(id)) {
-            transactionIds.push(id);
-          }
-        }
-
-        if (transactionIds.length > 0) {
-          telegramMarkup = {
-            inline_keyboard: transactionIds.map((id) => [
-              { text: 'Edit', callback_data: `edit_${id}` },
-              { text: 'Delete', callback_data: `delete_${id}` },
-            ]),
-          };
-          logger.info('[workflow:query-agent]', {
-            event: 'generated_markup',
-            transactionCount: transactionIds.length,
-            userId: inputData.userId,
-          });
-        }
-      }
-
+      // Not JSON - use raw response as-is
       agentResponse = rawResponse;
     }
 
