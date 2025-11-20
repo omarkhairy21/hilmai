@@ -267,44 +267,6 @@ ${instructions}`,
     fetchFailed: () => "❌ Sorry, I couldn't fetch your recent transactions. Please try again.",
   },
 
-  menu: {
-    header: () => fmt`📱 ${b()}HilmAI Menu
-
-Select an option from the menu below:`,
-
-    addTransaction: () =>
-      '💰 *Add Transaction*\n\n' +
-      'You can add a transaction by:\n' +
-      '• Typing: "I spent 50 AED at Carrefour"\n' +
-      '• Sending a voice message\n' +
-      '• Sending a receipt photo\n\n' +
-      'Just send your transaction details!',
-
-    reports: () =>
-      '📊 *View Reports*\n\n' +
-      'Ask me questions like:\n' +
-      '• "How much did I spend this month?"\n' +
-      '• "Show my spending by category"\n' +
-      '• "Total expenses this week"\n\n' +
-      'What would you like to know?',
-
-    help: () =>
-      '*HilmAI Help*\n\n' +
-      '*Track Expenses:*\n' +
-      '• Type: "I spent 50 AED at Starbucks"\n' +
-      '• Voice: Send a voice message\n' +
-      '• Photo: Send a receipt photo\n\n' +
-      '*Ask Questions:*\n' +
-      '• "How much did I spend on groceries?"\n' +
-      '• "Show my Starbucks spending"\n' +
-      '• "Total expenses this month"\n\n' +
-      '*Commands:*\n' +
-      '• /menu - Show this menu\n' +
-      '• /help - Detailed help\n' +
-      '• /start - Welcome message\n\n' +
-      'Just start chatting naturally!',
-  },
-
   timezone: {
     invalidInput: (input: string) => fmt`❌ I didn't recognize "${input}"
 

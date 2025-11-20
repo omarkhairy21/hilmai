@@ -4,7 +4,6 @@ import type { Mastra } from '@mastra/core/mastra';
 // Command handlers
 import { registerStartCommand } from './commands/start.handler';
 import { registerHelpCommand } from './commands/help.handler';
-import { registerMenuCommand } from './commands/menu.handler';
 import { registerModeCommands } from './commands/mode.handler';
 import { registerCurrencyCommand } from './commands/currency.handler';
 import { registerTimezoneCommand } from './commands/timezone.handler';
@@ -16,7 +15,6 @@ import { registerClearCommand } from './commands/clear.handler';
 
 // Callback handlers
 import { registerModeCallbacks } from './callbacks/mode.callback';
-import { registerMenuCallbacks } from './callbacks/menu.callback';
 import { registerTransactionCallbacks } from './callbacks/transaction.callback';
 import { registerSubscriptionCallbacks } from './callbacks/subscription.callback';
 import { registerProfileSetupCallbacks } from './callbacks/profile-setup.callback';
@@ -36,7 +34,6 @@ export function registerAllHandlers(bot: Bot, mastra: Mastra): void {
   // Register command handlers
   registerStartCommand(bot, mastra);
   registerHelpCommand(bot, mastra);
-  registerMenuCommand(bot, mastra);
   registerModeCommands(bot, mastra); // /mode, /mode_logger, /mode_chat, /mode_query
   registerCurrencyCommand(bot, mastra);
   registerTimezoneCommand(bot, mastra);
@@ -48,7 +45,6 @@ export function registerAllHandlers(bot: Bot, mastra: Mastra): void {
 
   // Register callback query handlers
   registerModeCallbacks(bot, mastra);
-  registerMenuCallbacks(bot, mastra);
   registerTransactionCallbacks(bot, mastra);
   registerSubscriptionCallbacks(bot, mastra);
   registerProfileSetupCallbacks(bot, mastra);

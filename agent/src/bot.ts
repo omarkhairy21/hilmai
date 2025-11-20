@@ -37,10 +37,6 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
   bot.api
     .setMyCommands([
       {
-        command: 'menu',
-        description: '📋 Show main menu',
-      },
-      {
         command: 'start',
         description: '🚀 Start the bot',
       },
