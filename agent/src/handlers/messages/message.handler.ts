@@ -251,8 +251,12 @@ export function registerMessageHandler(bot: Bot, mastra: Mastra): void {
         }
 
         // Agent processing phase (main work)
+        if (stepId === 'invoke-logger-agent') {
+          progress.emit('analyzing');
+          return;
+        }
+
         if (
-          stepId === 'invoke-logger-agent' ||
           stepId === 'invoke-query-agent' ||
           stepId === 'invoke-chat-agent'
         ) {

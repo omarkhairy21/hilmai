@@ -11,6 +11,7 @@ export type ProgressStage =
   | 'transcribing'
   | 'extracting'
   | 'categorized'
+  | 'analyzing'
   | 'currencyConversion'
   | 'saving'
   | 'finalizing';
@@ -35,6 +36,7 @@ interface StageMessages {
   transcribing: string;
   extracting: string;
   categorized: string;
+  analyzing: string;
   currencyConversion: string;
   saving: string;
   finalizing: string;
@@ -50,6 +52,7 @@ function getModeSpecificMessages(mode: UserMode): StageMessages {
     transcribing: modeMessages.transcribing,
     extracting: modeMessages.extracting,
     categorized: modeMessages.categorized,
+    analyzing: modeMessages.analyzing,
     currencyConversion: modeMessages.currencyConversion,
     saving: modeMessages.saving,
     finalizing: modeMessages.finalizing,
