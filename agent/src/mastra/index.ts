@@ -14,12 +14,11 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { LangfuseExporter } from '@mastra/langfuse';
 import { registerApiRoute } from '@mastra/core/server';
 import type { Context } from 'hono';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { config } from '../lib/config';
+import { config, getLangfuseExporter } from '../lib/config';
 
 // Import agents
 import { transactionLoggerAgent } from './agents/transaction-logger-agent';
@@ -102,21 +101,9 @@ export const mastra = new Mastra({
       hilmAgentV2: {
         serviceName: config.telemetry.serviceName,
         exporters: [
-          // Langfuse exporter for LLM observability
-          ...(config.langfuse.publicKey && config.langfuse.secretKey
-            ? [
-                new LangfuseExporter({
-                  publicKey: config.langfuse.publicKey,
-                  secretKey: config.langfuse.secretKey,
-                  baseUrl: config.langfuse.baseUrl,
-                  realtime: isDevelopment, // Realtime in dev, batch in prod
-                  logLevel: isDevelopment ? 'debug' : 'warn',
-                  options: {
-                    environment: config.app.nodeEnv,
-                  },
-                }),
-              ]
-            : []),
+          // Langfuse exporter for LLM observability (production only)
+          // In development, use Mastra playground for observability
+          ...getLangfuseExporter(),
         ],
         processors: [new UsageTrackingProcessor()],
       },

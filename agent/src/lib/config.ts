@@ -4,6 +4,8 @@
  * Centralizes environment variable loading and provides typed access
  */
 
+import { LangfuseExporter } from '@mastra/langfuse';
+
 export const config = {
   // Telegram
   telegram: {
@@ -53,6 +55,7 @@ export const config = {
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,
     secretKey: process.env.LANGFUSE_SECRET_KEY,
     baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com',
+    enabled: process.env.NODE_ENV === 'production', // Only enable in production
   },
 
   // Stripe (for subscriptions)
@@ -147,4 +150,36 @@ export function getDatabaseUrl(): string | undefined {
     // If all else fails, return the original URL and hope for the best
     return config.database.url;
   }
+}
+
+/**
+ * Get Langfuse exporter configuration
+ * Returns array with LangfuseExporter instance if enabled and configured, otherwise returns empty array
+ * 
+ * Langfuse is only enabled in production (use Mastra playground in development)
+ */
+export function getLangfuseExporter(): LangfuseExporter[] {
+  // Only enable in production
+  if (config.app.nodeEnv !== 'production') {
+    return [];
+  }
+
+  // Check if credentials are provided
+  if (!config.langfuse.publicKey || !config.langfuse.secretKey) {
+    return [];
+  }
+
+  // Return LangfuseExporter instance
+  return [
+    new LangfuseExporter({
+      publicKey: config.langfuse.publicKey,
+      secretKey: config.langfuse.secretKey,
+      baseUrl: config.langfuse.baseUrl,
+      realtime: false, // Batch mode in production
+      logLevel: 'warn',
+      options: {
+        environment: config.app.nodeEnv,
+      },
+    }),
+  ];
 }
