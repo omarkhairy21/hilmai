@@ -22,7 +22,6 @@ import { fileURLToPath } from 'node:url';
 import { config } from '../lib/config';
 
 // Import agents
-import { supervisorAgent } from './agents/supervisor-agent';
 import { transactionLoggerAgent } from './agents/transaction-logger-agent';
 import { queryExecutorAgent } from './agents/query-executor-agent';
 import { conversationAgent } from './agents/conversation-agent';
@@ -59,7 +58,6 @@ const isDevelopment = config.app.nodeEnv === 'development';
 export const mastra = new Mastra({
   // Register agents
   agents: {
-    supervisor: supervisorAgent,
     transactionLogger: transactionLoggerAgent,
     queryExecutor: queryExecutorAgent,
     conversation: conversationAgent,
