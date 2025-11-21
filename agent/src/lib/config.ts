@@ -48,6 +48,13 @@ export const config = {
     endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
   },
 
+  // Langfuse (for LLM observability)
+  langfuse: {
+    publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+    secretKey: process.env.LANGFUSE_SECRET_KEY,
+    baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com',
+  },
+
   // Stripe (for subscriptions)
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY,

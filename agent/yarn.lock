@@ -773,10 +773,10 @@
   resolved "https://registry.yarnpkg.com/@libsql/win32-x64-msvc/-/win32-x64-msvc-0.5.22.tgz#3d8eb9d092ebe18005dea97953575d981f669621"
   integrity sha512-Fj0j8RnBpo43tVZUVoNK6BV/9AtDUM5S7DF3LB4qTYg1LMSZqi3yeCneUTLJD6XomQJlZzbI4mst89yspVSAnA==
 
-"@mastra/core@0.23.1":
-  version "0.23.1"
-  resolved "https://registry.npmjs.org/@mastra/core/-/core-0.23.1.tgz"
-  integrity sha512-X+ncaBxCMTtPTLIP3iU79fVcweLV0tOmU4xwAEo0kpwtrf1St9SrGzQzkH9xF/sXCi+ksFJUoHMzbC8ISYjY4g==
+"@mastra/core@0.24.0":
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/@mastra/core/-/core-0.24.0.tgz#bd753e3a840ff2753dcf2884787b2ffa7adfbc21"
+  integrity sha512-lurtcdObDJE1Hb6p6Byu67i2mnNFVSE1ylVnbtcAqSXmfW7rRNx61B+inJmVSMZOu2gVtfoH3Q0tMrjBsJwm6g==
   dependencies:
     "@a2a-js/sdk" "~0.2.4"
     "@ai-sdk/anthropic-v5" "npm:@ai-sdk/anthropic@2.0.33"
@@ -790,7 +790,7 @@
     "@ai-sdk/ui-utils" "^1.2.11"
     "@ai-sdk/xai-v5" "npm:@ai-sdk/xai@2.0.26"
     "@isaacs/ttlcache" "^1.4.1"
-    "@mastra/schema-compat" "0.11.5"
+    "@mastra/schema-compat" "0.11.7"
     "@openrouter/ai-sdk-provider-v5" "npm:@openrouter/ai-sdk-provider@1.2.0"
     "@opentelemetry/api" "^1.9.0"
     "@opentelemetry/auto-instrumentations-node" "^0.62.1"
@@ -824,15 +824,15 @@
     xstate "^5.20.1"
     zod-to-json-schema "^3.24.6"
 
-"@mastra/deployer@^0.23.2":
-  version "0.23.2"
-  resolved "https://registry.npmjs.org/@mastra/deployer/-/deployer-0.23.2.tgz"
-  integrity sha512-eIZAnIf9a2Fb11Uk+G5gcsAWXIQeoQMvXBkovYzfdz0gt7FNMkD+Rat6bDFY8BjVH32dO+rv8OMzDgTxqbgekw==
+"@mastra/deployer@^0.24.5":
+  version "0.24.5"
+  resolved "https://registry.yarnpkg.com/@mastra/deployer/-/deployer-0.24.5.tgz#2f40569647e3f646adbe314bb08a1f10cae21411"
+  integrity sha512-iTt5nI1dyLFwr9jtRlXNQutoIDgG/rbCrtdCOgiQpRlybmtSEuf86V8EoYd+ueA7ZiFk9r+hCwfaj/UdTsrDfQ==
   dependencies:
     "@babel/core" "^7.28.4"
     "@babel/helper-module-imports" "^7.27.1"
     "@babel/preset-typescript" "^7.27.1"
-    "@mastra/server" "^0.23.2"
+    "@mastra/server" "^0.24.5"
     "@neon-rs/load" "^0.1.82"
     "@optimize-lodash/rollup-plugin" "^5.0.2"
     "@rollup/plugin-alias" "5.1.1"
@@ -866,27 +866,27 @@
   dependencies:
     langfuse "^3.38.5"
 
-"@mastra/libsql@^0.16.0":
-  version "0.16.1"
-  resolved "https://registry.npmjs.org/@mastra/libsql/-/libsql-0.16.1.tgz"
-  integrity sha512-jkYCsv00qzhjq4nyscChovW8cfeb8r8VkgzW+iPU9SBLu7pDX2HGgC/WSvSOeH1Ll0twqL2iql6gKXGAnDmRfw==
+"@mastra/libsql@^0.16.2":
+  version "0.16.2"
+  resolved "https://registry.yarnpkg.com/@mastra/libsql/-/libsql-0.16.2.tgz#1edf3e279aba9015c2257d56cdbf5eef337842f8"
+  integrity sha512-yQ3FYQkRdmIE9Z0RJqVJsKH7H4YjgYb4WcpTfe1C7ulz6OS0VANyXUxiggUhs/mC/WCRjXYlMIj5D19+8o+KeA==
   dependencies:
     "@libsql/client" "^0.15.15"
 
-"@mastra/loggers@^0.10.17", "@mastra/loggers@^0.10.18":
-  version "0.10.18"
-  resolved "https://registry.npmjs.org/@mastra/loggers/-/loggers-0.10.18.tgz"
-  integrity sha512-Ti711VpYqAwUbxEkYnJ11KeERROI7c6Nf9nNh/t85rCbLspLB/wpwX/FYH9/JUqC0fe5U2kKfergoTs9SKq9Qw==
+"@mastra/loggers@^0.10.19":
+  version "0.10.19"
+  resolved "https://registry.yarnpkg.com/@mastra/loggers/-/loggers-0.10.19.tgz#4acd3af82a9fc6521a71769a91454f64c22af285"
+  integrity sha512-H4qTgqKt3YJxz6B1I0lOPqRpOpR8gEzYYNZ6iO/TGQ11r+wvug/i80MAKr0B1IBZvr9l18vr7wjYCdTxPqaAGg==
   dependencies:
     pino "^9.7.0"
     pino-pretty "^13.0.0"
 
-"@mastra/memory@^0.15.8":
-  version "0.15.10"
-  resolved "https://registry.npmjs.org/@mastra/memory/-/memory-0.15.10.tgz"
-  integrity sha512-ZSL3iQCgtBpXf/8i504eW2gX+mx0A93DAY4T+9lPx7tgVESZJ2e4C7U4L3mcn/laQtkcdhHC+fX54J1ahaphxQ==
+"@mastra/memory@^0.15.11":
+  version "0.15.11"
+  resolved "https://registry.yarnpkg.com/@mastra/memory/-/memory-0.15.11.tgz#e6011dd642e7d1ea69935efb7dd0a44d1b689e69"
+  integrity sha512-HxcvJ+JBCEN9f8JQ+mPgxBm2K9Ln52aGsX0OeqG1sgt1vac60PqQi1MbywbiIsLxlMkVFysE2C/7bFh+d6vtjQ==
   dependencies:
-    "@mastra/schema-compat" "0.11.6"
+    "@mastra/schema-compat" "0.11.7"
     "@upstash/redis" "^1.35.5"
     ai "^4.3.19"
     ai-v5 "npm:ai@5.0.60"
@@ -900,40 +900,30 @@
     xxhash-wasm "^1.1.0"
     zod-to-json-schema "^3.24.6"
 
-"@mastra/pg@^0.17.7":
-  version "0.17.7"
-  resolved "https://registry.npmjs.org/@mastra/pg/-/pg-0.17.7.tgz"
-  integrity sha512-gI/xsreRVHbJTdFLQXp9CghtreIBeHmXBwRSaAOcrrOYAf1w+/awu5ymOmj7lkOCxQrdPyqglE5EBl1ZszwG7A==
+"@mastra/pg@^0.17.8":
+  version "0.17.8"
+  resolved "https://registry.yarnpkg.com/@mastra/pg/-/pg-0.17.8.tgz#129c588a03c6ce96775c7e67bbff46e7c4de4d42"
+  integrity sha512-5jumeTaasPv7K9zlCwadzTjbXgRnMfEGx3JqzeDEFX7jrwHC9DcMyPP8/DEzgwijVL5r+vDixL8ia5vlYmt/GQ==
   dependencies:
     async-mutex "^0.5.0"
     pg "^8.16.3"
     pg-promise "^11.15.0"
     xxhash-wasm "^1.1.0"
 
-"@mastra/schema-compat@0.11.5":
-  version "0.11.5"
-  resolved "https://registry.npmjs.org/@mastra/schema-compat/-/schema-compat-0.11.5.tgz"
-  integrity sha512-oNyNns8R++Gf87c6B4j7TaLAXRtUMv73CKbk20rreVDb2kSJr0vhtI12ALvJjcO6Lixdle7th99K3EqkGfKpfg==
+"@mastra/schema-compat@0.11.7":
+  version "0.11.7"
+  resolved "https://registry.yarnpkg.com/@mastra/schema-compat/-/schema-compat-0.11.7.tgz#d4f63f0391b2e4ac1bc8922de06b56410a577287"
+  integrity sha512-F/Q2myO7ar5+p2zRb1anGvLrUCKmdrJraXq9TWsWRp7frrcGUwlewf6Qo9+lp6NSumH0XlC/yvcjzzDwVzaMEw==
   dependencies:
     json-schema "^0.4.0"
     zod-from-json-schema "^0.5.0"
     zod-from-json-schema-v3 "npm:zod-from-json-schema@^0.0.5"
     zod-to-json-schema "^3.24.6"
 
-"@mastra/schema-compat@0.11.6":
-  version "0.11.6"
-  resolved "https://registry.npmjs.org/@mastra/schema-compat/-/schema-compat-0.11.6.tgz"
-  integrity sha512-oPsnOj6CyWjCyXitDB3BLQjzf83Xo/TsyKZAMPoRaxRd673C1QzHf/1hwF2vTunpGeiwpBpVJE+WO7rYUX9ZvQ==
-  dependencies:
-    json-schema "^0.4.0"
-    zod-from-json-schema "^0.5.0"
-    zod-from-json-schema-v3 "npm:zod-from-json-schema@^0.0.5"
-    zod-to-json-schema "^3.24.6"
-
-"@mastra/server@^0.23.2":
-  version "0.23.2"
-  resolved "https://registry.npmjs.org/@mastra/server/-/server-0.23.2.tgz"
-  integrity sha512-RqbeXTbFap/YiBMpdxBkEtx0bQ/GhzWa93eHNLf2rrouJTSaGlGLwBGnNNYXI43yr4T3HfimP2P3mLb2mfY2iw==
+"@mastra/server@^0.24.5":
+  version "0.24.5"
+  resolved "https://registry.yarnpkg.com/@mastra/server/-/server-0.24.5.tgz#cd5305cacee030168bd101cc69ef379f859e5cb4"
+  integrity sha512-MVw/o0ALgdDXXxVD0j3EmgpN1yKIXc5CpcuCUWzvLOmnnH/L80ouD1ObNXYXJPcpEzvWl0TvKEZjENxNhpIs+A==
 
 "@neon-rs/load@^0.0.4":
   version "0.0.4"
@@ -3866,15 +3856,15 @@ magic-string@^0.30.19, magic-string@^0.30.3, magic-string@~0.30.11:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.5.5"
 
-mastra@^0.17.3:
-  version "0.17.6"
-  resolved "https://registry.npmjs.org/mastra/-/mastra-0.17.6.tgz"
-  integrity sha512-8bALaTcNY85hWwIsaunvPBA0jEcKZsErc+3OkkBQVhTYo5zA+CuEMZvCduBomN56ZVopRUdxAJ7lNsX9eIJRUw==
+mastra@^0.18.0:
+  version "0.18.5"
+  resolved "https://registry.yarnpkg.com/mastra/-/mastra-0.18.5.tgz#e7b79ede0cea8647f37219e38ef2fc7997022f2e"
+  integrity sha512-/e5/h8BzjZLm01Y0VsONqxBu+jgij/ERmRQZXXSds5gVmkkWmyfnVpjE9eqxZjQZyyzovLs/XIqVmuJ6QUGs+w==
   dependencies:
     "@clack/prompts" "^0.11.0"
     "@expo/devcert" "^1.2.0"
-    "@mastra/deployer" "^0.23.2"
-    "@mastra/loggers" "^0.10.18"
+    "@mastra/deployer" "^0.24.5"
+    "@mastra/loggers" "^0.10.19"
     "@opentelemetry/auto-instrumentations-node" "^0.62.1"
     "@opentelemetry/core" "^2.0.1"
     "@opentelemetry/exporter-trace-otlp-grpc" "^0.203.0"

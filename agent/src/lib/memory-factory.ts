@@ -28,10 +28,34 @@ import { getDatabaseUrl } from './config';
 
 const OPENAI_EMBEDDER_MODEL_ID = 'openai/text-embedding-3-small';
 
-const PG_CONNECTION_POOL = {
-  max: 5,
-  idleTimeoutMillis: 30_000,
-} as const;
+/**
+ * Check if database URL is for Supabase (requires SSL)
+ */
+function isSupabaseUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  return url.includes('supabase') || url.includes('pooler.supabase.com');
+}
+
+/**
+ * Get PostgreSQL connection pool configuration
+ * Automatically enables SSL for Supabase connections
+ */
+function getPgConnectionConfig(databaseUrl: string | undefined) {
+  const baseConfig = {
+    max: 5,
+    idleTimeoutMillis: 30_000,
+  };
+
+  // Enable SSL for Supabase connections
+  if (isSupabaseUrl(databaseUrl)) {
+    return {
+      ...baseConfig,
+      ssl: { rejectUnauthorized: false },
+    };
+  }
+
+  return baseConfig;
+}
 
 const DEFAULT_SEMANTIC_RECALL = {
   topK: 3,
@@ -109,14 +133,15 @@ export function getSharedMemory(): Memory | undefined {
   }
 
   if (!sharedMemoryInstance) {
+    const pgConfig = getPgConnectionConfig(databaseUrl);
     sharedMemoryInstance = new Memory({
       storage: new PostgresStore({
         connectionString: databaseUrl,
-        ...PG_CONNECTION_POOL,
+        ...pgConfig,
       }),
       vector: new PgVector({
         connectionString: databaseUrl,
-        ...PG_CONNECTION_POOL,
+        ...pgConfig,
       }),
       embedder: OPENAI_EMBEDDER_MODEL_ID,
       // Keep token usage low while still recalling recent context and resource-level history
@@ -148,14 +173,15 @@ export function getExtendedMemory(lastMessages: number = 10): Memory | undefined
 
   // Create a new instance each time for extended memory
   // This is intentional - extended memory should be used sparingly
+  const pgConfig = getPgConnectionConfig(databaseUrl);
   return new Memory({
     storage: new PostgresStore({
       connectionString: databaseUrl,
-      ...PG_CONNECTION_POOL,
+      ...pgConfig,
     }),
     vector: new PgVector({
       connectionString: databaseUrl,
-      ...PG_CONNECTION_POOL,
+      ...pgConfig,
     }),
     embedder: OPENAI_EMBEDDER_MODEL_ID,
     // Allow callers to request more context while keeping semantic recall tuned the same way
@@ -210,14 +236,15 @@ export function getQueryMemory(): Memory | undefined {
   }
 
   // Create lightweight memory for queries
+  const pgConfig = getPgConnectionConfig(databaseUrl);
   return new Memory({
     storage: new PostgresStore({
       connectionString: databaseUrl,
-      ...PG_CONNECTION_POOL,
+      ...pgConfig,
     }),
     vector: new PgVector({
       connectionString: databaseUrl,
-      ...PG_CONNECTION_POOL,
+      ...pgConfig,
     }),
     embedder: OPENAI_EMBEDDER_MODEL_ID,
     options: {
@@ -245,14 +272,15 @@ export function getChatMemory(): Memory | undefined {
   }
 
   // Create lightweight memory for chat
+  const pgConfig = getPgConnectionConfig(databaseUrl);
   return new Memory({
     storage: new PostgresStore({
       connectionString: databaseUrl,
-      ...PG_CONNECTION_POOL,
+      ...pgConfig,
     }),
     vector: new PgVector({
       connectionString: databaseUrl,
-      ...PG_CONNECTION_POOL,
+      ...pgConfig,
     }),
     embedder: OPENAI_EMBEDDER_MODEL_ID,
     options: {
@@ -331,14 +359,15 @@ export function getAgentMemory(role: AgentRole): Memory | undefined {
   switch (role) {
     case 'conversation':
       // Extended context for conversation agent - needs more history for context-aware responses
+      const conversationPgConfig = getPgConnectionConfig(databaseUrl);
       memoryInstance = new Memory({
         storage: new PostgresStore({
           connectionString: databaseUrl,
-          ...PG_CONNECTION_POOL,
+          ...conversationPgConfig,
         }),
         vector: new PgVector({
           connectionString: databaseUrl,
-          ...PG_CONNECTION_POOL,
+          ...conversationPgConfig,
         }),
         embedder: OPENAI_EMBEDDER_MODEL_ID,
         options: {
@@ -365,14 +394,15 @@ export function getAgentMemory(role: AgentRole): Memory | undefined {
 
     case 'query':
       // Lightweight memory for query agent - minimal context for follow-up questions
+      const queryPgConfig = getPgConnectionConfig(databaseUrl);
       memoryInstance = new Memory({
         storage: new PostgresStore({
           connectionString: databaseUrl,
-          ...PG_CONNECTION_POOL,
+          ...queryPgConfig,
         }),
         vector: new PgVector({
           connectionString: databaseUrl,
-          ...PG_CONNECTION_POOL,
+          ...queryPgConfig,
         }),
         embedder: OPENAI_EMBEDDER_MODEL_ID,
         options: {
@@ -405,14 +435,15 @@ export function getAgentMemory(role: AgentRole): Memory | undefined {
 
     case 'transactionManager':
       // Minimal memory for transaction manager - just enough for edit context
+      const transactionManagerPgConfig = getPgConnectionConfig(databaseUrl);
       memoryInstance = new Memory({
         storage: new PostgresStore({
           connectionString: databaseUrl,
-          ...PG_CONNECTION_POOL,
+          ...transactionManagerPgConfig,
         }),
         vector: new PgVector({
           connectionString: databaseUrl,
-          ...PG_CONNECTION_POOL,
+          ...transactionManagerPgConfig,
         }),
         embedder: OPENAI_EMBEDDER_MODEL_ID,
         options: {
