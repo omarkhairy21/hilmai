@@ -406,7 +406,7 @@ Use /timezone to see more options.`,
       `• Get AI-powered insights\n` +
       `• Multi-currency support\n` +
       `• All 3 specialized modes\n\n` +
-      `After your trial, continue for just $20/month.\n\n` +
+      `After your trial, continue for just $16/month.\n\n` +
       `Use /subscribe to view plans and secure your spot!`,
 
     trialExpired: () =>
@@ -415,7 +415,7 @@ Use /timezone to see more options.`,
       `💡 *Continue where you left off:*\n` +
       `• All your data is saved and waiting\n` +
       `• Subscribe to regain instant access\n` +
-      `• Choose monthly ($20) or annual ($200)\n\n` +
+      `• Choose monthly ($16) or annual ($150)\n\n` +
       `Ready to continue? Use /subscribe to pick a plan.`,
 
     limitReached: () =>
@@ -427,14 +427,14 @@ Use /timezone to see more options.`,
       `• AI-powered categorization\n` +
       `• Multi-currency support\n` +
       `• 3 specialized tracking modes\n\n` +
-      `💰 *Plans starting at $20/month*\n\n` +
+      `💰 *Plans starting at $16/month*\n\n` +
       `Choose below to get started:`,
 
     subscriptionOptions: () =>
       `Which option works best for you?\n\n` +
-      `📅 *Try 7 Days Free* — Then $20/month\n` +
+      `📅 *Try 7 Days Free* — Then $16/month\n` +
       `Perfect to test all features\n\n` +
-      `💳 *Subscribe Now* — $20/month\n` +
+      `💳 *Subscribe Now* — $16/month\n` +
       `Immediate unlimited access\n\n` +
       `Choose below:`,
 
@@ -447,7 +447,7 @@ Use /timezone to see more options.`,
       `• AI-powered categorization\n` +
       `• Multi-currency support\n` +
       `• 3 specialized tracking modes\n\n` +
-      `📅 Plans start at just $20/month\n\n` +
+      `📅 Plans start at just $16/month\n\n` +
       `Use /subscribe to get started!`,
 
     plans: () =>
@@ -459,11 +459,11 @@ Use /timezone to see more options.`,
       `✅ Instant insights on demand\n` +
       `✅ 3 specialized modes\n` +
       `✅ Unlimited transactions\n\n` +
-      `📅 *Monthly - $20/month*\n` +
+      `📅 *Monthly - $16/month*\n` +
       `Perfect for getting started\n` +
       `Cancel anytime, no commitment\n\n` +
-      `📆 *Annual - $200/year*\n` +
-      `💰 SAVE $40 (2 months free!)\n` +
+      `📆 *Annual - $150/year*\n` +
+      `💰 SAVE $42 (3.5 months free!)\n` +
       `Best value for serious trackers\n\n` +
       `🎁 *New here? Try free for 7 days!*\n` +
       `Test all features, no card needed\n\n` +
@@ -486,9 +486,9 @@ Use /timezone to see more options.`,
 
       const planText =
         planTier === 'monthly'
-          ? 'Monthly ($20/mo)'
+          ? 'Monthly ($16/mo)'
           : planTier === 'annual'
-            ? 'Annual ($200/yr)'
+            ? 'Annual ($150/yr)'
             : 'No plan';
       const renewsText = periodEnd ? `Renews: ${new Date(periodEnd).toLocaleDateString()}` : '';
 
@@ -514,7 +514,7 @@ Use /timezone to see more options.`,
       `• We need a card to start your trial\n` +
       `• No charges for 7 days\n` +
       `• Cancel anytime during trial\n` +
-      `• After trial: $20/month (cancel anytime)\n\n` +
+      `• After trial: $16/month (cancel anytime)\n\n` +
       `🔒 *Secure checkout powered by Stripe*\n` +
       `Your data is encrypted and safe.\n\n` +
       `Click below to start your free trial!`,
@@ -529,7 +529,7 @@ Use /timezone to see more options.`,
       `• AI-powered insights\n` +
       `• Multi-currency support\n\n` +
       `💵 *Pricing:*\n` +
-      `• $20/month, billed monthly\n` +
+      `• $16/month, billed monthly\n` +
       `• Cancel anytime, no penalties\n` +
       `• Transparent pricing, no hidden fees\n` +
       `• First charge happens today\n\n` +
@@ -543,9 +543,9 @@ Use /timezone to see more options.`,
     subscriptionConfirmed: (planTier: string | null) => {
       const planName =
         planTier === 'monthly'
-          ? 'Monthly Plan ($20/month)'
+          ? 'Monthly Plan ($16/month)'
           : planTier === 'annual'
-            ? 'Annual Plan ($200/year)'
+            ? 'Annual Plan ($150/year)'
             : 'Premium Plan';
       return fmt`✅ ${b()}Subscription Confirmed!
 
