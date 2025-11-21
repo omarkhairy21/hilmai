@@ -6,7 +6,7 @@ import PricingToggle from '../components/PricingToggle.astro';
 
 <Layout title="Pricing - hilm.ai">
   <!-- Hero Section -->
-  <section class="relative py-12 md:py-20 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
     <!-- Background elements -->
     <div class="absolute inset-0 opacity-30">
       <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
@@ -38,7 +38,7 @@ import PricingToggle from '../components/PricingToggle.astro';
   </section>
 
   <!-- Pricing Cards Section -->
-  <section class="py-12 px-4 bg-gray-900">
+  <section class="py-8 px-4 bg-gray-900">
     <div class="max-w-6xl mx-auto">
       <!-- Section Header -->
       <div class="text-center mb-10">
@@ -180,17 +180,6 @@ import PricingToggle from '../components/PricingToggle.astro';
           </p>
         </details>
 
-        <!-- FAQ Item 3 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
-          <summary class="flex items-center justify-between font-semibold text-white">
-            <span>Do you offer refunds?</span>
-            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
-          </summary>
-          <p class="text-gray-400 mt-4 leading-relaxed">
-            We want you to love hilm.ai. If you're not satisfied within the first 7 days of your trial, let us know and we'll process a full refund. No questions asked.
-          </p>
-        </details>
-
         <!-- FAQ Item 4 -->
         <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
           <summary class="flex items-center justify-between font-semibold text-white">
@@ -202,16 +191,6 @@ import PricingToggle from '../components/PricingToggle.astro';
           </p>
         </details>
 
-        <!-- FAQ Item 5 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
-          <summary class="flex items-center justify-between font-semibold text-white">
-            <span>How do I update my payment method?</span>
-            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
-          </summary>
-          <p class="text-gray-400 mt-4 leading-relaxed">
-            You can update your payment method anytime using the Stripe billing portal. Use the `/billing` command in the Telegram bot to access your subscription dashboard.
-          </p>
-        </details>
       </div>
     </div>
   </section>

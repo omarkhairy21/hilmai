@@ -58,13 +58,6 @@ const features = [
       </p>
     </div>
 
-    <!-- Trial info -->
-    <div class="mb-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-      <p class="text-sm text-gray-300">
-        <span class="font-semibold">Start free:</span> 7-day trial with full access
-      </p>
-    </div>
-
     <!-- Features list -->
     <ul class="space-y-3 mb-8">
       {features.map((feature) => (
@@ -82,10 +75,10 @@ const features = [
       <button
         class="w-full py-3 px-4 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
         data-plan={tier}
-        data-action="trial"
-        id={`trial-btn-${tier}`}
+        data-action="subscribe"
+        id={`subscribe-btn-${tier}`}
       >
-        <span>Start 7-Day Free Trial</span>
+        <span>Subscribe Now</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="group-hover:translate-x-1 transition-transform">
           <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -94,10 +87,10 @@ const features = [
       <button
         class="w-full py-3 px-4 bg-gray-800/50 text-white font-semibold rounded-lg border border-gray-700 hover:bg-gray-800 hover:border-[#d4ff2a]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         data-plan={tier}
-        data-action="subscribe"
-        id={`subscribe-btn-${tier}`}
+        data-action="trial"
+        id={`trial-btn-${tier}`}
       >
-        Subscribe Now
+        Start 7-Day Free Trial
       </button>
     </div>
   </div>

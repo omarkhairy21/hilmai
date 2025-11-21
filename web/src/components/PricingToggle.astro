@@ -43,7 +43,7 @@
   const saveBadges = document.querySelectorAll('.annual-save-badge') as NodeListOf<HTMLElement>;
 
   // Store current selection
-  let currentPeriod = 'monthly';
+  let currentPeriod = 'annual';
 
   // Update pricing cards based on selected period
   function updatePricing(period: 'monthly' | 'annual') {
@@ -101,8 +101,8 @@
   monthlyBtn.addEventListener('click', () => updatePricing('monthly'));
   annualBtn.addEventListener('click', () => updatePricing('annual'));
 
-  // Initialize - hide annual card on page load
-  updatePricing('monthly');
+  // Initialize - show annual card on page load
+  updatePricing('annual');
 
   // Handle Astro navigation
   document.addEventListener('astro:after-swap', () => {
