@@ -323,10 +323,23 @@ WITH CHECK (auth.role() = 'service_role');
 -- ----------------------------------------------------------------------------
 
 -- Auto-increment display_id per user on transaction insert
+-- Uses advisory lock to prevent race conditions when multiple transactions are inserted concurrently
 CREATE OR REPLACE FUNCTION set_next_display_id()
 RETURNS TRIGGER AS $$
+DECLARE
+  lock_key BIGINT;
 BEGIN
+  -- Convert user_id to a lock key (use user_id directly as it's already BIGINT)
+  -- pg_advisory_xact_lock uses a 64-bit integer key
+  lock_key := NEW.user_id;
+  
+  -- Acquire transaction-level advisory lock for this user_id
+  -- This ensures atomic display_id calculation even under concurrent load
+  -- Lock is automatically released when transaction commits or rolls back
+  PERFORM pg_advisory_xact_lock(lock_key);
+  
   -- Get the next display_id for this user (max existing + 1, or 1 if none exist)
+  -- This query now runs atomically within the locked transaction
   SELECT COALESCE(MAX(display_id), 0) + 1
   INTO NEW.display_id
   FROM transactions

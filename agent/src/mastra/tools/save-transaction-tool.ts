@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { supabaseService } from '../../lib/supabase';
 import { getMerchantEmbedding } from '../../lib/embeddings';
 import { getUserDefaultCurrency, convertCurrency, normalizeCurrency } from '../../lib/currency';
+import { insertTransactionWithRetry, type TransactionInsertPayload } from '../../services/transaction.service';
 
 export const saveTransactionTool = createTool({
   id: 'save-transaction',
@@ -246,49 +247,40 @@ export const saveTransactionTool = createTool({
         });
       }
 
-      // Step 3: Insert transaction into Supabase using service role
+      // Step 3: Insert transaction into Supabase using service role with retry logic
       // Emit saving progress
       progressEmitter?.('saving');
 
-      const dbInsertStart = Date.now();
-      const { data, error } = await supabaseService
-        .from('transactions')
-        .insert({
-          user_id: userId,
-          amount: finalAmount, // Primary amount in user's default currency
-          currency: userDefaultCurrency, // Store user's default currency as the main currency
-          merchant,
-          category,
-          description: description || null,
-          transaction_date: transactionDate,
-          merchant_embedding: merchantEmbedding,
-          // Currency conversion tracking
-          original_amount: originalAmount,
-          original_currency: originalCurrency,
-          converted_amount: convertedAmount,
-          conversion_rate: conversionRate,
-          converted_at: convertedAt,
-        })
-        .select('id')
-        .single();
+      const transactionPayload: TransactionInsertPayload = {
+        user_id: userId,
+        amount: finalAmount, // Primary amount in user's default currency
+        currency: userDefaultCurrency, // Store user's default currency as the main currency
+        merchant,
+        category,
+        description: description || null,
+        transaction_date: transactionDate,
+        merchant_embedding: merchantEmbedding,
+        // Currency conversion tracking
+        original_amount: originalAmount,
+        original_currency: originalCurrency,
+        converted_amount: convertedAmount,
+        conversion_rate: conversionRate,
+        converted_at: convertedAt,
+      };
 
-      const dbInsertDuration = Date.now() - dbInsertStart;
+      // Use transaction service for insert with retry logic
+      const { transactionId, duration: dbInsertDuration } = await insertTransactionWithRetry(
+        transactionPayload,
+        logger
+      );
+
       logger?.info('[tool:performance]', {
         operation: 'database_insert',
         duration: dbInsertDuration,
         userId,
       });
 
-      if (error) {
-        logger?.error('[tool:save-transaction]', {
-          event: 'database_error',
-          error: error.message,
-          userId,
-        });
-        throw new Error(`Failed to save transaction: ${error.message}`);
-      }
-
-      const transactionId = data?.id;
+      // transactionId already retrieved from insertTransactionWithRetry
 
       const totalDuration = Date.now() - toolStartTime;
       logger?.info('[tool:performance]', {
@@ -320,16 +312,33 @@ export const saveTransactionTool = createTool({
       };
     } catch (error) {
       const errorDuration = Date.now() - toolStartTime;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Determine error type for better user messaging
+      let userFriendlyMessage: string;
+      if (errorMessage.includes('unique_user_display_id') || errorMessage.includes('display_id race condition')) {
+        // Race condition - should be rare with the advisory lock fix, but retries handle it
+        userFriendlyMessage = 'Failed to save transaction due to a temporary conflict. Please try again.';
+      } else if (errorMessage.includes('duplicate') || errorMessage.includes('unique constraint')) {
+        // True duplicate (shouldn't happen with proper validation, but handle gracefully)
+        userFriendlyMessage = 'This transaction appears to be a duplicate. Please verify and try again.';
+      } else {
+        // Other database errors
+        userFriendlyMessage = `Failed to save transaction: ${errorMessage}`;
+      }
+
       logger?.error('[tool:save-transaction]', {
         event: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         duration: errorDuration,
         userId,
+        errorType: errorMessage.includes('display_id') ? 'race_condition' : 
+                   errorMessage.includes('duplicate') ? 'duplicate' : 'other',
       });
 
       return {
         success: false,
-        message: `Failed to save transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        message: userFriendlyMessage,
       };
     }
   },
