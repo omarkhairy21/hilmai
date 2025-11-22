@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hilm.ai/sitemap.xml
+
+# Crawl delay to be respectful
+Crawl-delay: 1
+
+# Block bad bots if needed
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

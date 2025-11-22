@@ -14,7 +14,15 @@ const { post } = Astro.props;
 const { Content } = await post.render();
 ---
 
-<Layout title={post.data.title}>
+<Layout
+  title={`${post.data.title} - hilm.ai Blog`}
+  description={post.data.description || post.data.title}
+  keywords={post.data.tags?.join(', ') || 'finance, tips'}
+  image={post.data.image || '/logo.png'}
+  canonical={`/blog/${post.slug}`}
+  ogType="article"
+  author={post.data.author || 'hilm.ai'}
+>
   <article class="min-h-screen px-4 py-20">
     <div class="max-w-3xl mx-auto">
       <!-- Back link -->

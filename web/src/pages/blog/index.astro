@@ -6,7 +6,15 @@ const blogPosts = await getCollection('blog');
 const sortedPosts = blogPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
-<Layout title="Blog - Wait">
+<Layout
+  title="Blog - hilm.ai | Tips & Insights on Personal Finance"
+  description="Read tips, insights, and updates about personal finance management, expense tracking, and AI-powered financial solutions."
+  keywords="blog, finance tips, expense tracking, personal finance, money management, financial insights"
+  image="/logo.png"
+  canonical="/blog"
+  ogType="website"
+  author="hilm.ai"
+>
   <div class="min-h-screen px-4 py-20">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
