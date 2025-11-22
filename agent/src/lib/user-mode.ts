@@ -125,52 +125,6 @@ export function getModeEmoji(mode: UserMode): string {
 }
 
 /**
- * Get detailed instructions for each mode
- */
-export function getModeInstructions(mode: UserMode): string {
-  switch (mode) {
-    case 'logger':
-      return (
-        '💰 *Logger Mode Active*\n\n' +
-        'Fast transaction logging - no conversation history.\n\n' +
-        '*How to use:*\n' +
-        '• Type: "I spent 50 AED at Carrefour"\n' +
-        '• Send a voice message\n' +
-        '• Send a receipt photo\n\n' +
-        '*Commands:*\n' +
-        '• /mode - Change mode\n' +
-        '• /recent - View recent transactions'
-      );
-    case 'chat':
-      return (
-        '💬 *Chat Mode Active*\n\n' +
-        'General conversation and help.\n\n' +
-        '*I can help you:*\n' +
-        '• Learn how to use HilmAI\n' +
-        '• Answer questions\n' +
-        '• Guide you to the right mode\n\n' +
-        '*Other modes:*\n' +
-        '• /mode_logger - Fast transaction logging\n' +
-        '• /mode_query - Ask about your spending'
-      );
-    case 'query':
-      return (
-        '📊 *Query Mode Active*\n\n' +
-        'Ask questions about your spending.\n\n' +
-        '*Examples:*\n' +
-        '• "How much on groceries?"\n' +
-        '• "Show my spending this week"\n' +
-        '• "Top 5 expenses this month"\n\n' +
-        '*Commands:*\n' +
-        '• /mode - Change mode\n' +
-        '• /recent - View recent transactions'
-      );
-    default:
-      return 'Unknown mode. Use /mode to select a mode.';
-  }
-}
-
-/**
  * Validate if a string is a valid mode
  */
 export function isValidMode(mode: string): mode is UserMode {

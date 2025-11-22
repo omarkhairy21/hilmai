@@ -3,7 +3,6 @@ import type { Mastra } from '@mastra/core/mastra';
 import {
   setUserMode,
   getModeDescription,
-  getModeInstructions,
   isValidMode,
   type UserMode,
 } from '../../lib/user-mode';
@@ -41,10 +40,9 @@ export function registerModeCallbacks(bot: Bot, mastra: Mastra): void {
 
       await ctx.answerCallbackQuery(`✅ Switched to ${getModeDescription(mode)}`);
 
-      const changeMsg = messages.mode.changed(getModeInstructions(mode));
-      await ctx.editMessageText(changeMsg.text, {
-        parse_mode: 'Markdown',
-        entities: changeMsg.entities,
+      const modeMsg = messages.mode.instructions[mode]();
+      await ctx.editMessageText(modeMsg.text, {
+        entities: modeMsg.entities,
       });
 
       logger.info('callback:set_mode:success', {

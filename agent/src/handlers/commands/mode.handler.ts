@@ -4,7 +4,6 @@ import {
   getUserMode,
   setUserMode,
   getModeDescription,
-  getModeInstructions,
 } from '../../lib/user-mode';
 import { messages } from '../../lib/messages';
 
@@ -66,7 +65,7 @@ export function registerModeCommands(bot: Bot, mastra: Mastra): void {
 
     try {
       await setUserMode(userId, 'logger');
-      const loggerMsg = messages.mode.switchedToLogger();
+      const loggerMsg = messages.mode.instructions.logger();
       await ctx.reply(loggerMsg.text, {
         entities: loggerMsg.entities,
       });
@@ -91,7 +90,7 @@ export function registerModeCommands(bot: Bot, mastra: Mastra): void {
 
     try {
       await setUserMode(userId, 'chat');
-      const chatMsg = messages.mode.switchedToChat();
+      const chatMsg = messages.mode.instructions.chat();
       await ctx.reply(chatMsg.text, {
         entities: chatMsg.entities,
       });
@@ -116,7 +115,7 @@ export function registerModeCommands(bot: Bot, mastra: Mastra): void {
 
     try {
       await setUserMode(userId, 'query');
-      const queryMsg = messages.mode.switchedToQuery();
+      const queryMsg = messages.mode.instructions.query();
       await ctx.reply(queryMsg.text, {
         entities: queryMsg.entities,
       });

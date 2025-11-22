@@ -118,87 +118,60 @@ ${b()}💌 Need Direct Support?
   mode: {
     current: (mode: string) => fmt`🎯 ${b()}Current Mode: ${mode}
 
-${b()}Choose the mode that fits your task:
+${b()}Pick a mode:
 
-💰 ${b()}Logger Mode - Lightning Fast ⚡
-${b()}No typing needed! Perfect for:
-• Voice messages: "50 AED at Carrefour"
-• Receipt photos: Snap & done
-• Quick text: "100 AED groceries"
-${b()}Speed: Instant (no memory overhead)
+💰 ${b()}Logger Mode
+Fast expense logging with voice, photos, and text.
+Commands: /mode_logger
 
-💬 ${b()}Chat Mode - Smart Assistant 🤖
-${b()}I remember everything! Perfect for:
-• Learning: "How do I track expenses?"
-• Questions: "What can you do?"
-• Help: "Show me my options"
-${b()}Speed: Normal (with conversation memory)
+💬 ${b()}Chat Mode
+Ask questions and get help with anything.
+Commands: /mode_chat
 
-📊 ${b()}Query Mode - Financial Insights 📈
-${b()}Get instant answers! Perfect for:
-• "How much on groceries this month?"
-• "Show my Starbucks spending"
-• "Top 5 expenses this week"
-${b()}Speed: Fast (minimal memory)
+📊 ${b()}Query Mode
+Search spending and get financial insights.
+Commands: /mode_query`,
 
-💡 ${b()}Pro tip: Switch anytime!
-/mode_logger → Fast logging
-/mode_chat → Help & questions
-/mode_query → Financial insights`,
+    instructions: {
+      logger: () => fmt`💰 ${b()}Logger Mode Active
 
-    switchedToLogger: () => fmt`✅ ${b()}Logger Mode Activated!
+Fast transaction logging - no conversation history.
 
-💰 ${b()}You're now in speed mode - perfect for rapid expense tracking.
+${b()}How to use:
+• Type: "I spent 50 AED at Carrefour"
+• Send a voice message
+• Send a receipt photo
 
-${b()}Try these:
-• ${b()}Voice: Just say "50 AED at Carrefour"
-• ${b()}Photo: Snap your receipt - I'll handle the rest
-• ${b()}Text: "100 AED groceries"
+${b()}Commands:
+• /mode - Change mode
+• /recent - View recent transactions`,
 
-${b()}Why Logger Mode?
-✅ Fastest processing (no conversation memory)
-✅ Perfect for on-the-go logging
-✅ Works with voice, photo, and text
+      chat: () => fmt`💬 ${b()}Chat Mode Active
 
-Need help? Switch to Chat Mode: /mode_chat`,
-
-    switchedToChat: () => fmt`✅ ${b()}Chat Mode Activated!
-
-💬 ${b()}I'm your smart assistant - ask me anything!
+General conversation and help.
 
 ${b()}I can help you:
-• ${b()}Learn: "How does expense tracking work?"
-• ${b()}Understand: "What's the difference between modes?"
-• ${b()}Navigate: "How do I see my spending?"
-• ${b()}Answer: Any questions you have!
+• Learn how to use HilmAI
+• Answer questions
+• Guide you to the right mode
 
-${b()}Why Chat Mode?
-✅ I remember our conversation
-✅ Best for learning and discovery
-✅ Friendly, conversational help
+${b()}Other modes:
+• /mode_logger - Fast transaction logging
+• /mode_query - Ask about your spending`,
 
-Ready to log expenses? Try Logger Mode: /mode_logger`,
+      query: () => fmt`📊 ${b()}Query Mode Active
 
-    switchedToQuery: () => fmt`✅ ${b()}Query Mode Activated!
+Ask questions about your spending.
 
-📊 ${b()}Get instant insights into your spending!
+${b()}Examples:
+• "How much on groceries?"
+• "Show my spending this week"
+• "Top 5 expenses this month"
 
-${b()}Try asking:
-• ${b()}"How much did I spend on groceries?"
-• ${b()}"Show my Starbucks spending this month"
-• ${b()}"What's my biggest expense category?"
-• ${b()}"Total spending this week"
-
-${b()}Why Query Mode?
-✅ Fast financial insights
-✅ Smart search (handles typos!)
-✅ Multi-currency aggregation
-
-Need to log expenses? Try Logger Mode: /mode_logger`,
-
-    changed: (instructions: string) => fmt`✅ ${b()}Mode Changed
-
-${instructions}`,
+${b()}Commands:
+• /mode - Change mode
+• /recent - View recent transactions`,
+    },
   },
 
   currency: {
