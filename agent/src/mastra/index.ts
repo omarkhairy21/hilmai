@@ -18,7 +18,7 @@ import { registerApiRoute } from '@mastra/core/server';
 import type { Context } from 'hono';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { config, getLangfuseExporter } from '../lib/config';
+import { config, getLangfuseExporter, getMastraTelemetryConfig } from '../lib/config';
 
 // Import agents
 import { transactionLoggerAgent } from './agents/transaction-logger-agent';
@@ -82,15 +82,8 @@ export const mastra = new Mastra({
     level: isDevelopment ? 'debug' : (config.app.logLevel as 'info' | 'debug' | 'warn' | 'error'),
   }),
 
-  // Telemetry (OpenTelemetry)
-  telemetry: {
-    serviceName: config.telemetry.serviceName,
-    enabled: !isDevelopment,
-    export: {
-      type: 'otlp',
-      endpoint: config.telemetry.endpoint,
-    },
-  },
+  // Telemetry (OpenTelemetry) - Only configured if in production with endpoint
+  telemetry: getMastraTelemetryConfig(),
 
   // Observability
   observability: {

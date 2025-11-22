@@ -155,7 +155,7 @@ export function getDatabaseUrl(): string | undefined {
 /**
  * Get Langfuse exporter configuration
  * Returns array with LangfuseExporter instance if enabled and configured, otherwise returns empty array
- * 
+ *
  * Langfuse is only enabled in production (use Mastra playground in development)
  */
 export function getLangfuseExporter(): LangfuseExporter[] {
@@ -182,4 +182,39 @@ export function getLangfuseExporter(): LangfuseExporter[] {
       },
     }),
   ];
+}
+
+/**
+ * Get Mastra telemetry configuration
+ * Returns telemetry config with OTEL enabled only in production when endpoint is configured
+ * Always returns a config object (Mastra requires it), but export is only set when enabled
+ */
+export function getMastraTelemetryConfig(): {
+  serviceName: string;
+  enabled: boolean;
+  export?: {
+    type: 'otlp';
+    endpoint: string;
+  };
+} {
+  const isProduction = config.app.nodeEnv === 'production';
+  const hasOtelEndpoint = !!config.telemetry.endpoint;
+  const shouldExport = isProduction && hasOtelEndpoint;
+
+  const baseConfig = {
+    serviceName: config.telemetry.serviceName,
+    enabled: shouldExport,
+  };
+
+  if (shouldExport && config.telemetry.endpoint) {
+    return {
+      ...baseConfig,
+      export: {
+        type: 'otlp' as const,
+        endpoint: config.telemetry.endpoint,
+      },
+    };
+  }
+
+  return baseConfig;
 }
