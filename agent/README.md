@@ -199,8 +199,8 @@ This will:
 1. **Create a Stripe account** at https://stripe.com
 2. **Create products and prices:**
    - Go to Stripe Dashboard → Products
-   - Create a "Monthly Plan" product with a price of $20/month (recurring)
-   - Create an "Annual Plan" product with a price of $200/year (recurring)
+   - Create a "Monthly Plan" product with a price of $16/month (recurring)
+   - Create an "Annual Plan" product with a price of $150/year (recurring)
    - Copy the price IDs (starts with `price_`) and add them to your `.env` file
 3. **Set up webhook endpoint:**
    - Go to Stripe Dashboard → Developers → Webhooks
@@ -384,7 +384,7 @@ const result = await supervisor.generate(prompt, {
 
 Stripe-powered subscription system with:
 - **7-day free trial** for all new users
-- **Two paid plans:** Monthly ($20/mo) and Annual ($200/yr)
+- **Two paid plans:** Monthly ($16/mo) and Annual ($150/yr)
 - Automatic access control and trial expiration
 - Usage tracking (token consumption per billing period)
 - Billing portal for subscription management

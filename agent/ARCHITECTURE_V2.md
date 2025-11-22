@@ -39,8 +39,8 @@ This document describes the production architecture of the HilmAI Telegram bot, 
 ### Subscription Tiers
 
 **Free Trial**: 7-day trial (auto-granted on `/start`)  
-**Monthly Plan**: $20/month (optional 7-day trial)  
-**Annual Plan**: $200/year (no trial)
+**Monthly Plan**: $16/month (optional 7-day trial)
+**Annual Plan**: $150/year (no trial)
 
 ---
 
@@ -155,8 +155,8 @@ Update Progress Message with Final Response
 | Tier | Price | Trial | Features |
 |------|-------|-------|----------|
 | Free Trial | $0 | 7 days | Full access |
-| Monthly | $20/mo | Optional | Full access |
-| Annual | $200/yr | No | Full access + save $40 |
+| Monthly | $16/mo | Optional | Full access |
+| Annual | $150/yr | No | Full access + save $42 |
 
 ---
 

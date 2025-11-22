@@ -21,8 +21,8 @@ export function registerSubscribeCommand(bot: Bot, mastra: Mastra): void {
     const keyboard = {
       inline_keyboard: [
         [{ text: '🎁 Free Trial', callback_data: 'subscribe_monthly_trial' }],
-        [{ text: '📅 Monthly - $20/mo', callback_data: 'subscribe_monthly_notrial' }],
-        [{ text: '📆 Annual - $200/yr', callback_data: 'subscribe_annual' }],
+        [{ text: '📅 Monthly - $16/mo', callback_data: 'subscribe_monthly_notrial' }],
+        [{ text: '📆 Annual - $150/yr', callback_data: 'subscribe_annual' }],
       ],
     };
 

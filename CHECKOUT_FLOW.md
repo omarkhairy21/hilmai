@@ -11,8 +11,8 @@ This document describes the complete checkout and subscription activation flow i
 │                         Web (Astro)                                  │
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │ Pricing Page                                                 │   │
-│  │  - Monthly: $20/month                                        │   │
-│  │  - Annual: $200/year                                         │   │
+│  │  - Monthly: $16/month                                        │   │
+│  │  - Annual: $150/year                                         │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │           ↓ (Click "Start Free Trial" or "Subscribe Now")           │
 │  ┌──────────────────────────────────────────────────────────────┐   │

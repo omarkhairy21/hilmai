@@ -15,8 +15,8 @@ HilmAI uses a **mode-based architecture** with three specialized modes and integ
 
 **Subscription Tiers:**
 - **Free Trial**: 7-day trial (auto-granted on `/start`)
-- **Monthly Plan**: $20/month (optional 7-day trial)
-- **Annual Plan**: $200/year (no trial)
+- **Monthly Plan**: $16/month (optional 7-day trial)
+- **Annual Plan**: $150/year (no trial)
 
 ---
 
@@ -1125,13 +1125,13 @@ All under 2 seconds for 95th percentile! ✅
 │                                                                     │
 │  "💳 HilmAI Subscription Plans                                      │
 │                                                                     │
-│   📅 Monthly Plan - $20/month                                       │
+│   📅 Monthly Plan - $16/month                                       │
 │   • Billed monthly                                                  │
 │   • Cancel anytime                                                  │
 │   • Full access to all features                                     │
 │                                                                     │
-│   📆 Annual Plan - $200/year                                        │
-│   • Save $40 per year                                               │
+│   📆 Annual Plan - $150/year                                        │
+│   • Save $42 per year                                               │
 │   • Billed annually                                                 │
 │   • Full access to all features                                     │
 │                                                                     │
@@ -1142,8 +1142,8 @@ All under 2 seconds for 95th percentile! ✅
 │                                                                     │
 │  [Inline Keyboard:]                                                 │
 │  [ 🎁 Free Trial ]                                                  │
-│  [ 📅 Monthly - $20/mo ]                                            │
-│  [ 📆 Annual - $200/yr ]                                            │
+│  [ 📅 Monthly - $16/mo ]                                            │
+│  [ 📆 Annual - $150/yr ]                                            │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1193,7 +1193,7 @@ All under 2 seconds for 95th percentile! ✅
 │   • Full access to all HilmAI features                              │
 │   • No payment required for 7 days                                  │
 │   • Cancel anytime before trial ends                                │
-│   • After trial: $20/month                                          │
+│   • After trial: $16/month                                          │
 │                                                                     │
 │   💳 You'll need a payment method to activate the trial."           │
 │                                                                     │
@@ -1248,7 +1248,7 @@ All under 2 seconds for 95th percentile! ✅
 │                                                                     │
 │   🎉 Thank you for subscribing to HilmAI!                           │
 │                                                                     │
-│   Your Monthly Plan ($20/month) is now active.                      │
+│   Your Monthly Plan ($16/month) is now active.                      │
 │                                                                     │
 │   You now have full access to all HilmAI features:                  │
 │   • 💰 Fast expense logging                                         │
@@ -1289,7 +1289,7 @@ All under 2 seconds for 95th percentile! ✅
 │  "💳 Your Subscription                                              │
 │                                                                     │
 │   ✅ Status: Active (or 🎉 Trial, ⚠️ Payment Due, etc.)            │
-│   📋 Plan: Monthly ($20/mo)                                         │
+│   📋 Plan: Monthly ($16/mo)                                         │
 │   📅 Renews: [current_period_end date]                              │
 │                                                                     │
 │   Use the button below to manage your subscription:"                │

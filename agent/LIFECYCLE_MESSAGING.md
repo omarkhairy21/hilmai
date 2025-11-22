@@ -175,8 +175,8 @@ Your HilmAI trial ends in 2 days!
 🎯 Ready to continue?
 Subscribe now and keep all your data:
 
-📅 Monthly: $20/month (cancel anytime)
-📆 Annual: $200/year (save $40!)
+📅 Monthly: $16/month (cancel anytime)
+📆 Annual: $150/year (save $42!)
 
 [Button: Subscribe Now]
 [Button: Remind Me Tomorrow]
@@ -199,8 +199,8 @@ Your HilmAI trial ends TODAY.
 💰 Don't lose your data!
 Subscribe now to keep everything:
 
-📅 Monthly: $20/month
-📆 Annual: $200/year (SAVE $40!)
+📅 Monthly: $16/month
+📆 Annual: $150/year (SAVE $42!)
 
 [Button: Subscribe & Keep My Data]
 

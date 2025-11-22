@@ -39,7 +39,7 @@ The `subscription_usage` table tracks token consumption per billing period:
 2. User is automatically granted a 7-day trial
 3. User optionally sets their email with `/setemail your@email.com`
 4. User views subscription plans with `/subscribe`
-5. User selects a plan (Monthly $20 or Annual $200)
+5. User selects a plan (Monthly $16 or Annual $150)
 6. Bot creates a Stripe checkout session
 7. User completes payment on Stripe's hosted checkout page
 8. Stripe webhook notifies our system
@@ -259,7 +259,7 @@ Users can view their current usage with `/billing`:
 ```
 💰 Your Subscription
 
-Plan: Monthly ($20/mo)
+Plan: Monthly ($16/mo)
 Status: Active
 Renewal: Dec 31, 2025
 
