@@ -210,13 +210,6 @@ export function getNoMemory(): undefined {
 // MODE-SPECIFIC MEMORY CONFIGURATIONS
 // ============================================================================
 
-/**
- * Logger Mode Memory: No memory (fastest)
- * For transaction logging - no conversation context needed
- *
- * Performance: ~0ms overhead
- * Use case: "I spent 50 AED at Carrefour"
- */
 export function getLoggerMemory(): undefined {
   return undefined;
 }

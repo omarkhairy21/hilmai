@@ -15,7 +15,7 @@ ${b()}I help you by:
 ${b()}Why HilmAI changes everything:
 
 💬 ${b()}Just talk naturally
-"I spent 50 AED at Carrefour"
+"I spent 50$ at Amazon"
 No forms, no fields, no hassle.
 
 📸 ${b()}Snap & done
@@ -36,7 +36,7 @@ ${b()} Let's setup your account or keep talking naturally.
     fallback: () =>
       `👋 Welcome to HilmAI!\n\n` +
       `Your AI assistant for effortless expense tracking.\n\n` +
-      `💬 Just talk: "I spent 50 AED at Carrefour"\n` +
+      `💬 Just talk: "I spent 50$ at Amazon"\n` +
       `📸 Snap receipts: Instant extraction\n` +
       `🎤 Voice messages: Any language\n` +
       `🧠 Get insights: "How much on groceries?"\n\n` +
@@ -138,7 +138,7 @@ Commands: /mode_query`,
 Fast transaction logging - no conversation history.
 
 ${b()}How to use:
-• Type: "I spent 50 AED at Carrefour"
+• Type: "I spent 50$ at Amazon"
 • Send a voice message
 • Send a receipt photo
 
@@ -217,7 +217,7 @@ ${b()}Commands:
     empty: () =>
       '📋 *Recent Transactions*\n\n' +
       'No transactions found. Start tracking your expenses!\n\n' +
-      'Try saying: "I spent 50 AED at Carrefour"',
+      'Try saying: "I spent 50$ at Amazon"',
 
     header: () => '📋 *Recent Transactions*',
 
