@@ -97,38 +97,22 @@ Switch anytime with \`/mode\`.`,
   },
 
   help: {
-    main: () => fmt`${b()}HilmAI - Your AI Expense Tracker
+    main: () => fmt`${b()}HilmAI - Help & Support
 
-${b()}📝 Track Expenses (3 ways):
-• ${b()}Text: "I spent 50 AED at Starbucks"
-• ${b()}Voice: Send a voice message (any language!)
-• ${b()}Photo: Snap your receipt - I'll extract everything
+${b()}💬 Have Questions?
+Use Chat Mode: /mode_chat
+Then just ask naturally - I'm here to help!
 
-${b()}💬 Ask Questions:
-• "How much did I spend on groceries?"
-• "Show my Starbucks spending this month"
-• "What's my biggest expense category?"
-• "Total spending this week"
+${b()}Examples:
+• "How do I track expenses?"
+• "What can you do for me?"
+• "How do these modes work?"
+• "How do I use receipts?"
 
-${b()}🎯 3 Specialized Modes:
-• ${b()}Logger Mode - Fastest for rapid logging
-• ${b()}Chat Mode - Best for questions & help
-• ${b()}Query Mode - Deep financial insights
-
-${b()}⚡ Smart Features:
-✅ Handles typos ("Carrefur" → "Carrefour")
-✅ Remembers conversation context
-✅ Multi-currency support (50+ currencies)
-✅ Auto-categorization
-✅ Works in English & Arabic
-
-${b()}🚀 Quick Commands:
-• /mode - Switch modes
-• /recent - View recent transactions
-• /currency - Set default currency
-• /subscribe - View plans
-
-Try saying: "I spent 100 AED at Carrefour for groceries"`,
+${b()}💌 Need Direct Support?
+📧 Email: omar@hilm.ai or support@hilm.ai
+📱 Telegram: @omark4y
+💬 Or use Chat Mode above!`,
   },
 
   mode: {
