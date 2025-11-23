@@ -76,6 +76,15 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
 
     <!-- Title -->
     <title>{title}</title>
+
+    <!-- Google Tag Manager -->
+    <script async is:inline src="https://www.googletagmanager.com/gtag/js?id=G-KNH93Z3QSL"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-KNH93Z3QSL');
+    </script>
   </head>
   <body>
     <Navbar />

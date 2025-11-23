@@ -72,7 +72,7 @@ Simply type your expense naturally:
 
 ```
 I spent 50 AED at Carrefour
-Coffee $5.50 at Starbucks
+Coffee $5.50 at Arbica.
 Lunch 25 EUR at the restaurant
 ```
 
