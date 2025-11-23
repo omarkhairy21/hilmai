@@ -61,7 +61,7 @@
 
 #### Logger Mode Tests
 - [ ] "Spent $45 at Trader Joe's" - Extracts amount, merchant, saves transaction
-- [ ] "Paid 200 AED for groceries at Carrefour" - Multi-currency handling
+- [ ] "Paid 200$ for groceries at Amazon" - Multi-currency handling
 - [ ] "Coffee 5.50" - Handles minimal input with defaults
 - [ ] "Taxi home 15 dollars yesterday" - Handles relative dates correctly
 - [ ] "Lunch 25 on Monday" - Handles day names

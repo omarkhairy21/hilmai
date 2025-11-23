@@ -112,7 +112,7 @@ Update Database
 You started your HilmAI trial yesterday. Ready to track your first expense?
 
 💡 Try one of these:
-• Say: "I spent 50 AED at Carrefour"
+• Say: "I spent 50$ at Amazon"
 • Send a voice message with your expense
 • Snap a photo of your receipt
 

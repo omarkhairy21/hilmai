@@ -252,7 +252,7 @@ HilmAI uses a **mode-based architecture** with three specialized modes and integ
 │                                                                     │
 │  Model: gpt-4o                                                      │
 │  Input: Normalized message + date context                          │
-│  Example: "I spent 50 AED at Carrefour yesterday                   │
+│  Example: "I spent 50$ at Amazon yesterday                        │
 │            [Current Date: Today is 2025-10-29, Yesterday was ...]" │
 └────────────────────────────────┬────────────────────────────────────┘
                                  │
@@ -296,9 +296,9 @@ HilmAI uses a **mode-based architecture** with three specialized modes and integ
         │                                        │
         │  Extracts:                             │
         │  - Amount: 50                          │
-        │  - Currency: AED                       │
-        │  - Merchant: Carrefour                 │
-        │  - Category: Groceries (inferred)      │
+        │  - Currency: USD                       │
+        │  - Merchant: Amazon                    │
+        │  - Category: Shopping (inferred)       │
         │  - Date: 2025-10-28 (yesterday)        │
         │  - Description: null                   │
         └────────────────┬───────────────────────┘
@@ -309,7 +309,7 @@ HilmAI uses a **mode-based architecture** with three specialized modes and integ
         │                                        │
         │  Step 1: Generate merchant embedding   │
         │  ┌──────────────────────────────────┐  │
-        │  │ getMerchantEmbedding('Carrefour')│  │
+        │  │ getMerchantEmbedding('Amazon')   │  │
         │  │                                  │  │
         │  │ Check cache first:               │  │
         │  │ - Query merchant_embeddings_cache│  │
@@ -324,9 +324,9 @@ HilmAI uses a **mode-based architecture** with three specialized modes and integ
         │  │ INSERT INTO transactions         │  │
         │  │   user_id = 12345               │  │
         │  │   amount = 50                    │  │
-        │  │   currency = 'AED'               │  │
-        │  │   merchant = 'Carrefour'         │  │
-        │  │   category = 'Groceries'         │  │
+        │  │   currency = 'USD'               │  │
+        │  │   merchant = 'Amazon'            │  │
+        │  │   category = 'Shopping'          │  │
         │  │   transaction_date = 2025-10-28  │  │
         │  │   merchant_embedding = [...]     │  │  ← Vector!
         │  │   telegram_chat_id = 12345       │  │
@@ -338,8 +338,8 @@ HilmAI uses a **mode-based architecture** with three specialized modes and integ
         ┌────────────────────────────────────────┐
         │       GENERATE CONFIRMATION            │
         │                                        │
-        │  "✅ Saved! 50 AED at Carrefour        │
-        │   for Groceries on Oct 28."            │
+        │  "✅ Saved! 50$ at Amazon              │
+        │   for Shopping on Oct 28."             │
         │                                        │
         │  Style: Natural, friendly, brief       │
         └────────────────┬───────────────────────┘
@@ -469,12 +469,12 @@ User: "How much at carrefur?" (typo)
 │   Results:                             │
 │   [                                    │
 │     {                                  │
-│       merchant: "Carrefour",           │  ← Matched!
+│       merchant: "Amazon",              │  ← Matched!
 │       amount: 50,                      │
 │       similarity: 0.95                 │  ← Very similar
 │     },                                 │
 │     {                                  │
-│       merchant: "Carrefour City",      │
+│       merchant: "Amazon Prime",        │
 │       amount: 30,                      │
 │       similarity: 0.87                 │
 │     }                                  │
@@ -485,13 +485,13 @@ User: "How much at carrefur?" (typo)
 ┌────────────────────────────────────────┐
 │       AGGREGATE & FORMAT RESPONSE      │
 │                                        │
-│  "Found 2 transactions at Carrefour:   │
-│   - 50 AED on Oct 28                   │
-│   - 30 AED at Carrefour City on Oct 25 │
+│  "Found 2 transactions at Amazon:      │
+│   - 50$ on Oct 28                      │
+│   - 30$ at Amazon Prime on Oct 25      │
 │                                        │
-│   Total: 80 AED"                       │
+│   Total: 80$"                          │
 │                                        │
-│  (Did you mean 'Carrefour'?)           │
+│  (Did you mean 'Amazon'?)              │
 └────────────────┬───────────────────────┘
                  │
                  ▼
@@ -718,17 +718,17 @@ How it works:
 ### Example 1: Text Transaction
 
 ```
-USER TYPES: "I spent 50 AED at Carrefour yesterday"
+USER TYPES: "I spent 50$ at Amazon yesterday"
      ↓
 ┌─────────────────────────────────────────┐
 │ Bot receives text message               │
-│ ctx.message.text = "I spent 50 AED..." │
+│ ctx.message.text = "I spent 50$ ..."   │
 └─────────────────────────────────────────┘
      ↓
 ┌─────────────────────────────────────────┐
 │ normalizeInput(ctx)                     │
 │ → type: 'text'                          │
-│ → text: "I spent 50 AED..."             │
+│ → text: "I spent 50$ ..."               │
 │ → currentDate: "2025-10-29"             │
 │ → yesterday: "2025-10-28"               │
 └─────────────────────────────────────────┘
@@ -737,7 +737,7 @@ USER TYPES: "I spent 50 AED at Carrefour yesterday"
 │ Build prompt:                           │
 │ "[Current Date: Today is 2025-10-29,    │
 │   Yesterday was 2025-10-28]             │
-│  I spent 50 AED at Carrefour yesterday" │
+│  I spent 50$ at Amazon yesterday"       │
 └─────────────────────────────────────────┘
      ↓
 ┌─────────────────────────────────────────┐
@@ -755,19 +755,19 @@ USER TYPES: "I spent 50 AED at Carrefour yesterday"
 │ Transaction Logger Agent:               │
 │ 1. extract-transaction-tool             │
 │    → amount: 50                         │
-│    → currency: AED                      │
-│    → merchant: Carrefour                │
-│    → category: Groceries                │
+│    → currency: USD                      │
+│    → merchant: Amazon                   │
+│    → category: Shopping                 │
 │    → date: 2025-10-28 (yesterday)       │
 │                                         │
 │ 2. save-transaction-tool                │
-│    a) getMerchantEmbedding("Carrefour") │
+│    a) getMerchantEmbedding("Amazon")    │
 │       → [0.123, -0.456, ...] (1536)     │
 │    b) Insert to Supabase:               │
 │       ┌─────────────────────────────┐   │
 │       │ transactions table:         │   │
 │       │ - amount: 50                │   │
-│       │ - merchant: Carrefour       │   │
+│       │ - merchant: Amazon          │   │
 │       │ - merchant_embedding: [...]│   │
 │       │ - date: 2025-10-28         │   │
 │       └─────────────────────────────┘   │
@@ -776,8 +776,8 @@ USER TYPES: "I spent 50 AED at Carrefour yesterday"
      ↓
 ┌─────────────────────────────────────────┐
 │ Agent generates response:               │
-│ "✅ Saved! 50 AED at Carrefour for      │
-│  Groceries on Oct 28."                  │
+│ "✅ Saved! 50$ at Amazon for            │
+│  Shopping on Oct 28."                   │
 └─────────────────────────────────────────┘
      ↓
 ┌─────────────────────────────────────────┐
@@ -787,14 +787,14 @@ USER TYPES: "I spent 50 AED at Carrefour yesterday"
      ↓
 ┌─────────────────────────────────────────┐
 │ Send to user via Telegram:              │
-│ ctx.reply("✅ Saved! 50 AED...")        │
+│ ctx.reply("✅ Saved! 50$...")           │
 └─────────────────────────────────────────┘
 ```
 
 ### Example 2: Voice Transaction
 
 ```
-USER SENDS: Voice message "I bought coffee for 15 dirhams"
+USER SENDS: Voice message "I bought coffee for 5 dollars"
      ↓
 ┌─────────────────────────────────────────┐
 │ Bot receives voice message              │
@@ -816,12 +816,12 @@ USER SENDS: Voice message "I bought coffee for 15 dirhams"
 │ Build prompt:                           │
 │ "[Current Date: Today is 2025-10-29]    │
 │  [Message Type: voice]                  │
-│  I bought coffee for 15 dirhams"        │
+│  I bought coffee for 5 dollars"         │
 └─────────────────────────────────────────┘
      ↓
 [Same flow as text transaction above]
      ↓
-RESULT: "✅ Saved! 15 AED for Coffee (Dining) on Oct 29."
+RESULT: "✅ Saved! 5$ for Coffee (Dining) on Oct 29."
 ```
 
 ### Example 3: Receipt Photo
@@ -1105,7 +1105,7 @@ All under 2 seconds for 95th percentile! ✅
 | **Best For** | Fast logging | Help & onboarding | Spending questions |
 | **Agent** | Transaction Logger | Conversation | Query Executor |
 | **Speed** | Fastest | Medium | Fast |
-| **Examples** | "50 AED at Carrefour" | "What can you do?" | "How much on groceries?" |
+| **Examples** | "50$ at Amazon" | "What can you do?" | "How much on groceries?" |
 
 ---
 

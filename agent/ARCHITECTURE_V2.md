@@ -24,7 +24,7 @@ This document describes the production architecture of the HilmAI Telegram bot, 
 **💰 Logger Mode**
 - Fast transaction logging
 - No conversation memory (stateless)
-- Best for: "I spent 50 AED at Carrefour"
+- Best for: "I spent 50$ at Amazon"
 
 **💬 Chat Mode** (Default)
 - General conversation and help
@@ -103,7 +103,7 @@ Update Progress Message with Final Response
 | **Best For** | Fast logging | Help & onboarding | Spending questions |
 | **Agent** | Transaction Logger | Conversation | Query Executor |
 | **Speed** | Fastest | Medium | Fast |
-| **Examples** | "50 AED at Carrefour" | "What can you do?" | "How much on groceries?" |
+| **Examples** | "50$ at Amazon" | "What can you do?" | "How much on groceries?" |
 | **Use Case** | Rapid expense entry | Learning, help | Financial insights |
 
 ---
@@ -543,9 +543,9 @@ Your job: Analyze user messages and delegate to the right specialist agent.
 
 1. **transactionLogger** - Use when user wants to LOG a transaction
    Examples:
-   - "I spent 50 AED at Carrefour"
+   - "I spent 50$ at Amazon"
    - Receipt photos
-   - Voice: "Bought coffee for 15 dirhams"
+   - Voice: "Bought coffee for 15 dollars"
 
 2. **queryExecutor** - Use when user ASKS about their finances
    Examples:
@@ -817,7 +817,7 @@ export const transactionLoggerAgent = new Agent({
   instructions: `You extract and save financial transactions.
 
 Inputs:
-- Text: "I spent 50 AED at Carrefour"
+- Text: "I spent 50$ at Amazon"
 - Photos: Receipt images
 - Voice: Transcribed audio
 
@@ -1088,12 +1088,12 @@ export function createBot(): Bot {
 describe('Agent V2 Integration', () => {
   it('logs text transaction', async () => {
     const result = await testSupervisor({
-      message: 'I spent 50 AED at Carrefour today',
+      message: 'I spent 50$ at Amazon today',
       userId: 123,
     });
 
     expect(result.text).toContain('50');
-    expect(result.text).toContain('Carrefour');
+    expect(result.text).toContain('Amazon');
 
     // Verify saved with embedding
     const tx = await getLatestTransaction(123);
@@ -1173,11 +1173,11 @@ describe('normalizeInput', () => {
 describe('Supervisor Agent', () => {
   it('routes to transaction logger', async () => {
     const result = await supervisorAgent.generate(
-      'I spent 50 AED at Carrefour\n[Current Date: Today is 2025-10-28]'
+      'I spent 50$ at Amazon\n[Current Date: Today is 2025-10-28]'
     );
 
     expect(result.text).toContain('50');
-    expect(result.text).toContain('Carrefour');
+    expect(result.text).toContain('Amazon');
 
     const tx = await getLatestTransaction(123);
     expect(tx.amount).toBe(50);
