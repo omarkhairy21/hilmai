@@ -37,6 +37,8 @@
 </div>
 
 <script>
+  import { conversionEvents } from '../lib/analytics';
+
   const monthlyBtn = document.getElementById('monthly-toggle') as HTMLButtonElement;
   const annualBtn = document.getElementById('annual-toggle') as HTMLButtonElement;
   const indicator = document.getElementById('toggle-indicator') as HTMLElement;
@@ -48,6 +50,9 @@
   // Update pricing cards based on selected period
   function updatePricing(period: 'monthly' | 'annual') {
     currentPeriod = period;
+
+    // Track pricing period toggle
+    conversionEvents.togglePricingPeriod(period);
 
     // Update cards visibility
     const monthlyCard = document.getElementById('pricing-card-monthly');

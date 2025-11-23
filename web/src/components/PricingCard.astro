@@ -97,6 +97,8 @@ const features = [
 </div>
 
 <script>
+  import { conversionEvents } from '../lib/analytics';
+
   interface CheckoutResponse {
     url?: string;
     error?: string;
@@ -115,6 +117,13 @@ const features = [
           console.error('Missing plan or action on button', button);
           alert('Error: Missing plan or action');
           return;
+        }
+
+        // Track conversion event
+        if (action === 'subscribe') {
+          conversionEvents.clickSubscribe(plan, plan);
+        } else if (action === 'trial') {
+          conversionEvents.clickFreeTrial(plan, plan);
         }
 
         // Disable button and show loading state
