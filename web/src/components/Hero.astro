@@ -39,6 +39,7 @@
     <!-- CTA Buttons -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
       <a
+        id="try-now-btn"
         href="https://t.me/hilmaibot"
         target="_blank"
         rel="noopener noreferrer"
@@ -69,6 +70,14 @@
 
 <script>
   import { conversionEvents } from '../lib/analytics';
+
+  // Track Try Now button click
+  const tryNowBtn = document.getElementById('try-now-btn');
+  if (tryNowBtn) {
+    tryNowBtn.addEventListener('click', () => {
+      conversionEvents.clickTryNow();
+    });
+  }
 
   // Track View Pricing button click
   const viewPricingBtn = document.getElementById('view-pricing-btn');
