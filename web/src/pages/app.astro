@@ -1,9 +1,90 @@
 ---
+const redirectUrl = 'https://t.me/hilmaibot';
+
+// Try server-side redirect first
+if (Astro.request.headers.get('accept')?.includes('text/html')) {
+  return Astro.redirect(redirectUrl, 301);
+}
+
+// Fallback for non-HTML requests
 return new Response(null, {
   status: 301,
   headers: {
-    Location: 'https://t.me/hilmaibot'
+    Location: redirectUrl
   }
 });
 ---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content="0; url=https://t.me/hilmaibot" />
+    <title>Redirecting to HilmAi Bot...</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+      .container {
+        text-align: center;
+        padding: 2rem;
+      }
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(212, 255, 42, 0.2);
+        border-top-color: #d4ff2a;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1.5rem;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #ffffff;
+      }
+      p {
+        color: #a0a0a0;
+        font-size: 0.95rem;
+      }
+      .link {
+        color: #d4ff2a;
+        text-decoration: none;
+        margin-top: 1rem;
+        display: inline-block;
+      }
+      .link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="spinner"></div>
+      <h1>Redirecting to HilmAi Bot...</h1>
+      <p>Opening Telegram...</p>
+      <a href="https://t.me/hilmaibot" class="link">Click here if you're not redirected</a>
+    </div>
+    <script>
+      // Immediate redirect
+      window.location.replace('https://t.me/hilmaibot');
+    </script>
+  </body>
+</html>
 
