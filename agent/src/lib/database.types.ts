@@ -144,7 +144,7 @@ export type Database = {
           metadata: Json | null;
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
-          plan_tier: 'monthly' | 'annual' | null;
+          plan_tier: 'monthly' | 'annual' | 'free_premium' | null;
           subscription_status:
             | 'free'
             | 'trialing'
@@ -175,7 +175,7 @@ export type Database = {
           metadata?: Json | null;
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
-          plan_tier?: 'monthly' | 'annual' | null;
+          plan_tier?: 'monthly' | 'annual' | 'free_premium' | null;
           subscription_status?:
             | 'free'
             | 'trialing'
@@ -206,7 +206,7 @@ export type Database = {
           metadata?: Json | null;
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
-          plan_tier?: 'monthly' | 'annual' | null;
+          plan_tier?: 'monthly' | 'annual' | 'free_premium' | null;
           subscription_status?:
             | 'free'
             | 'trialing'

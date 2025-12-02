@@ -22,18 +22,23 @@ export function registerBillingCommand(bot: Bot, mastra: Mastra): void {
     try {
       const subscription = await getUserSubscription(userId);
 
-      if (!subscription || !subscription.stripe_customer_id) {
+      // Check if user has a subscription (either Stripe or free_premium)
+      if (!subscription || (!subscription.stripe_customer_id && subscription.plan_tier !== 'free_premium')) {
         await ctx.reply("You don't have a subscription yet. Use /subscribe to get started.", {
           parse_mode: 'Markdown',
         });
         return;
       }
 
-      const keyboard = {
-        inline_keyboard: [
-          [{ text: '💳 Manage Subscription', callback_data: 'open_billing_portal' }],
-        ],
-      };
+      // Only show billing portal for Stripe subscriptions, not free_premium
+      const keyboard =
+        subscription.plan_tier === 'free_premium'
+          ? undefined
+          : {
+              inline_keyboard: [
+                [{ text: '💳 Manage Subscription', callback_data: 'open_billing_portal' }],
+              ],
+            };
 
       await ctx.reply(
         messages.subscription.billingInfo(

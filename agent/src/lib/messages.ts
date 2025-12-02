@@ -446,7 +446,9 @@ Use /timezone to see more options.`,
           ? 'Monthly ($16/mo)'
           : planTier === 'annual'
             ? 'Annual ($150/yr)'
-            : 'No plan';
+            : planTier === 'free_premium'
+              ? 'Free Premium (Internal Testing)'
+              : 'No plan';
       const renewsText = periodEnd ? `Renews: ${new Date(periodEnd).toLocaleDateString()}` : '';
 
       return (
@@ -503,7 +505,9 @@ Use /timezone to see more options.`,
           ? 'Monthly Plan ($16/month)'
           : planTier === 'annual'
             ? 'Annual Plan ($150/year)'
-            : 'Premium Plan';
+            : planTier === 'free_premium'
+              ? 'Free Premium Plan (Internal Testing)'
+              : 'Premium Plan';
       return fmt`✅ ${b()}Subscription Confirmed!
 
 🎉 Thank you for subscribing to HilmAI!

@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS users (
   -- Subscription fields
   stripe_customer_id TEXT UNIQUE,
   stripe_subscription_id TEXT,
-  plan_tier TEXT CHECK (plan_tier IN ('monthly', 'annual')),
+  plan_tier TEXT CHECK (plan_tier IN ('monthly', 'annual', 'free_premium')),
   subscription_status TEXT CHECK (subscription_status IN ('free', 'trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid')),
   trial_started_at TIMESTAMPTZ,
   trial_ends_at TIMESTAMPTZ,

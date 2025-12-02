@@ -345,7 +345,7 @@ export async function handleStripeWebhook(
  */
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription): Promise<void> {
   let userId = subscription.metadata.telegram_user_id;
-  const planTier = subscription.metadata.plan_tier as 'monthly' | 'annual';
+  const planTier = subscription.metadata.plan_tier as 'monthly' | 'annual' | 'free_premium';
 
   // If no telegram_user_id in metadata, try to find user by Stripe customer
   if (!userId) {
@@ -857,7 +857,7 @@ export async function generateActivationCodeForSession(
           code: linkCode,
           stripe_session_id: sessionId,
           stripe_customer_email: customerEmail,
-          plan_tier: planTier as 'monthly' | 'annual' | null,
+          plan_tier: planTier as 'monthly' | 'annual' | 'free_premium' | null,
           expires_at: expiresAt.toISOString(),
         };
 
@@ -1043,7 +1043,7 @@ export async function activateFromActivationCode(
     }
 
     // Step 6: Determine plan tier
-    const planTier = (codeLookup.code.plan_tier as 'monthly' | 'annual') || 'monthly';
+    const planTier = (codeLookup.code.plan_tier as 'monthly' | 'annual' | 'free_premium') || 'monthly';
 
     // Step 7: Activate subscription via RPC
     const rpcResult = await activateSubscriptionViaRPC(

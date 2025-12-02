@@ -119,7 +119,7 @@ export async function updateUserSubscription(
   subscriptionData: {
     stripe_customer_id?: string;
     stripe_subscription_id?: string;
-    plan_tier?: 'monthly' | 'annual';
+    plan_tier?: 'monthly' | 'annual' | 'free_premium';
     subscription_status?:
       | 'free'
       | 'trialing'
@@ -163,6 +163,12 @@ export async function hasActiveAccess(userId: number): Promise<boolean> {
 
     if (!subscription) {
       return false;
+    }
+
+    // Free premium plan bypasses all Stripe checks - always grant access
+    // This is for internal testing and feedback collection
+    if (subscription.plan_tier === 'free_premium') {
+      return true;
     }
 
     // Check if in Stripe trial and trial hasn't expired
@@ -211,7 +217,7 @@ export async function checkTrialMessageLimit(userId: number): Promise<{
   try {
     const { data: user, error } = await supabaseService
       .from('users')
-      .select('subscription_status, trial_started_at, trial_ends_at, trial_messages_used')
+      .select('subscription_status, plan_tier, trial_started_at, trial_ends_at, trial_messages_used')
       .eq('id', userId)
       .single();
 
@@ -219,6 +225,11 @@ export async function checkTrialMessageLimit(userId: number): Promise<{
       console.error('[user.service] Failed to fetch trial status:', error);
       // Default to allowing if we can't check (safer fallback)
       return { canUse: true, remaining: 5, isTrialActive: true, messagesUsed: 0 };
+    }
+
+    // Free premium users have unlimited access
+    if (user.plan_tier === 'free_premium') {
+      return { canUse: true, remaining: -1, isTrialActive: false, messagesUsed: 0 };
     }
 
     // Only applies to 'free' status users
