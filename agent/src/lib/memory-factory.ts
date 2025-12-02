@@ -39,10 +39,13 @@ function isSupabaseUrl(url: string | undefined): boolean {
 /**
  * Get PostgreSQL connection pool configuration
  * Automatically enables SSL for Supabase connections
+ * 
+ * Reduced pool size from 5 to 2 to prevent connection exhaustion.
+ * With shared PostgresStore/PgVector instances, 2 connections per pool (4 total) is sufficient.
  */
 function getPgConnectionConfig(databaseUrl: string | undefined) {
   const baseConfig = {
-    max: 5,
+    max: 2,
     idleTimeoutMillis: 30_000,
   };
 
@@ -55,6 +58,54 @@ function getPgConnectionConfig(databaseUrl: string | undefined) {
   }
 
   return baseConfig;
+}
+
+/**
+ * Shared PostgresStore instance (singleton pattern)
+ * All Memory instances share this single store to minimize connection pool usage
+ */
+let sharedPostgresStore: PostgresStore | null = null;
+
+/**
+ * Shared PgVector instance (singleton pattern)
+ * All Memory instances share this single vector store to minimize connection pool usage
+ */
+let sharedPgVector: PgVector | null = null;
+
+/**
+ * Initialize shared PostgresStore and PgVector instances
+ * Called once when first Memory instance is created
+ */
+function initializeSharedStores(): { store: PostgresStore; vector: PgVector } {
+  const databaseUrl = getDatabaseUrl();
+  
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is required to initialize shared stores');
+  }
+
+  if (!sharedPostgresStore || !sharedPgVector) {
+    const pgConfig = getPgConnectionConfig(databaseUrl);
+    
+    sharedPostgresStore = new PostgresStore({
+      connectionString: databaseUrl,
+      ...pgConfig,
+    });
+    
+    sharedPgVector = new PgVector({
+      connectionString: databaseUrl,
+      ...pgConfig,
+    });
+
+    console.log('[memory-factory] Initialized shared PostgresStore and PgVector instances', {
+      poolSize: pgConfig.max,
+      totalConnections: pgConfig.max * 2, // 2 pools (store + vector)
+    });
+  }
+
+  return {
+    store: sharedPostgresStore,
+    vector: sharedPgVector,
+  };
 }
 
 const DEFAULT_SEMANTIC_RECALL = {
@@ -119,6 +170,7 @@ let sharedMemoryInstance: Memory | null = null;
  *
  * Performance optimizations applied:
  * - Singleton pattern: Reuses same Memory instance
+ * - Shared PostgresStore/PgVector: All Memory instances share the same connection pools
  * - Balanced lastMessages window (6) for fast lookups without losing context
  * - Resource-scoped semantic recall (topK 3) backed by pgvector
  * - Working memory disabled: Supabase user_profiles holds persistent data
@@ -133,16 +185,10 @@ export function getSharedMemory(): Memory | undefined {
   }
 
   if (!sharedMemoryInstance) {
-    const pgConfig = getPgConnectionConfig(databaseUrl);
+    const { store, vector } = initializeSharedStores();
     sharedMemoryInstance = new Memory({
-      storage: new PostgresStore({
-        connectionString: databaseUrl,
-        ...pgConfig,
-      }),
-      vector: new PgVector({
-        connectionString: databaseUrl,
-        ...pgConfig,
-      }),
+      storage: store,
+      vector: vector,
       embedder: OPENAI_EMBEDDER_MODEL_ID,
       // Keep token usage low while still recalling recent context and resource-level history
       options: buildPostgresMemoryOptions(6),
@@ -159,6 +205,8 @@ export function getSharedMemory(): Memory | undefined {
  * Note: This will be slower than getSharedMemory()
  * Use only when necessary (e.g., complex conversation flows)
  *
+ * Uses shared PostgresStore/PgVector instances to minimize connection pool usage.
+ *
  * @param lastMessages - Number of messages to load (default: 10)
  * @returns Memory instance or undefined if DATABASE_URL not set
  */
@@ -171,18 +219,12 @@ export function getExtendedMemory(lastMessages: number = 10): Memory | undefined
 
   const effectiveLastMessages = Math.max(lastMessages, 6);
 
-  // Create a new instance each time for extended memory
-  // This is intentional - extended memory should be used sparingly
-  const pgConfig = getPgConnectionConfig(databaseUrl);
+  // Create a new Memory instance each time for extended memory (different options)
+  // But reuse shared PostgresStore/PgVector to minimize connection pools
+  const { store, vector } = initializeSharedStores();
   return new Memory({
-    storage: new PostgresStore({
-      connectionString: databaseUrl,
-      ...pgConfig,
-    }),
-    vector: new PgVector({
-      connectionString: databaseUrl,
-      ...pgConfig,
-    }),
+    storage: store,
+    vector: vector,
     embedder: OPENAI_EMBEDDER_MODEL_ID,
     // Allow callers to request more context while keeping semantic recall tuned the same way
     options: buildPostgresMemoryOptions(effectiveLastMessages),
@@ -190,11 +232,17 @@ export function getExtendedMemory(lastMessages: number = 10): Memory | undefined
 }
 
 /**
- * Reset the shared memory instance
+ * Reset the shared memory instance and stores
  * Useful for testing or when configuration changes
  */
 export function resetSharedMemory(): void {
   sharedMemoryInstance = null;
+  sharedPostgresStore = null;
+  sharedPgVector = null;
+  // Clear role memory cache as well since they depend on shared stores
+  Object.keys(roleMemoryCache).forEach((key) => {
+    delete roleMemoryCache[key as AgentRole];
+  });
 }
 
 /**
@@ -220,6 +268,8 @@ export function getLoggerMemory(): undefined {
  *
  * Performance: ~100-200ms overhead
  * Use case: "How much on groceries?" → "What about last week?"
+ * 
+ * Uses shared PostgresStore/PgVector instances to minimize connection pool usage.
  */
 export function getQueryMemory(): Memory | undefined {
   const databaseUrl = getDatabaseUrl();
@@ -228,17 +278,11 @@ export function getQueryMemory(): Memory | undefined {
     return undefined;
   }
 
-  // Create lightweight memory for queries
-  const pgConfig = getPgConnectionConfig(databaseUrl);
+  // Create lightweight memory for queries, reusing shared stores
+  const { store, vector } = initializeSharedStores();
   return new Memory({
-    storage: new PostgresStore({
-      connectionString: databaseUrl,
-      ...pgConfig,
-    }),
-    vector: new PgVector({
-      connectionString: databaseUrl,
-      ...pgConfig,
-    }),
+    storage: store,
+    vector: vector,
     embedder: OPENAI_EMBEDDER_MODEL_ID,
     options: {
       lastMessages: 3, // Minimal context
@@ -256,6 +300,8 @@ export function getQueryMemory(): Memory | undefined {
  *
  * Performance: ~100-200ms overhead
  * Use case: "How do I use this?" → "What about queries?"
+ * 
+ * Uses shared PostgresStore/PgVector instances to minimize connection pool usage.
  */
 export function getChatMemory(): Memory | undefined {
   const databaseUrl = getDatabaseUrl();
@@ -264,17 +310,11 @@ export function getChatMemory(): Memory | undefined {
     return undefined;
   }
 
-  // Create lightweight memory for chat
-  const pgConfig = getPgConnectionConfig(databaseUrl);
+  // Create lightweight memory for chat, reusing shared stores
+  const { store, vector } = initializeSharedStores();
   return new Memory({
-    storage: new PostgresStore({
-      connectionString: databaseUrl,
-      ...pgConfig,
-    }),
-    vector: new PgVector({
-      connectionString: databaseUrl,
-      ...pgConfig,
-    }),
+    storage: store,
+    vector: vector,
     embedder: OPENAI_EMBEDDER_MODEL_ID,
     options: {
       lastMessages: 3, // Minimal context
@@ -323,6 +363,8 @@ export const MEMORY_LOOKUP_TIMEOUT_MS = 500;
  * - Transaction Manager: Minimal memory (3 messages) for edit context
  *
  * Memory instances are cached (singleton per role) to avoid connection overhead.
+ * All Memory instances share the same PostgresStore/PgVector connection pools to minimize
+ * database connections (reduces from 6 pools to 2 pools total).
  * User isolation is achieved via thread/resource IDs passed at runtime.
  *
  * Latency considerations:
@@ -349,19 +391,16 @@ export function getAgentMemory(role: AgentRole): Memory | undefined {
 
   let memoryInstance: Memory | undefined;
 
+  // Get shared PostgresStore and PgVector instances
+  // All Memory instances share the same connection pools to minimize connection usage
+  const { store, vector } = initializeSharedStores();
+
   switch (role) {
     case 'conversation':
       // Extended context for conversation agent - needs more history for context-aware responses
-      const conversationPgConfig = getPgConnectionConfig(databaseUrl);
       memoryInstance = new Memory({
-        storage: new PostgresStore({
-          connectionString: databaseUrl,
-          ...conversationPgConfig,
-        }),
-        vector: new PgVector({
-          connectionString: databaseUrl,
-          ...conversationPgConfig,
-        }),
+        storage: store,
+        vector: vector,
         embedder: OPENAI_EMBEDDER_MODEL_ID,
         options: {
           lastMessages: 12, // Extended window for conversation context
@@ -387,16 +426,9 @@ export function getAgentMemory(role: AgentRole): Memory | undefined {
 
     case 'query':
       // Lightweight memory for query agent - minimal context for follow-up questions
-      const queryPgConfig = getPgConnectionConfig(databaseUrl);
       memoryInstance = new Memory({
-        storage: new PostgresStore({
-          connectionString: databaseUrl,
-          ...queryPgConfig,
-        }),
-        vector: new PgVector({
-          connectionString: databaseUrl,
-          ...queryPgConfig,
-        }),
+        storage: store,
+        vector: vector,
         embedder: OPENAI_EMBEDDER_MODEL_ID,
         options: {
           lastMessages: 4, // Lightweight window for follow-ups
@@ -428,16 +460,9 @@ export function getAgentMemory(role: AgentRole): Memory | undefined {
 
     case 'transactionManager':
       // Minimal memory for transaction manager - just enough for edit context
-      const transactionManagerPgConfig = getPgConnectionConfig(databaseUrl);
       memoryInstance = new Memory({
-        storage: new PostgresStore({
-          connectionString: databaseUrl,
-          ...transactionManagerPgConfig,
-        }),
-        vector: new PgVector({
-          connectionString: databaseUrl,
-          ...transactionManagerPgConfig,
-        }),
+        storage: store,
+        vector: vector,
         embedder: OPENAI_EMBEDDER_MODEL_ID,
         options: {
           lastMessages: 3, // Minimal context for edit operations
