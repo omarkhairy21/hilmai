@@ -1,0 +1,188 @@
+---
+// 50/30/20 Budget Calculator Component
+---
+
+<div class="budget-calculator max-w-4xl mx-auto">
+  <!-- Calculator Form -->
+  <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8">
+    <h3 class="text-2xl font-bold text-white mb-6">Calculate Your Budget</h3>
+    
+    <div class="space-y-6">
+      <!-- Monthly Income Input -->
+      <div>
+        <label for="monthly-income" class="block text-sm font-medium text-gray-300 mb-2">
+          Monthly After-Tax Income
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="monthly-income"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="5000"
+            min="0"
+            step="0.01"
+          />
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Enter your take-home pay after taxes</p>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        id="calculate-budget"
+        class="w-full px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+      >
+        Calculate Budget
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div id="budget-results" class="hidden">
+    <!-- Summary Cards -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+      <!-- Needs Card -->
+      <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-lg font-semibold text-white">Needs</h4>
+          <span class="text-sm text-gray-400">50%</span>
+        </div>
+        <p id="needs-amount" class="text-3xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p class="text-sm text-gray-400">Housing, utilities, groceries, transportation</p>
+      </div>
+
+      <!-- Wants Card -->
+      <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-lg font-semibold text-white">Wants</h4>
+          <span class="text-sm text-gray-400">30%</span>
+        </div>
+        <p id="wants-amount" class="text-3xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p class="text-sm text-gray-400">Dining out, entertainment, hobbies</p>
+      </div>
+
+      <!-- Savings Card -->
+      <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-lg font-semibold text-white">Savings</h4>
+          <span class="text-sm text-gray-400">20%</span>
+        </div>
+        <p id="savings-amount" class="text-3xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p class="text-sm text-gray-400">Emergency fund, retirement, investments</p>
+      </div>
+    </div>
+
+    <!-- Visual Breakdown -->
+    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-8">
+      <h4 class="text-xl font-semibold text-white mb-4">Budget Breakdown</h4>
+      <div class="space-y-4">
+        <!-- Needs Bar -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-300">Needs (50%)</span>
+            <span id="needs-bar-amount" class="text-sm font-semibold text-white">$0</span>
+          </div>
+          <div class="w-full bg-gray-800 rounded-full h-4 overflow-hidden">
+            <div id="needs-bar" class="h-full bg-[#d4ff2a] transition-all duration-500" style="width: 50%"></div>
+          </div>
+        </div>
+
+        <!-- Wants Bar -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-300">Wants (30%)</span>
+            <span id="wants-bar-amount" class="text-sm font-semibold text-white">$0</span>
+          </div>
+          <div class="w-full bg-gray-800 rounded-full h-4 overflow-hidden">
+            <div id="wants-bar" class="h-full bg-green-500 transition-all duration-500" style="width: 30%"></div>
+          </div>
+        </div>
+
+        <!-- Savings Bar -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-300">Savings (20%)</span>
+            <span id="savings-bar-amount" class="text-sm font-semibold text-white">$0</span>
+          </div>
+          <div class="w-full bg-gray-800 rounded-full h-4 overflow-hidden">
+            <div id="savings-bar" class="h-full bg-blue-500 transition-all duration-500" style="width: 20%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA After Results -->
+    <div id="budget-cta" class="hidden mt-8">
+      <div class="bg-gradient-to-r from-[#d4ff2a]/20 to-green-500/20 border-2 border-[#d4ff2a]/50 rounded-2xl p-8 text-center">
+        <h4 class="text-2xl font-bold text-white mb-3">Ready to Track Your Actual Spending?</h4>
+        <p class="text-gray-300 mb-6 max-w-2xl mx-auto">
+          Now that you know your budget breakdown, use hilm.ai to automatically track every expense and see how your actual spending compares to your 50/30/20 budget. Log expenses with text, voice, or photos—no forms, no hassle.
+        </p>
+        <a
+          href="https://t.me/hilmaibot"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-8 py-4 bg-[#d4ff2a] text-black font-bold rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/30 group"
+        >
+          Start Tracking Free
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { calculateBudget, formatCurrency } from '../../lib/calculators/budget';
+
+  const incomeInput = document.getElementById('monthly-income') as HTMLInputElement;
+  const calculateButton = document.getElementById('calculate-budget') as HTMLButtonElement;
+  const resultsSection = document.getElementById('budget-results') as HTMLElement;
+
+  // Result elements
+  const needsAmount = document.getElementById('needs-amount') as HTMLElement;
+  const wantsAmount = document.getElementById('wants-amount') as HTMLElement;
+  const savingsAmount = document.getElementById('savings-amount') as HTMLElement;
+  const needsBarAmount = document.getElementById('needs-bar-amount') as HTMLElement;
+  const wantsBarAmount = document.getElementById('wants-bar-amount') as HTMLElement;
+  const savingsBarAmount = document.getElementById('savings-bar-amount') as HTMLElement;
+
+  function calculateAndDisplay() {
+    const income = parseFloat(incomeInput.value);
+
+    if (!income || income <= 0) {
+      alert('Please enter a valid monthly income');
+      return;
+    }
+
+    const breakdown = calculateBudget(income);
+
+    // Update amounts
+    needsAmount.textContent = formatCurrency(breakdown.needs);
+    wantsAmount.textContent = formatCurrency(breakdown.wants);
+    savingsAmount.textContent = formatCurrency(breakdown.savings);
+    needsBarAmount.textContent = formatCurrency(breakdown.needs);
+    wantsBarAmount.textContent = formatCurrency(breakdown.wants);
+    savingsBarAmount.textContent = formatCurrency(breakdown.savings);
+
+    // Show results and CTA
+    resultsSection.classList.remove('hidden');
+    const ctaSection = document.getElementById('budget-cta') as HTMLElement;
+    if (ctaSection) {
+      ctaSection.classList.remove('hidden');
+    }
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  calculateButton.addEventListener('click', calculateAndDisplay);
+
+  // Allow Enter key to calculate
+  incomeInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      calculateAndDisplay();
+    }
+  });
+</script>
+

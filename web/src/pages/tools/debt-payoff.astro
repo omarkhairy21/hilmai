@@ -1,0 +1,111 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import DebtPayoffCalculator from '../../components/calculators/DebtPayoffCalculator.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout
+  title="Debt Payoff Calculator - Free Debt Calculator | hilm.ai"
+  description="Create a strategic plan to eliminate debt faster. Compare debt snowball vs avalanche methods and see your payoff timeline."
+  keywords="debt payoff calculator, debt snowball calculator, debt avalanche calculator, debt calculator"
+  image="/logo.png"
+  canonical="/tools/debt-payoff"
+  ogType="website"
+  author="hilm.ai"
+>
+  <!-- Hero Section -->
+  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto text-center z-10">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        Debt Payoff Calculator
+      </h1>
+      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+        Create a strategic plan to eliminate debt faster. Compare debt snowball vs avalanche methods and see your payoff timeline.
+      </p>
+    </div>
+  </section>
+
+  <!-- Calculator Section -->
+  <section class="py-12 px-4 bg-gray-900">
+    <div class="max-w-6xl mx-auto">
+      <DebtPayoffCalculator />
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-12 px-4 bg-black">
+    <div class="max-w-4xl mx-auto">
+      <div class="prose prose-invert max-w-none">
+        <h2 class="text-3xl font-bold text-white mb-6">Debt Payoff Methods Explained</h2>
+        
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Debt Snowball Method</h3>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          The debt snowball method focuses on paying off your smallest debts first, regardless of interest rate. This approach provides psychological motivation through quick wins as you eliminate debts one by one.
+        </p>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          <strong>Best for:</strong> People who need motivation and quick wins to stay committed to debt payoff.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Debt Avalanche Method</h3>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          The debt avalanche method prioritizes paying off debts with the highest interest rates first. This approach saves the most money on interest over time.
+        </p>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          <strong>Best for:</strong> People who want to minimize total interest paid and are motivated by financial efficiency.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Which Method Should You Choose?</h3>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          Both methods are effective. Choose based on what keeps you motivated:
+        </p>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Snowball:</strong> Better if you need quick wins and psychological motivation</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Avalanche:</strong> Better if you want to save the most money on interest</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 px-4 bg-gradient-to-b from-gray-900 via-black to-black">
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-gradient-to-br from-[#d4ff2a]/20 via-[#d4ff2a]/10 to-green-500/10 border-2 border-[#d4ff2a]/40 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#d4ff2a]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+          <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            Track Your Debt Payments with hilm.ai
+          </h3>
+          <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Use hilm.ai to log every debt payment and track your progress toward becoming debt-free. See your balances decrease over time and stay motivated.
+          </p>
+          <a
+            href="https://t.me/hilmaibot"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-[#d4ff2a] text-black font-bold text-lg rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-2xl shadow-[#d4ff2a]/40 group"
+          >
+            Start Tracking Free
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+

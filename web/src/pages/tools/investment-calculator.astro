@@ -1,0 +1,140 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import InvestmentCalculator from '../../components/calculators/InvestmentCalculator.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout
+  title="Investment Return Calculator - Free Investment Calculator | hilm.ai"
+  description="Project future investment value based on initial investment, monthly contributions, return rate, and time period."
+  keywords="investment return calculator, investment calculator, compound interest calculator"
+  image="/logo.png"
+  canonical="/tools/investment-calculator"
+  ogType="website"
+  author="hilm.ai"
+>
+  <!-- Hero Section -->
+  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto text-center z-10">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        Investment Return Calculator
+      </h1>
+      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+        Project future investment value based on initial investment, monthly contributions, return rate, and time period.
+      </p>
+    </div>
+  </section>
+
+  <!-- Calculator Section -->
+  <section class="py-12 px-4 bg-gray-900">
+    <div class="max-w-6xl mx-auto">
+      <InvestmentCalculator />
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-12 px-4 bg-black">
+    <div class="max-w-4xl mx-auto">
+      <div class="prose prose-invert max-w-none">
+        <h2 class="text-3xl font-bold text-white mb-6">Understanding Investment Growth</h2>
+        
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          This calculator shows you how your investments can grow over time through the power of compound interest. The longer you invest, the more your money can grow.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">How Compound Interest Works</h3>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          Compound interest means you earn returns on both your initial investment and previously earned returns. Over time, this creates exponential growth, making time your greatest asset in investing.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Expected Return Rates</h3>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Savings Account:</strong> 0.5-2% annually</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Bonds:</strong> 3-5% annually</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Balanced Portfolio:</strong> 6-8% annually</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Stock Market (S&P 500):</strong> 7-10% historically</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Aggressive Portfolio:</strong> 8-12% (higher risk)</span>
+          </li>
+        </ul>
+        <p class="text-gray-400 text-sm italic mb-6">
+          Note: Past performance doesn't guarantee future results. Use conservative estimates for planning.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Tips for Successful Investing</h3>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Start early:</strong> Time is your biggest advantage</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Invest consistently:</strong> Regular contributions build wealth</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Stay diversified:</strong> Don't put all money in one investment</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Think long-term:</strong> Avoid emotional decisions based on short-term market moves</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Keep costs low:</strong> High fees eat into returns</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 px-4 bg-gradient-to-b from-gray-900 via-black to-black">
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-gradient-to-br from-[#d4ff2a]/20 via-[#d4ff2a]/10 to-green-500/10 border-2 border-[#d4ff2a]/40 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#d4ff2a]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+          <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            Track Your Investments with hilm.ai
+          </h3>
+          <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Log your investment contributions and track your portfolio growth over time. Monitor your progress and stay on track with your investment goals.
+          </p>
+          <a
+            href="https://t.me/hilmaibot"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-[#d4ff2a] text-black font-bold text-lg rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-2xl shadow-[#d4ff2a]/40 group"
+          >
+            Start Tracking Free
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+

@@ -1,0 +1,190 @@
+---
+// Monthly Budget Planner Component
+---
+
+<div class="budget-planner max-w-4xl mx-auto">
+  <!-- Planner Form -->
+  <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8">
+    <h3 class="text-2xl font-bold text-white mb-6">Create Your Monthly Budget</h3>
+    
+    <div class="space-y-6">
+      <!-- Monthly Income -->
+      <div>
+        <label for="planner-income" class="block text-sm font-medium text-gray-300 mb-2">
+          Monthly Income
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="planner-income"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="5000"
+            min="0"
+            step="0.01"
+          />
+        </div>
+      </div>
+
+      <!-- Budget Categories -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">
+          Budget Categories
+        </label>
+        <div id="categories-list" class="space-y-3 mb-3">
+          <!-- Categories will be added here -->
+        </div>
+        <button
+          id="add-category"
+          type="button"
+          class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-[#d4ff2a] transition-colors text-sm"
+        >
+          + Add Category
+        </button>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        id="calculate-budget-planner"
+        class="w-full px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+      >
+        Calculate Budget
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div id="planner-results" class="hidden">
+    <!-- Summary -->
+    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
+      <h4 class="text-lg font-semibold text-white mb-4">Budget Summary</h4>
+      <div class="space-y-3">
+        <div class="flex justify-between">
+          <span class="text-gray-400">Total Income:</span>
+          <span id="total-income" class="text-white font-semibold">$0</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-400">Total Budgeted:</span>
+          <span id="total-budgeted" class="text-white font-semibold">$0</span>
+        </div>
+        <div class="border-t border-gray-700 pt-3 flex justify-between">
+          <span class="text-white font-semibold">Remaining:</span>
+          <span id="remaining-amount" class="text-[#d4ff2a] font-bold text-lg">$0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+      <h4 class="text-lg font-semibold text-white mb-4">Category Breakdown</h4>
+      <div id="category-breakdown" class="space-y-4">
+        <!-- Categories will be populated dynamically -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let categoryCount = 0;
+  const categoriesList = document.getElementById('categories-list') as HTMLElement;
+  const addCategoryBtn = document.getElementById('add-category') as HTMLButtonElement;
+  const calculateBtn = document.getElementById('calculate-budget-planner') as HTMLButtonElement;
+  const resultsSection = document.getElementById('planner-results') as HTMLElement;
+
+  function formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  function addCategoryInput() {
+    categoryCount++;
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'bg-gray-800 border border-gray-700 rounded-lg p-4';
+    categoryDiv.innerHTML = `
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Category Name</label>
+          <input type="text" class="category-name w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" placeholder="Groceries" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Budgeted Amount</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+            <input type="number" class="category-amount w-full pl-7 pr-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" placeholder="500" min="0" step="0.01" />
+          </div>
+        </div>
+      </div>
+      <button type="button" class="remove-category mt-2 text-xs text-red-400 hover:text-red-300">Remove</button>
+    `;
+    categoriesList.appendChild(categoryDiv);
+
+    categoryDiv.querySelector('.remove-category')?.addEventListener('click', () => {
+      categoryDiv.remove();
+    });
+  }
+
+  addCategoryBtn.addEventListener('click', addCategoryInput);
+  addCategoryInput(); // Add first category
+
+  calculateBtn.addEventListener('click', () => {
+    const income = parseFloat((document.getElementById('planner-income') as HTMLInputElement).value);
+
+    if (!income || income <= 0) {
+      alert('Please enter your monthly income');
+      return;
+    }
+
+    const categories: { name: string; amount: number }[] = [];
+    const categoryInputs = categoriesList.querySelectorAll('.bg-gray-800');
+
+    categoryInputs.forEach((catDiv) => {
+      const name = (catDiv.querySelector('.category-name') as HTMLInputElement)?.value || 'Category';
+      const amount = parseFloat((catDiv.querySelector('.category-amount') as HTMLInputElement)?.value || '0');
+
+      if (amount > 0) {
+        categories.push({ name, amount });
+      }
+    });
+
+    const totalBudgeted = categories.reduce((sum, cat) => sum + cat.amount, 0);
+    const remaining = income - totalBudgeted;
+
+    // Update summary
+    document.getElementById('total-income')!.textContent = formatCurrency(income);
+    document.getElementById('total-budgeted')!.textContent = formatCurrency(totalBudgeted);
+    const remainingEl = document.getElementById('remaining-amount')!;
+    remainingEl.textContent = formatCurrency(remaining);
+    remainingEl.className = remaining >= 0 ? 'text-[#d4ff2a] font-bold text-lg' : 'text-red-400 font-bold text-lg';
+
+    // Update breakdown
+    const breakdownDiv = document.getElementById('category-breakdown')!;
+    breakdownDiv.innerHTML = categories
+      .map((cat) => {
+        const percentage = (cat.amount / income) * 100;
+        return `
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-300">${cat.name}</span>
+          <span class="text-white font-semibold">${formatCurrency(cat.amount)} (${percentage.toFixed(1)}%)</span>
+        </div>
+        <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+          <div class="h-full bg-[#d4ff2a]" style="width: ${Math.min(percentage, 100)}%"></div>
+        </div>
+      </div>
+    `;
+      })
+      .join('');
+
+    if (categories.length === 0) {
+      breakdownDiv.innerHTML = '<p class="text-gray-400">Add categories to see breakdown</p>';
+    }
+
+    resultsSection.classList.remove('hidden');
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+</script>
+

@@ -24,6 +24,66 @@ export async function GET() {
       priority: '0.8'
     },
     {
+      url: '/tools',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: '/tools/budget-calculator',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.9'
+    },
+    {
+      url: '/tools/emergency-fund',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.9'
+    },
+    {
+      url: '/tools/debt-payoff',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: '/tools/savings-goal',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: '/tools/debt-to-income',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: '/tools/financial-health',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: '/tools/budget-planner',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: '/tools/retirement-calculator',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: '/tools/investment-calculator',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
       url: '/success',
       lastmod: new Date().toISOString().split('T')[0],
       changefreq: 'yearly',

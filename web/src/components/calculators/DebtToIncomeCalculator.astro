@@ -1,0 +1,197 @@
+---
+// Debt-to-Income Calculator Component
+---
+
+<div class="debt-to-income-calculator max-w-4xl mx-auto">
+  <!-- Calculator Form -->
+  <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8">
+    <h3 class="text-2xl font-bold text-white mb-6">Calculate Your Debt-to-Income Ratio</h3>
+    
+    <div class="space-y-6">
+      <!-- Monthly Income -->
+      <div>
+        <label for="monthly-income" class="block text-sm font-medium text-gray-300 mb-2">
+          Monthly Gross Income
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="monthly-income"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="5000"
+            min="0"
+            step="0.01"
+          />
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Your total monthly income before taxes</p>
+      </div>
+
+      <!-- Monthly Debt Payments -->
+      <div>
+        <label for="monthly-debt" class="block text-sm font-medium text-gray-300 mb-2">
+          Total Monthly Debt Payments
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="monthly-debt"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="1500"
+            min="0"
+            step="0.01"
+          />
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Include mortgage, auto loans, credit cards, student loans, etc.</p>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        id="calculate-dti"
+        class="w-full px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+      >
+        Calculate DTI Ratio
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div id="dti-results" class="hidden">
+    <!-- DTI Score Card -->
+    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-8 mb-6 text-center">
+      <h4 class="text-lg font-semibold text-white mb-4">Your Debt-to-Income Ratio</h4>
+      <p id="dti-percentage" class="text-5xl font-bold text-[#d4ff2a] mb-2">0%</p>
+      <p id="dti-grade" class="text-xl font-semibold text-white mb-4">-</p>
+      <div class="w-full bg-gray-800 rounded-full h-4 overflow-hidden">
+        <div id="dti-bar" class="h-full bg-[#d4ff2a] transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Interpretation -->
+    <div id="dti-interpretation" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
+      <h4 class="text-lg font-semibold text-white mb-4">What This Means</h4>
+      <p id="dti-explanation" class="text-gray-300 leading-relaxed"></p>
+    </div>
+
+    <!-- Tips -->
+    <div class="bg-[#d4ff2a]/10 border border-[#d4ff2a]/30 rounded-xl p-6">
+      <h4 class="text-lg font-semibold text-white mb-3">💡 Tips to Improve Your DTI</h4>
+      <ul id="dti-tips" class="space-y-2 text-gray-300">
+        <!-- Tips will be populated dynamically -->
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  const incomeInput = document.getElementById('monthly-income') as HTMLInputElement;
+  const debtInput = document.getElementById('monthly-debt') as HTMLInputElement;
+  const calculateBtn = document.getElementById('calculate-dti') as HTMLButtonElement;
+  const resultsSection = document.getElementById('dti-results') as HTMLElement;
+
+  function getDTIGrade(dti: number): { grade: string; color: string; explanation: string; tips: string[] } {
+    if (dti <= 20) {
+      return {
+        grade: 'Excellent',
+        color: 'text-green-400',
+        explanation: 'Your debt-to-income ratio is excellent! You have a very manageable debt load and are in a strong financial position. Most lenders will offer you the best rates.',
+        tips: [
+          'Maintain your current debt level',
+          'Consider investing extra income',
+          'You may qualify for premium loan products',
+        ],
+      };
+    } else if (dti <= 35) {
+      return {
+        grade: 'Good',
+        color: 'text-[#d4ff2a]',
+        explanation: 'Your debt-to-income ratio is good. You have a healthy debt level that most lenders consider acceptable. You should have no trouble getting approved for loans.',
+        tips: [
+          'Continue making payments on time',
+          'Avoid taking on unnecessary debt',
+          'Consider paying down high-interest debt',
+        ],
+      };
+    } else if (dti <= 43) {
+      return {
+        grade: 'Fair',
+        color: 'text-yellow-400',
+        explanation: 'Your debt-to-income ratio is fair but approaching the limit. You may have difficulty getting approved for new loans, and lenders may offer higher interest rates.',
+        tips: [
+          'Focus on reducing debt',
+          'Avoid new credit applications',
+          'Consider debt consolidation',
+          'Increase your income if possible',
+        ],
+      };
+    } else if (dti <= 50) {
+      return {
+        grade: 'Poor',
+        color: 'text-orange-400',
+        explanation: 'Your debt-to-income ratio is high. You may struggle to get approved for loans, and if approved, you\'ll likely face high interest rates. Focus on debt reduction.',
+        tips: [
+          'Urgently reduce your debt',
+          'Create a strict budget',
+          'Consider credit counseling',
+          'Look for ways to increase income',
+          'Stop using credit cards',
+        ],
+      };
+    } else {
+      return {
+        grade: 'Critical',
+        color: 'text-red-400',
+        explanation: 'Your debt-to-income ratio is critical. You\'re likely struggling to make payments and may need professional help. Focus on immediate debt reduction strategies.',
+        tips: [
+          'Seek professional financial counseling',
+          'Contact creditors to negotiate payment plans',
+          'Consider debt settlement or bankruptcy consultation',
+          'Eliminate all non-essential expenses',
+          'Find additional income sources immediately',
+        ],
+      };
+    }
+  }
+
+  calculateBtn.addEventListener('click', () => {
+    const monthlyIncome = parseFloat(incomeInput.value);
+    const monthlyDebt = parseFloat(debtInput.value) || 0;
+
+    if (!monthlyIncome || monthlyIncome <= 0) {
+      alert('Please enter your monthly income');
+      return;
+    }
+
+    const dti = (monthlyDebt / monthlyIncome) * 100;
+    const gradeInfo = getDTIGrade(dti);
+
+    // Update results
+    document.getElementById('dti-percentage')!.textContent = `${dti.toFixed(1)}%`;
+    const gradeElement = document.getElementById('dti-grade')!;
+    gradeElement.textContent = gradeInfo.grade;
+    gradeElement.className = `text-xl font-semibold ${gradeInfo.color} mb-4`;
+
+    document.getElementById('dti-bar')!.style.width = `${Math.min(dti, 100)}%`;
+    document.getElementById('dti-explanation')!.textContent = gradeInfo.explanation;
+
+    // Update tips
+    const tipsList = document.getElementById('dti-tips')!;
+    tipsList.innerHTML = gradeInfo.tips
+      .map((tip) => `<li class="flex items-start gap-2"><span class="text-[#d4ff2a] mt-1">•</span><span>${tip}</span></li>`)
+      .join('');
+
+    resultsSection.classList.remove('hidden');
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  // Allow Enter key
+  [incomeInput, debtInput].forEach((input) => {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        calculateBtn.click();
+      }
+    });
+  });
+</script>
+

@@ -1,0 +1,215 @@
+---
+// Debt Payoff Calculator Component
+---
+
+<div class="debt-payoff-calculator max-w-4xl mx-auto">
+  <!-- Calculator Form -->
+  <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8">
+    <h3 class="text-2xl font-bold text-white mb-6">Calculate Your Debt Payoff Strategy</h3>
+    
+    <div class="space-y-6">
+      <!-- Debts List -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">
+          Your Debts
+        </label>
+        <div id="debts-list" class="space-y-4 mb-4">
+          <!-- Debt inputs will be added here -->
+        </div>
+        <button
+          id="add-debt"
+          type="button"
+          class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-[#d4ff2a] transition-colors text-sm"
+        >
+          + Add Debt
+        </button>
+      </div>
+
+      <!-- Extra Payment -->
+      <div>
+        <label for="extra-payment" class="block text-sm font-medium text-gray-300 mb-2">
+          Extra Monthly Payment (Optional)
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="extra-payment"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="0"
+            min="0"
+            step="0.01"
+            value="0"
+          />
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Additional amount you can pay toward debt each month</p>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        id="calculate-debt-payoff"
+        class="w-full px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+      >
+        Calculate Payoff Strategy
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div id="debt-results" class="hidden">
+    <!-- Method Comparison -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+      <!-- Snowball Method -->
+      <div id="snowball-card" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+        <h4 class="text-lg font-semibold text-white mb-4">Debt Snowball</h4>
+        <div class="space-y-2 mb-4">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Payoff Time:</span>
+            <span id="snowball-months" class="text-white font-semibold">-</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Total Interest:</span>
+            <span id="snowball-interest" class="text-white font-semibold">-</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Total Paid:</span>
+            <span id="snowball-total" class="text-white font-semibold">-</span>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500">Pays smallest debts first for quick wins</p>
+      </div>
+
+      <!-- Avalanche Method -->
+      <div id="avalanche-card" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+        <h4 class="text-lg font-semibold text-white mb-4">Debt Avalanche</h4>
+        <div class="space-y-2 mb-4">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Payoff Time:</span>
+            <span id="avalanche-months" class="text-white font-semibold">-</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Total Interest:</span>
+            <span id="avalanche-interest" class="text-white font-semibold">-</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Total Paid:</span>
+            <span id="avalanche-total" class="text-white font-semibold">-</span>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500">Pays highest interest first to save money</p>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div id="recommendation" class="bg-[#d4ff2a]/10 border border-[#d4ff2a]/30 rounded-xl p-6 mb-8">
+      <h4 class="text-lg font-semibold text-white mb-2">💡 Recommendation</h4>
+      <p id="recommendation-text" class="text-gray-300"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  import {
+    calculateSnowballMethod,
+    calculateAvalancheMethod,
+    formatCurrency,
+    type Debt,
+  } from '../../lib/calculators/debt';
+
+  let debtCount = 0;
+  const debtsList = document.getElementById('debts-list') as HTMLElement;
+  const addDebtBtn = document.getElementById('add-debt') as HTMLButtonElement;
+  const calculateBtn = document.getElementById('calculate-debt-payoff') as HTMLButtonElement;
+  const resultsSection = document.getElementById('debt-results') as HTMLElement;
+  const extraPaymentInput = document.getElementById('extra-payment') as HTMLInputElement;
+
+  function addDebtInput() {
+    debtCount++;
+    const debtDiv = document.createElement('div');
+    debtDiv.className = 'bg-gray-800 border border-gray-700 rounded-lg p-4';
+    debtDiv.innerHTML = `
+      <div class="grid md:grid-cols-2 gap-4 mb-3">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Debt Name</label>
+          <input type="text" class="debt-name w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" placeholder="Credit Card" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Balance</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+            <input type="number" class="debt-balance w-full pl-7 pr-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" placeholder="5000" min="0" step="0.01" />
+          </div>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 mb-3">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Interest Rate (%)</label>
+          <input type="number" class="debt-rate w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" placeholder="18.5" min="0" step="0.1" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Minimum Payment</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+            <input type="number" class="debt-min-payment w-full pl-7 pr-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" placeholder="100" min="0" step="0.01" />
+          </div>
+        </div>
+      </div>
+      <button type="button" class="remove-debt text-xs text-red-400 hover:text-red-300">Remove</button>
+    `;
+    debtsList.appendChild(debtDiv);
+
+    debtDiv.querySelector('.remove-debt')?.addEventListener('click', () => {
+      debtDiv.remove();
+    });
+  }
+
+  addDebtBtn.addEventListener('click', addDebtInput);
+  addDebtInput(); // Add first debt input
+
+  calculateBtn.addEventListener('click', () => {
+    const debts: Debt[] = [];
+    const debtInputs = debtsList.querySelectorAll('.bg-gray-800');
+
+    debtInputs.forEach((debtDiv) => {
+      const name = (debtDiv.querySelector('.debt-name') as HTMLInputElement)?.value || 'Debt';
+      const balance = parseFloat((debtDiv.querySelector('.debt-balance') as HTMLInputElement)?.value || '0');
+      const rate = parseFloat((debtDiv.querySelector('.debt-rate') as HTMLInputElement)?.value || '0');
+      const minPayment = parseFloat((debtDiv.querySelector('.debt-min-payment') as HTMLInputElement)?.value || '0');
+
+      if (balance > 0 && rate >= 0 && minPayment > 0) {
+        debts.push({ name, balance, interestRate: rate, minimumPayment: minPayment });
+      }
+    });
+
+    if (debts.length === 0) {
+      alert('Please add at least one debt with valid information');
+      return;
+    }
+
+    const extraPayment = parseFloat(extraPaymentInput.value) || 0;
+    const snowball = calculateSnowballMethod(debts, extraPayment);
+    const avalanche = calculateAvalancheMethod(debts, extraPayment);
+
+    // Update snowball results
+    document.getElementById('snowball-months')!.textContent = `${snowball.totalMonths} months`;
+    document.getElementById('snowball-interest')!.textContent = formatCurrency(snowball.totalInterest);
+    document.getElementById('snowball-total')!.textContent = formatCurrency(snowball.totalPaid);
+
+    // Update avalanche results
+    document.getElementById('avalanche-months')!.textContent = `${avalanche.totalMonths} months`;
+    document.getElementById('avalanche-interest')!.textContent = formatCurrency(avalanche.totalInterest);
+    document.getElementById('avalanche-total')!.textContent = formatCurrency(avalanche.totalPaid);
+
+    // Recommendation
+    const recommendationText = document.getElementById('recommendation-text')!;
+    if (avalanche.totalInterest < snowball.totalInterest) {
+      recommendationText.textContent = `The Avalanche method saves you ${formatCurrency(snowball.totalInterest - avalanche.totalInterest)} in interest. However, the Snowball method provides faster psychological wins. Choose based on what keeps you motivated!`;
+    } else {
+      recommendationText.textContent = `Both methods are similar. The Snowball method provides faster wins, while the Avalanche method saves slightly more interest. Choose what keeps you motivated!`;
+    }
+
+    resultsSection.classList.remove('hidden');
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+</script>
+

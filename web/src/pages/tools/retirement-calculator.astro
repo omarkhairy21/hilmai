@@ -1,0 +1,136 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RetirementCalculator from '../../components/calculators/RetirementCalculator.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout
+  title="Retirement Calculator - Free Retirement Savings Calculator | hilm.ai"
+  description="Determine how much you need to save for retirement. Calculate required contributions and see if you're on track."
+  keywords="retirement calculator, retirement savings calculator, retirement planning"
+  image="/logo.png"
+  canonical="/tools/retirement-calculator"
+  ogType="website"
+  author="hilm.ai"
+>
+  <!-- Hero Section -->
+  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto text-center z-10">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        Retirement Calculator
+      </h1>
+      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+        Determine how much you need to save for retirement. Calculate required contributions and see if you're on track.
+      </p>
+    </div>
+  </section>
+
+  <!-- Calculator Section -->
+  <section class="py-12 px-4 bg-gray-900">
+    <div class="max-w-6xl mx-auto">
+      <RetirementCalculator />
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-12 px-4 bg-black">
+    <div class="max-w-4xl mx-auto">
+      <div class="prose prose-invert max-w-none">
+        <h2 class="text-3xl font-bold text-white mb-6">Understanding Retirement Planning</h2>
+        
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          Planning for retirement is one of the most important financial decisions you'll make. This calculator helps you determine if you're on track to meet your retirement goals.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">The 4% Rule</h3>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          This calculator uses the 4% rule, which suggests you can safely withdraw 4% of your retirement savings annually. This means you need about 25 times your annual expenses saved for retirement.
+        </p>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          <strong>Example:</strong> If you need $50,000 per year in retirement, you should aim for $1.25 million in savings.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Retirement Savings Guidelines</h3>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">By age 30:</span>
+            <span>1x your annual salary saved</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">By age 40:</span>
+            <span>3x your annual salary saved</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">By age 50:</span>
+            <span>6x your annual salary saved</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">By age 60:</span>
+            <span>8x your annual salary saved</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">By age 67:</span>
+            <span>10x your annual salary saved</span>
+          </li>
+        </ul>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Tips for Retirement Savings</h3>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Start early:</strong> Time is your biggest advantage due to compound growth</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Maximize employer match:</strong> Don't leave free money on the table</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Increase contributions:</strong> Raise savings rate with raises</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Diversify investments:</strong> Don't put all eggs in one basket</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 px-4 bg-gradient-to-b from-gray-900 via-black to-black">
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-gradient-to-br from-[#d4ff2a]/20 via-[#d4ff2a]/10 to-green-500/10 border-2 border-[#d4ff2a]/40 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#d4ff2a]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+          <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            Track Your Retirement Savings with hilm.ai
+          </h3>
+          <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Monitor your retirement contributions and track your progress toward your goal. Log deposits, see your growth over time, and stay on track.
+          </p>
+          <a
+            href="https://t.me/hilmaibot"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-[#d4ff2a] text-black font-bold text-lg rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-2xl shadow-[#d4ff2a]/40 group"
+          >
+            Start Tracking Free
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+

@@ -1,0 +1,227 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EmergencyFundCalculator from '../../components/calculators/EmergencyFundCalculator.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout
+  title="Emergency Fund Calculator - How Much Should You Save? | hilm.ai"
+  description="Calculate how much you need in your emergency fund. Free emergency fund calculator to determine your target savings based on monthly expenses and coverage period."
+  keywords="emergency fund calculator, how much emergency fund, emergency savings calculator, emergency fund, savings calculator"
+  image="/logo.png"
+  canonical="/tools/emergency-fund"
+  ogType="website"
+  author="hilm.ai"
+>
+  <!-- Hero Section -->
+  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto text-center z-10">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        Emergency Fund Calculator
+      </h1>
+      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+        Calculate how much you need in your emergency fund to cover unexpected expenses or income loss. Your financial safety net starts here.
+      </p>
+    </div>
+  </section>
+
+  <!-- Calculator Section -->
+  <section class="py-12 px-4 bg-gray-900">
+    <div class="max-w-6xl mx-auto">
+      <EmergencyFundCalculator />
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-12 px-4 bg-black">
+    <div class="max-w-4xl mx-auto">
+      <div class="prose prose-invert max-w-none">
+        <h2 class="text-3xl font-bold text-white mb-6">Why You Need an Emergency Fund</h2>
+        
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          An emergency fund is a financial safety net designed to cover unexpected expenses or income loss. It's one of the most important foundations of financial security, protecting you from having to rely on credit cards or loans during difficult times.
+        </p>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Common Emergencies</h3>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Job loss:</strong> Covers living expenses while you search for new employment</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Medical emergencies:</strong> Unexpected healthcare costs not covered by insurance</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Home repairs:</strong> Urgent fixes like a broken furnace or roof leak</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Car repairs:</strong> Unexpected vehicle breakdowns</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Family emergencies:</strong> Travel or other urgent family needs</span>
+          </li>
+        </ul>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">How Much Should You Save?</h3>
+        <p class="text-gray-300 mb-4 leading-relaxed">
+          The general recommendation is:
+        </p>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">3 months:</span>
+            <span>Minimum for single income earners or those with unstable jobs</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">6 months:</span>
+            <span>Standard recommendation for most people</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] font-bold mt-1">9-12 months:</span>
+            <span>Recommended for self-employed, single-income families, or high-risk industries</span>
+          </li>
+        </ul>
+
+        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Building Your Emergency Fund</h3>
+        <ul class="space-y-2 text-gray-300 mb-6">
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Start small:</strong> Even $1,000 is better than nothing</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Automate savings:</strong> Set up automatic transfers to a separate savings account</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Use a high-yield account:</strong> Keep your emergency fund in a savings account that earns interest</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Don't touch it:</strong> Only use for true emergencies, not planned expenses</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#d4ff2a] mt-1">•</span>
+            <span><strong>Rebuild after use:</strong> If you use your emergency fund, prioritize rebuilding it</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="py-12 px-4 bg-gray-900">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-12 text-center">
+        Frequently Asked Questions
+      </h2>
+
+      <div class="space-y-6">
+        <details class="group bg-gray-800/50 border border-gray-700 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
+          <summary class="flex items-center justify-between font-semibold text-white">
+            <span>What counts as monthly expenses?</span>
+            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
+          </summary>
+          <p class="text-gray-400 mt-4 leading-relaxed">
+            Include all essential expenses: housing, utilities, groceries, transportation, insurance, minimum debt payments, and basic healthcare. Don't include discretionary spending.
+          </p>
+        </details>
+
+        <details class="group bg-gray-800/50 border border-gray-700 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
+          <summary class="flex items-center justify-between font-semibold text-white">
+            <span>Should I pay off debt first or build an emergency fund?</span>
+            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
+          </summary>
+          <p class="text-gray-400 mt-4 leading-relaxed">
+            Start with a small emergency fund ($1,000-$2,000), then focus on high-interest debt. Once debt is manageable, build your full emergency fund.
+          </p>
+        </details>
+
+        <details class="group bg-gray-800/50 border border-gray-700 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
+          <summary class="flex items-center justify-between font-semibold text-white">
+            <span>Can I invest my emergency fund?</span>
+            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
+          </summary>
+          <p class="text-gray-400 mt-4 leading-relaxed">
+            No. Emergency funds should be easily accessible and not subject to market risk. Keep it in a savings or money market account.
+          </p>
+        </details>
+
+        <details class="group bg-gray-800/50 border border-gray-700 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
+          <summary class="flex items-center justify-between font-semibold text-white">
+            <span>What if I can't save the full amount?</span>
+            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
+          </summary>
+          <p class="text-gray-400 mt-4 leading-relaxed">
+            Start with what you can afford. Even saving $50-100 per month will build your fund over time. The key is consistency.
+          </p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Enhanced CTA Section -->
+  <section class="py-16 px-4 bg-gradient-to-b from-gray-900 via-black to-black">
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-gradient-to-br from-[#d4ff2a]/20 via-[#d4ff2a]/10 to-green-500/10 border-2 border-[#d4ff2a]/40 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#d4ff2a]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+          <div class="inline-block bg-[#d4ff2a]/20 border border-[#d4ff2a]/40 rounded-full px-4 py-2 mb-6">
+            <p class="text-sm font-semibold text-[#d4ff2a]">💰 Build Your Emergency Fund Faster</p>
+          </div>
+          
+          <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            See Your Progress. Stay Motivated.
+          </h3>
+          <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Building an emergency fund is easier when you can track every contribution. hilm.ai helps you log savings deposits, visualize your progress, and get personalized tips to reach your goal faster.
+          </p>
+
+          <!-- Benefits Grid -->
+          <div class="grid md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto">
+            <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
+              <div class="text-2xl mb-2">📊</div>
+              <p class="text-sm text-gray-300 font-medium">Track Progress</p>
+              <p class="text-xs text-gray-400 mt-1">See your savings grow over time</p>
+            </div>
+            <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
+              <div class="text-2xl mb-2">🎯</div>
+              <p class="text-sm text-gray-300 font-medium">Stay on Goal</p>
+              <p class="text-xs text-gray-400 mt-1">Get reminders and insights</p>
+            </div>
+            <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
+              <div class="text-2xl mb-2">💬</div>
+              <p class="text-sm text-gray-300 font-medium">Easy Logging</p>
+              <p class="text-xs text-gray-400 mt-1">Log deposits in seconds</p>
+            </div>
+          </div>
+
+          <a
+            href="https://t.me/hilmaibot"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-[#d4ff2a] text-black font-bold text-lg rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-2xl shadow-[#d4ff2a]/40 group"
+          >
+            Start Tracking Free
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+

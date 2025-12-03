@@ -1,0 +1,300 @@
+---
+// Emergency Fund Calculator Component
+---
+
+<div class="emergency-fund-calculator max-w-4xl mx-auto">
+  <!-- Calculator Form -->
+  <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8">
+    <h3 class="text-2xl font-bold text-white mb-6">Calculate Your Emergency Fund</h3>
+    
+    <div class="space-y-6">
+      <!-- Monthly Expenses Input -->
+      <div>
+        <label for="monthly-expenses" class="block text-sm font-medium text-gray-300 mb-2">
+          Monthly Expenses
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="monthly-expenses"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="3000"
+            min="0"
+            step="0.01"
+          />
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Your total monthly essential expenses</p>
+      </div>
+
+      <!-- Target Months Selection -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">
+          Target Emergency Fund Coverage
+        </label>
+        <div class="grid grid-cols-4 gap-3">
+          {[3, 6, 9, 12].map((months) => (
+            <button
+              type="button"
+              class="target-months-btn px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-[#d4ff2a] hover:bg-gray-700 transition-colors"
+              data-months={months}
+            >
+              {months} months
+            </button>
+          ))}
+        </div>
+        <p class="mt-2 text-sm text-gray-500">Recommended: 3-6 months for most people</p>
+      </div>
+
+      <!-- Current Savings Input -->
+      <div>
+        <label for="current-savings" class="block text-sm font-medium text-gray-300 mb-2">
+          Current Savings (Optional)
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="current-savings"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="0"
+            min="0"
+            step="0.01"
+            value="0"
+          />
+        </div>
+      </div>
+
+      <!-- Monthly Contribution Input -->
+      <div>
+        <label for="monthly-contribution" class="block text-sm font-medium text-gray-300 mb-2">
+          Monthly Contribution (Optional)
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <input
+            type="number"
+            id="monthly-contribution"
+            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            placeholder="500"
+            min="0"
+            step="0.01"
+            value="0"
+          />
+        </div>
+        <p class="mt-2 text-sm text-gray-500">How much you can save each month</p>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        id="calculate-emergency-fund"
+        class="w-full px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+      >
+        Calculate Emergency Fund
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div id="emergency-fund-results" class="hidden">
+    <!-- Target Amount Card -->
+    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
+      <h4 class="text-xl font-semibold text-white mb-4">Your Emergency Fund Goal</h4>
+      <div class="text-center">
+        <p id="target-amount" class="text-4xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p class="text-gray-400">Based on <span id="target-months-display">0</span> months of expenses</p>
+      </div>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h4 class="text-lg font-semibold text-white">Progress</h4>
+        <span id="progress-percentage" class="text-lg font-bold text-[#d4ff2a]">0%</span>
+      </div>
+      <div class="w-full bg-gray-800 rounded-full h-6 overflow-hidden mb-4">
+        <div id="progress-bar" class="h-full bg-[#d4ff2a] transition-all duration-500" style="width: 0%"></div>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-gray-400">Current: <span id="current-savings-display" class="text-white font-semibold">$0</span></span>
+        <span class="text-gray-400">Remaining: <span id="remaining-needed" class="text-white font-semibold">$0</span></span>
+      </div>
+    </div>
+
+    <!-- Timeline Card -->
+    <div id="timeline-card" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6 hidden">
+      <h4 class="text-lg font-semibold text-white mb-4">Timeline to Goal</h4>
+      <div class="text-center">
+        <p class="text-3xl font-bold text-[#d4ff2a] mb-2">
+          <span id="months-to-save">0</span> months
+        </p>
+        <p class="text-gray-400">
+          Saving <span id="monthly-contribution-display" class="text-white font-semibold">$0</span> per month
+        </p>
+        <p id="timeline-note" class="mt-4 text-sm text-gray-500"></p>
+      </div>
+    </div>
+
+    <!-- Tips Card -->
+    <div class="bg-[#d4ff2a]/10 border border-[#d4ff2a]/30 rounded-xl p-6 mb-6">
+      <h4 class="text-lg font-semibold text-white mb-3">💡 Tips for Building Your Emergency Fund</h4>
+      <ul class="space-y-2 text-gray-300">
+        <li class="flex items-start gap-2">
+          <span class="text-[#d4ff2a] mt-1">•</span>
+          <span>Automate your savings by setting up automatic transfers to a separate savings account</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-[#d4ff2a] mt-1">•</span>
+          <span>Keep your emergency fund in a high-yield savings account to earn interest</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-[#d4ff2a] mt-1">•</span>
+          <span>Only use it for true emergencies, not planned expenses</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-[#d4ff2a] mt-1">•</span>
+          <span>Track your progress with hilm.ai to stay motivated</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- CTA After Results -->
+    <div id="emergency-fund-cta" class="hidden">
+      <div class="bg-gradient-to-r from-[#d4ff2a]/20 to-green-500/20 border-2 border-[#d4ff2a]/50 rounded-2xl p-8 text-center">
+        <h4 class="text-2xl font-bold text-white mb-3">Track Your Savings Journey with hilm.ai</h4>
+        <p class="text-gray-300 mb-6 max-w-2xl mx-auto">
+          Building an emergency fund is easier when you can see your progress. Use hilm.ai to log every savings deposit, track your growth over time, and get personalized insights to help you reach your goal faster.
+        </p>
+        <a
+          href="https://t.me/hilmaibot"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-8 py-4 bg-[#d4ff2a] text-black font-bold rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/30 group"
+        >
+          Start Tracking Free
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import {
+    calculateEmergencyFundTarget,
+    calculateSavingsTimeline,
+    formatCurrency,
+  } from '../../lib/calculators/emergency-fund';
+
+  const expensesInput = document.getElementById('monthly-expenses') as HTMLInputElement;
+  const currentSavingsInput = document.getElementById('current-savings') as HTMLInputElement;
+  const monthlyContributionInput = document.getElementById('monthly-contribution') as HTMLInputElement;
+  const calculateButton = document.getElementById('calculate-emergency-fund') as HTMLButtonElement;
+  const resultsSection = document.getElementById('emergency-fund-results') as HTMLElement;
+  const targetMonthsButtons = document.querySelectorAll('.target-months-btn') as NodeListOf<HTMLButtonElement>;
+
+  // Result elements
+  const targetAmount = document.getElementById('target-amount') as HTMLElement;
+  const targetMonthsDisplay = document.getElementById('target-months-display') as HTMLElement;
+  const progressPercentage = document.getElementById('progress-percentage') as HTMLElement;
+  const progressBar = document.getElementById('progress-bar') as HTMLElement;
+  const currentSavingsDisplay = document.getElementById('current-savings-display') as HTMLElement;
+  const remainingNeeded = document.getElementById('remaining-needed') as HTMLElement;
+  const timelineCard = document.getElementById('timeline-card') as HTMLElement;
+  const monthsToSave = document.getElementById('months-to-save') as HTMLElement;
+  const monthlyContributionDisplay = document.getElementById('monthly-contribution-display') as HTMLElement;
+  const timelineNote = document.getElementById('timeline-note') as HTMLElement;
+
+  let selectedMonths = 6; // Default
+
+  // Handle target months selection
+  targetMonthsButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      targetMonthsButtons.forEach((b) => {
+        b.classList.remove('border-[#d4ff2a]', 'bg-gray-700');
+        b.classList.add('border-gray-700');
+      });
+      btn.classList.add('border-[#d4ff2a]', 'bg-gray-700');
+      btn.classList.remove('border-gray-700');
+      selectedMonths = parseInt(btn.dataset.months || '6');
+    });
+  });
+
+  // Set default selection
+  targetMonthsButtons[1].click(); // Select 6 months by default
+
+  function calculateAndDisplay() {
+    const monthlyExpenses = parseFloat(expensesInput.value);
+    const currentSavings = parseFloat(currentSavingsInput.value) || 0;
+    const monthlyContribution = parseFloat(monthlyContributionInput.value) || 0;
+
+    if (!monthlyExpenses || monthlyExpenses <= 0) {
+      alert('Please enter your monthly expenses');
+      return;
+    }
+
+    const target = calculateEmergencyFundTarget(monthlyExpenses, selectedMonths);
+    const timeline = calculateSavingsTimeline(target, currentSavings, monthlyContribution);
+
+    // Update target amount
+    targetAmount.textContent = formatCurrency(target);
+    targetMonthsDisplay.textContent = selectedMonths.toString();
+
+    // Update progress
+    const progress = Math.min((currentSavings / target) * 100, 100);
+    progressPercentage.textContent = `${Math.round(progress)}%`;
+    progressBar.style.width = `${progress}%`;
+    currentSavingsDisplay.textContent = formatCurrency(currentSavings);
+    remainingNeeded.textContent = formatCurrency(timeline.remainingNeeded);
+
+    // Update timeline if monthly contribution provided
+    if (monthlyContribution > 0) {
+      timelineCard.classList.remove('hidden');
+      if (timeline.monthsToSave === Infinity) {
+        monthsToSave.textContent = '∞';
+        timelineNote.textContent = 'Increase your monthly contribution to reach your goal faster';
+      } else {
+        monthsToSave.textContent = timeline.monthsToSave.toString();
+        const years = Math.floor(timeline.monthsToSave / 12);
+        const months = timeline.monthsToSave % 12;
+        if (years > 0) {
+          timelineNote.textContent = `That's ${years} year${years > 1 ? 's' : ''} and ${months} month${months !== 1 ? 's' : ''}`;
+        } else {
+          timelineNote.textContent = `You'll reach your goal in ${months} month${months !== 1 ? 's' : ''}`;
+        }
+      }
+      monthlyContributionDisplay.textContent = formatCurrency(monthlyContribution);
+    } else {
+      timelineCard.classList.add('hidden');
+    }
+
+    // Show results and CTA
+    resultsSection.classList.remove('hidden');
+    const ctaSection = document.getElementById('emergency-fund-cta') as HTMLElement;
+    if (ctaSection) {
+      ctaSection.classList.remove('hidden');
+    }
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  calculateButton.addEventListener('click', calculateAndDisplay);
+
+  // Allow Enter key to calculate
+  [expensesInput, currentSavingsInput, monthlyContributionInput].forEach((input) => {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        calculateAndDisplay();
+      }
+    });
+  });
+</script>
+
+<style>
+  .target-months-btn.active {
+    border-color: #d4ff2a;
+    background-color: rgba(212, 255, 42, 0.1);
+  }
+</style>
+

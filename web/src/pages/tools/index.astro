@@ -1,0 +1,331 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout
+  title="Free Financial Calculators & Tools | hilm.ai"
+  description="Free financial calculators and tools to help you manage your money. Budget calculators, emergency fund calculator, and more financial planning tools."
+  keywords="financial calculators, budget calculator, emergency fund calculator, financial tools, money management tools"
+  image="/logo.png"
+  canonical="/tools"
+  ogType="website"
+  author="hilm.ai"
+>
+  <!-- Hero Section -->
+  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto text-center z-10">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        Free Financial Calculators
+      </h1>
+      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+        Tools to help you budget, save, and plan your financial future. All calculators are free and easy to use.
+      </p>
+    </div>
+  </section>
+
+  <!-- Tools Grid -->
+  <section class="py-12 px-4 bg-gray-900">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 50/30/20 Budget Calculator -->
+        <a
+          href="/tools/budget-calculator"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            50/30/20 Budget Calculator
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Calculate your budget breakdown using the popular 50/30/20 rule. Divide your income into needs, wants, and savings.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Emergency Fund Calculator -->
+        <a
+          href="/tools/emergency-fund"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Emergency Fund Calculator
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Calculate how much you need in your emergency fund based on your monthly expenses and target coverage period.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Debt Payoff Calculator -->
+        <a
+          href="/tools/debt-payoff"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Debt Payoff Calculator
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Create a strategic plan to eliminate debt faster. Compare debt snowball vs avalanche methods and see your payoff timeline.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Savings Goal Calculator -->
+        <a
+          href="/tools/savings-goal"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Savings Goal Calculator
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Plan and track progress toward specific financial goals. Calculate required monthly contributions or timeline to reach your target.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Debt-to-Income Calculator -->
+        <a
+          href="/tools/debt-to-income"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Debt-to-Income Calculator
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Calculate your DTI ratio to assess your ability to manage monthly payments. Important metric for loan approval and financial health.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Financial Health Score -->
+        <a
+          href="/tools/financial-health"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Financial Health Score
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Get a comprehensive assessment of your financial well-being. Answer questions to receive a score and personalized recommendations.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Budget Planner -->
+        <a
+          href="/tools/budget-planner"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Monthly Budget Planner
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Create a detailed monthly budget plan. Allocate your income across categories and track planned vs actual spending.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Retirement Calculator -->
+        <a
+          href="/tools/retirement-calculator"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Retirement Calculator
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Determine how much you need to save for retirement. Calculate required contributions and see if you're on track.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+
+        <!-- Investment Return Calculator -->
+        <a
+          href="/tools/investment-calculator"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+        >
+          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
+            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+            Investment Return Calculator
+          </h3>
+          <p class="text-gray-400 mb-4">
+            Project future investment value based on initial investment, monthly contributions, return rate, and time period.
+          </p>
+          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Use Calculator
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Enhanced CTA Section -->
+  <section class="py-16 px-4 bg-gradient-to-b from-gray-900 via-black to-black">
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-gradient-to-br from-[#d4ff2a]/20 via-[#d4ff2a]/10 to-green-500/10 border-2 border-[#d4ff2a]/40 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#d4ff2a]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+          <div class="inline-block bg-[#d4ff2a]/20 border border-[#d4ff2a]/40 rounded-full px-4 py-2 mb-6">
+            <p class="text-sm font-semibold text-[#d4ff2a]">🚀 Start Your Financial Journey Today</p>
+          </div>
+          
+          <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            Plan with Calculators. Track with hilm.ai.
+          </h3>
+          <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            You've used our calculators to plan your finances—now make it happen. hilm.ai automatically tracks every expense and savings deposit, so you can see your progress in real-time and stay on track with your goals.
+          </p>
+
+          <!-- Benefits Grid -->
+          <div class="grid md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto">
+            <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
+              <div class="text-2xl mb-2">⚡</div>
+              <p class="text-sm text-gray-300 font-medium">Instant Tracking</p>
+              <p class="text-xs text-gray-400 mt-1">Log expenses in seconds</p>
+            </div>
+            <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
+              <div class="text-2xl mb-2">🤖</div>
+              <p class="text-sm text-gray-300 font-medium">AI Insights</p>
+              <p class="text-xs text-gray-400 mt-1">Get personalized recommendations</p>
+            </div>
+            <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
+              <div class="text-2xl mb-2">📱</div>
+              <p class="text-sm text-gray-300 font-medium">Multiple Ways</p>
+              <p class="text-xs text-gray-400 mt-1">Text, voice, or photos</p>
+            </div>
+          </div>
+
+          <a
+            href="https://t.me/hilmaibot"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-[#d4ff2a] text-black font-bold text-lg rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-2xl shadow-[#d4ff2a]/40 group"
+          >
+            Start Your Free Trial
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<style>
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .delay-1000 {
+    animation-delay: 1s;
+  }
+</style>
+
