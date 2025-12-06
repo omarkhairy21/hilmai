@@ -1,7 +1,7 @@
 ---
 title: "Getting Started with hilm.ai"
 description: "Your complete guide to mastering your finances with hilm.ai - the AI personal finance assistant that understands you"
-pubDate: 2025-01-15
+pubDate: 2025-11-15
 author: "hilm.ai Team"
 tags: ["getting-started", "guide", "tutorial"]
 ---

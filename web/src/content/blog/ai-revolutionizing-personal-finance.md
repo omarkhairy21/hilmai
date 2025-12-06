@@ -1,8 +1,8 @@
 ---
 title: "How AI is Revolutionizing Personal Finance Management"
 description: "Discover how artificial intelligence is transforming personal finance. Learn about AI-powered expense tracking, automated insights, and the future of money management."
-pubDate: 2025-01-22
-updatedDate: 2025-01-22
+pubDate: 2025-11-30
+updatedDate: 2025-11-30
 author: "hilm.ai Team"
 tags: ["AI personal finance", "AI money management", "AI finance", "personal finance technology", "expense tracking AI"]
 image: "/og-image.png"

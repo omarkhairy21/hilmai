@@ -1,8 +1,8 @@
 ---
 title: "Best AI Personal Finance Assistants in 2025: Complete Guide"
 description: "Discover the best AI personal finance assistants for 2025. Compare features, pricing, and capabilities of top AI finance tools including hilm.ai, ChatGPT, and more."
-pubDate: 2025-01-20
-updatedDate: 2025-01-20
+pubDate: 2025-12-5
+updatedDate: 2025-12-5
 author: "hilm.ai Team"
 tags: ["AI personal finance", "AI finance assistant", "best AI for personal finance", "personal finance tools", "AI money management"]
 image: "/og-image.png"
