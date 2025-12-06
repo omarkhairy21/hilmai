@@ -64,7 +64,7 @@ const { Content } = await post.render();
       </header>
 
       <!-- Article content -->
-      <div class="prose prose-invert prose-lg max-w-none">
+      <div class="prose prose-lg max-w-none">
         <Content />
       </div>
     </div>
@@ -159,8 +159,34 @@ const { Content } = await post.render();
     padding: 0.2rem 0.4rem;
     border-radius: 0.25rem;
     font-size: 0.9em;
+    color: rgb(17 24 39);
   }
   html.dark .prose code {
     background: #1f2937;
+    color: #e5e7eb;
+  }
+  .prose pre {
+    background: rgb(243 244 246) !important;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border: 1px solid rgb(229 231 235);
+    color: rgb(17 24 39) !important;
+  }
+  html.dark .prose pre {
+    background: #1f2937 !important;
+    border-color: #374151;
+    color: #e5e7eb !important;
+  }
+  .prose pre code {
+    background: transparent !important;
+    padding: 0;
+    color: rgb(17 24 39) !important;
+    font-size: 0.9em;
+  }
+  html.dark .prose pre code {
+    background: transparent !important;
+    color: #e5e7eb !important;
   }
 </style>

@@ -29,7 +29,7 @@ const sortedPosts = blogPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.p
       <!-- Blog Posts -->
       <div class="space-y-8">
         {sortedPosts.map((post) => (
-          <article class="border border-gray-200 dark:border-gray-800 rounded-2xl p-8 hover:border-gray-400 dark:hover:border-white/50 transition-colors bg-white dark:bg-transparent">
+          <article class="border border-gray-200 dark:border-gray-800 rounded-2xl p-8 hover:border-gray-400 dark:hover:border-white/50 transition-colors bg-gray-50 dark:bg-transparent">
             <a href={`/blog/${post.slug}`} class="block">
               <time class="text-sm text-gray-500 dark:text-gray-500 mb-2 block">
                 {post.data.pubDate.toLocaleDateString('en-US', {
