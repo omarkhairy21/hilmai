@@ -320,9 +320,8 @@ export const queryExecutorAgent = new Agent({
   name: 'queryExecutor',
   instructions: queryExecutorInstructions,
 
-  model: openai('gpt-4o-mini'), // Fast enough for queries, cost-effective
+  model: 'openai/gpt-4o-mini',
 
-  // Role-based memory: Lightweight (4 messages) + semantic recall for follow-up questions
   memory: getAgentMemory('query'),
 
   tools: {
