@@ -1,5 +1,6 @@
 ---
 // Real Conversations, Real Results section
+import { FcCamera, FcVoicePresentation, FcDocument } from 'react-icons/fc';
 ---
 
 <section id="how-it-works" class="py-20 px-4 bg-black">
@@ -22,10 +23,7 @@
       <!-- Receipt Logging Screenshot -->
       <div class="bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
         <div class="flex items-center gap-3 mb-4">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-            <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-          </svg>
+          <FcCamera className="w-6 h-6" client:load />
           <h3 class="text-xl font-semibold text-white">Snap & Auto-Extract</h3>
         </div>
         <p class="text-sm text-gray-400 mb-6">Snap a photo and watch transactions log automatically</p>
@@ -41,10 +39,7 @@
       <!-- Voice Logging Screenshot -->
       <div class="bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
         <div class="flex items-center gap-3 mb-4">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 1a3 3 0 013 3v8a3 3 0 01-6 0V4a3 3 0 013-3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-            <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-          </svg>
+          <FcVoicePresentation className="w-6 h-6" client:load />
           <h3 class="text-xl font-semibold text-white">Voice to Transaction</h3>
         </div>
         <p class="text-sm text-gray-400 mb-6">Speak naturally and let AI extract every expense detail</p>
@@ -60,9 +55,7 @@
       <!-- Type Logging Screenshot -->
       <div class="bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
         <div class="flex items-center gap-3 mb-4">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-          </svg>
+          <FcDocument className="w-6 h-6" client:load />
           <h3 class="text-xl font-semibold text-white">Quick Manual Entry</h3>
         </div>
         <p class="text-sm text-gray-400 mb-6">Type your expenses and get instant categorization</p>

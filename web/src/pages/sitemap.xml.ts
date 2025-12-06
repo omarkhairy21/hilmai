@@ -42,6 +42,18 @@ export async function GET() {
       priority: '0.5'
     },
     {
+      url: '/features',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.9'
+    },
+    {
+      url: '/vs',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.9'
+    },
+    {
       url: '/tools',
       lastmod: new Date().toISOString().split('T')[0],
       changefreq: 'monthly',
@@ -109,9 +121,9 @@ export async function GET() {
     },
     ...blogPosts.map((post) => ({
       url: `/blog/${post.slug}`,
-      lastmod: post.data.pubDate.toISOString().split('T')[0],
+      lastmod: post.data.updatedDate ? post.data.updatedDate.toISOString().split('T')[0] : post.data.pubDate.toISOString().split('T')[0],
       changefreq: 'monthly',
-      priority: '0.7'
+      priority: post.slug.includes('ai-personal-finance') || post.slug.includes('chatgpt') ? '0.9' : '0.7'
     }))
   ];
 

@@ -1,5 +1,6 @@
 ---
 // Smart Insights & Queries section
+import { FcSearch, FcFlashOn, FcBarChart } from 'react-icons/fc';
 ---
 
 <section class="py-20 px-4 bg-black">
@@ -49,9 +50,7 @@
           <!-- Feature 1 -->
           <div class="flex items-start gap-4">
             <div class="flex-shrink-0">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-              </svg>
+              <FcSearch className="w-6 h-6" client:load />
             </div>
             <div>
               <h3 class="text-lg font-semibold text-white mb-1">Spending Analysis</h3>
@@ -62,9 +61,7 @@
           <!-- Feature 2 -->
           <div class="flex items-start gap-4">
             <div class="flex-shrink-0">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-              </svg>
+              <FcFlashOn className="w-6 h-6" client:load />
             </div>
             <div>
               <h3 class="text-lg font-semibold text-white mb-1">Smart Insights</h3>
@@ -75,9 +72,7 @@
           <!-- Feature 3 -->
           <div class="flex items-start gap-4">
             <div class="flex-shrink-0">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"/>
-              </svg>
+              <FcBarChart className="w-6 h-6" client:load />
             </div>
             <div>
               <h3 class="text-lg font-semibold text-white mb-1">Trends & Reports</h3>

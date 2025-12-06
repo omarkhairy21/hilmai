@@ -1,16 +1,45 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Features from '../components/Features.astro';
+import FeaturesComponent from '../components/Features.astro';
 import Footer from '../components/Footer.astro';
 ---
 
 <Layout
-  title="Features - hilm.ai | Track Expenses Your Way"
-  description="Track expenses with text, voice, or photos. Get personalized financial advice, smart alerts, and budget monitoring—all through Telegram."
-  keywords="expense tracking features, voice expense tracking, receipt scanning, financial advice, budget monitoring"
+  title="AI Personal Finance Features | Track Expenses with AI - hilm.ai"
+  description="AI-powered expense tracking with text, voice, or photos. Get personalized AI financial advice, smart insights, and budget monitoring—all through Telegram. Better than ChatGPT for money management."
+  keywords="AI personal finance features, AI-powered expense tracking, AI finance assistant features, chatgpt for money alternative, AI money management features"
   canonical="/features"
 >
-  <Features />
+  <FeaturesComponent />
   <Footer />
+
+  <!-- SoftwareApplication Features Structured Data -->
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    'name': 'hilm.ai',
+    'applicationCategory': 'FinanceApplication',
+    'applicationSubCategory': 'PersonalFinanceApplication',
+    'operatingSystem': 'Web',
+    'offers': {
+      '@type': 'Offer',
+      'price': '0',
+      'priceCurrency': 'USD'
+    },
+    'featureList': [
+      'AI-powered expense tracking via text, voice, or photos',
+      'Automatic transaction categorization',
+      'Personalized financial insights and advice',
+      'Receipt scanning with OCR',
+      'Voice message transcription',
+      'Spending pattern analysis',
+      'Budget monitoring and alerts',
+      'Natural language financial queries',
+      'Multi-currency support',
+      'Telegram integration'
+    ],
+    'description': 'AI-powered personal finance assistant that tracks expenses through text, voice, or receipt photos. Get personalized financial insights and advice.',
+    'url': 'https://hilm.ai/features'
+  })} />
 </Layout>
 

@@ -134,7 +134,10 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
             '@type': 'ContactPoint',
             'email': 'support@hilm.ai',
             'contactType': 'customer support'
-          }
+          },
+          'description': 'AI-powered personal finance assistant for tracking expenses and managing money',
+          'foundingDate': '2024',
+          'knowsAbout': ['Personal Finance', 'AI', 'Expense Tracking', 'Financial Management', 'Money Management']
         },
         {
           '@type': 'SoftwareApplication',
@@ -143,6 +146,7 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
           'description': description,
           'url': siteUrl,
           'applicationCategory': 'FinanceApplication',
+          'applicationSubCategory': 'PersonalFinanceApplication',
           'operatingSystem': 'Web',
           'offers': {
             '@type': 'Offer',
@@ -157,7 +161,22 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
             '@type': 'AggregateRating',
             'ratingValue': '4.8',
             'ratingCount': '1'
-          }
+          },
+          'featureList': [
+            'AI-powered expense tracking',
+            'Natural language processing',
+            'Automatic transaction categorization',
+            'Receipt scanning with OCR',
+            'Voice message transcription',
+            'Multi-currency support',
+            'Personalized financial insights',
+            'Spending pattern analysis',
+            'Budget monitoring',
+            'Telegram integration'
+          ],
+          'screenshot': `${siteUrl}/og-image.png`,
+          'softwareVersion': '1.0',
+          'releaseNotes': 'AI personal finance assistant for conversational expense tracking'
         },
         {
           '@type': 'WebSite',
