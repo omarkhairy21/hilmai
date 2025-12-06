@@ -1,0 +1,96 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getEntry } from 'astro:content';
+
+const privacyPage = await getEntry('pages', 'privacy');
+if (!privacyPage) {
+  throw new Error('Privacy page content not found');
+}
+const { Content } = await privacyPage.render();
+---
+
+<Layout
+  title={`${privacyPage.data.title} - hilm.ai`}
+  description={privacyPage.data.description}
+  keywords="privacy policy, data protection, financial data security"
+  image="/logo.png"
+  canonical="/privacy"
+  ogType="article"
+  author="hilm.ai"
+>
+  <article class="min-h-screen px-4 py-20 bg-gradient-to-b from-black via-gray-900 to-black">
+    <div class="max-w-4xl mx-auto">
+      <!-- Back link -->
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-gray-400 hover:text-[#d4ff2a] transition-colors mb-8"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to home
+      </a>
+
+      <!-- Article header -->
+      <header class="mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+          {privacyPage.data.title}
+        </h1>
+      </header>
+
+      <!-- Article content -->
+      <div class="prose prose-invert prose-lg max-w-none">
+        <Content />
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<style is:global>
+  .prose {
+    color: #e5e7eb;
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    color: #fff;
+    font-weight: 700;
+  }
+  .prose h2 {
+    font-size: 2rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose h3 {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose p {
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+  }
+  .prose a {
+    color: #d4ff2a;
+    text-decoration: none;
+  }
+  .prose a:hover {
+    text-decoration: underline;
+  }
+  .prose ul, .prose ol {
+    margin: 1.5rem 0;
+    padding-left: 1.5rem;
+  }
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  .prose strong {
+    color: #fff;
+    font-weight: 600;
+  }
+  .prose code {
+    background: #1f2937;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+  }
+</style>
+

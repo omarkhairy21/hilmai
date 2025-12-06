@@ -68,6 +68,35 @@ const { Content } = await post.render();
       </div>
     </div>
   </article>
+
+  <!-- Article Structured Data -->
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    'headline': post.data.title,
+    'description': post.data.description || post.data.title,
+    'image': post.data.image ? `https://hilm.ai${post.data.image}` : 'https://hilm.ai/logo.png',
+    'datePublished': post.data.pubDate.toISOString(),
+    'dateModified': post.data.updatedDate ? post.data.updatedDate.toISOString() : post.data.pubDate.toISOString(),
+    'author': {
+      '@type': 'Organization',
+      'name': post.data.author || 'hilm.ai',
+      'url': 'https://hilm.ai'
+    },
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'hilm.ai',
+      'logo': {
+        '@type': 'ImageObject',
+        'url': 'https://hilm.ai/logo.png'
+      }
+    },
+    'mainEntityOfPage': {
+      '@type': 'WebPage',
+      '@id': `https://hilm.ai/blog/${post.slug}`
+    },
+    'keywords': post.data.tags?.join(', ') || 'finance, tips'
+  })} />
 </Layout>
 
 <style is:global>

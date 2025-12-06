@@ -5,6 +5,7 @@ import Why from '../components/Why.astro';
 import Conversations from '../components/Conversations.astro';
 import SmartInsights from '../components/SmartInsights.astro';
 import Features from '../components/Features.astro';
+import JoinJourney from '../components/JoinJourney.astro';
 import FAQ from '../components/FAQ.astro';
 import Footer from '../components/Footer.astro';
 ---
@@ -13,7 +14,7 @@ import Footer from '../components/Footer.astro';
   title="hilm.ai - AI Personal Finance Assistant | Track & Manage Money"
   description="Track expenses with voice messages, photos, or text. Get AI-powered insights on your spending. Manage your finances with hilm.ai's intelligent Telegram bot."
   keywords="personal finance, expense tracking, AI assistant, money management, financial insights, spending tracker, Telegram bot"
-  image="/logo.png"
+  image="/og-image.png"
   canonical="/"
   ogType="website"
   author="hilm.ai"
@@ -23,6 +24,55 @@ import Footer from '../components/Footer.astro';
   <SmartInsights />
   <Features />
   <Why />
+  <JoinJourney />
   <FAQ />
   <Footer />
+
+  <!-- FAQ Structured Data -->
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': [
+      {
+        '@type': 'Question',
+        'name': 'What types of inputs does hilm.ai support?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'You can track expenses using text messages (e.g., "Coffee $5"), voice notes, or receipt photos. Our AI processes all formats automatically.'
+        }
+      },
+      {
+        '@type': 'Question',
+        'name': 'Is my financial data secure?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Yes. All data is encrypted and stored securely. We never share your information with third parties, and you can delete your data anytime.'
+        }
+      },
+      {
+        '@type': 'Question',
+        'name': 'What kind of AI advice do I get?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Based on your spending patterns, you will receive personalized insights like identifying spending trends, suggesting savings opportunities, and detailed financial analysis.'
+        }
+      },
+      {
+        '@type': 'Question',
+        'name': 'When will hilm.ai launch?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'We are currently in development. Join the waitlist to be among the first to get early access when we launch.'
+        }
+      },
+      {
+        '@type': 'Question',
+        'name': 'Is it free?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'You get 5 free messages to try hilm.ai with no credit card required. After that, you can subscribe to our Pro plan or start a 7-day free trial with full access. View our pricing page for more details.'
+        }
+      }
+    ]
+  })} />
 </Layout>

@@ -1,23 +1,41 @@
 ---
-title: "About Wait"
-description: "Learn more about Wait and how we're changing the way products launch"
+title: "About hilm.ai"
+description: "The personal story behind building hilm.ai - an AI personal finance assistant born from a need to understand my own spending"
 ---
 
-# About Wait
+# Why I Built hilm.ai
 
-Wait is a modern waitlist platform designed to help product creators build anticipation and grow their audience before launch.
+Hi, I'm the founder of hilm.ai. I wanted to share the personal story behind why I built this product—because it started with a problem I couldn't solve.
 
-## Our Mission
+## The Inspiration
 
-We believe that every great product deserves a great launch. That's why we've built Wait - to give you the tools to create viral waitlists that turn early interest into long-term success.
+I was inspired by Morgan Housel's book **"The Art of Spending Money"**, where he talks about owning your future through saving while preventing saving addiction or overspending. Finding the right balance requires data about your spending and insights—but I realized I had neither.
 
-## What We Offer
+## The Questions I Couldn't Answer
 
-- **Viral Growth Mechanics**: Built-in referral systems that incentivize sharing
-- **Beautiful Design**: Customizable templates that match your brand
-- **Powerful Analytics**: Track every signup, referral, and conversion
-- **Easy Integration**: Embed anywhere or use our hosted pages
+As I tried to apply these principles to my own life, I found myself asking questions I simply couldn't answer:
 
-## Contact Us
+- **Spending Patterns:** How much did I spend last 3 months on shopping, dining, or groceries? I had no clue.
+- **Balance Check:** Am I overspending or over-saving? Am I truly owning my future?
+- **Margin of Safety:** If I get laid off, do I have 6 months of expenses covered? What's my short-term safety net?
+- **Investment Readiness:** How about investing? Do I have the right foundation to start?
 
-Have questions? Reach out to us at hello@wait.com
+Traditional expense tracking apps felt like work. They required manual entry, complex categorization, and time I didn't have. I needed something that fit into my life naturally—like sending a message to a friend.
+
+## The Solution
+
+So I built hilm.ai as an AI agent for myself first—to get answers at any moment. To understand my spending patterns, track my progress toward financial goals, and make informed decisions about saving, spending, and investing.
+
+The idea was simple: what if tracking expenses was as easy as sending a text message, voice note, or photo of a receipt? What if I could ask questions about my spending in natural language and get instant insights?
+
+Now it's available for anyone who wants to own their financial future with data-driven insights.
+
+## We're Just Getting Started
+
+hilm.ai is a new product, and I'm building it in the open. If you're reading this, you're among the early users who will help shape what hilm.ai becomes. Your feedback, your questions, and your needs will directly influence the product's direction.
+
+I'd love to hear from you. Whether you have feedback, feature requests, or just want to share your experience, feel free to reach out:
+- Telegram: [@omark4y](https://t.me/omark4y)
+- Email: support@hilm.ai
+
+Thank you for being part of this journey.

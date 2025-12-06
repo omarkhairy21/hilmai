@@ -24,6 +24,24 @@ export async function GET() {
       priority: '0.8'
     },
     {
+      url: '/about',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'monthly',
+      priority: '0.7'
+    },
+    {
+      url: '/privacy',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'yearly',
+      priority: '0.5'
+    },
+    {
+      url: '/terms',
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'yearly',
+      priority: '0.5'
+    },
+    {
       url: '/tools',
       lastmod: new Date().toISOString().split('T')[0],
       changefreq: 'monthly',

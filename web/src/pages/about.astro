@@ -1,0 +1,131 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getEntry } from 'astro:content';
+
+const aboutPage = await getEntry('pages', 'about');
+if (!aboutPage) {
+  throw new Error('About page content not found');
+}
+const { Content } = await aboutPage.render();
+---
+
+<Layout
+  title={`${aboutPage.data.title} - hilm.ai`}
+  description={aboutPage.data.description}
+  keywords="founder story, personal finance, AI assistant, expense tracking"
+  image="/logo.png"
+  canonical="/about"
+  ogType="article"
+  author="hilm.ai"
+>
+  <article class="min-h-screen px-4 py-20 bg-gradient-to-b from-black via-gray-900 to-black">
+    <div class="max-w-4xl mx-auto">
+      <!-- Back link -->
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-gray-400 hover:text-[#d4ff2a] transition-colors mb-8"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to home
+      </a>
+
+      <!-- Article header -->
+      <header class="mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+          {aboutPage.data.title}
+        </h1>
+      </header>
+
+      <!-- Article content -->
+      <div class="prose prose-invert prose-lg max-w-none">
+        <Content />
+      </div>
+
+      <!-- CTA Section -->
+      <div class="mt-12 p-8 bg-gray-900/50 border border-gray-800 rounded-2xl">
+        <h2 class="text-2xl font-bold mb-4">Ready to take control of your finances?</h2>
+        <p class="text-gray-400 mb-6">
+          Start tracking your expenses today and get the insights you need to make better financial decisions.
+        </p>
+        <a
+          href="https://t.me/hilmaibot"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all"
+        >
+          <span>Try hilm.ai Now</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <!-- Article Structured Data -->
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    'headline': aboutPage.data.title,
+    'description': aboutPage.data.description,
+    'url': 'https://hilm.ai/about',
+    'mainEntity': {
+      '@type': 'Organization',
+      'name': 'hilm.ai',
+      'url': 'https://hilm.ai',
+      'logo': 'https://hilm.ai/logo.png',
+      'description': aboutPage.data.description
+    }
+  })} />
+</Layout>
+
+<style is:global>
+  .prose {
+    color: #e5e7eb;
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    color: #fff;
+    font-weight: 700;
+  }
+  .prose h2 {
+    font-size: 2rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose h3 {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose p {
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+  }
+  .prose a {
+    color: #d4ff2a;
+    text-decoration: none;
+  }
+  .prose a:hover {
+    text-decoration: underline;
+  }
+  .prose ul, .prose ol {
+    margin: 1.5rem 0;
+    padding-left: 1.5rem;
+  }
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  .prose strong {
+    color: #fff;
+    font-weight: 600;
+  }
+  .prose code {
+    background: #1f2937;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+  }
+</style>
+

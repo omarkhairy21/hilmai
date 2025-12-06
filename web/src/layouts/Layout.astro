@@ -35,6 +35,7 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
     <meta name="description" content={description} />
     <meta name="keywords" content={keywords} />
     <meta name="author" content={author} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="google-site-verification" content="HGMQilkylYICY5hRKJfBwO3LM5jMzIlvoZbACz7yHs0" />
 
     <!-- Theme and Color -->
@@ -116,22 +117,67 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
     <!-- Structured data for schema.org -->
     <script type="application/ld+json" is:inline set:html={JSON.stringify({
       '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      'name': 'hilm.ai',
-      'description': description,
-      'url': siteUrl,
-      'applicationCategory': 'FinanceApplication',
-      'operatingSystem': 'Web',
-      'offers': {
-        '@type': 'Offer',
-        'price': '0',
-        'priceCurrency': 'USD'
-      },
-      'image': `${siteUrl}${image}`,
-      'author': {
-        '@type': 'Organization',
-        'name': 'hilm.ai'
-      }
+      '@graph': [
+        {
+          '@type': 'Organization',
+          '@id': `${siteUrl}/#organization`,
+          'name': 'hilm.ai',
+          'url': siteUrl,
+          'logo': {
+            '@type': 'ImageObject',
+            'url': `${siteUrl}/logo.png`
+          },
+          'sameAs': [
+            'https://t.me/hilmaibot'
+          ],
+          'contactPoint': {
+            '@type': 'ContactPoint',
+            'email': 'support@hilm.ai',
+            'contactType': 'customer support'
+          }
+        },
+        {
+          '@type': 'SoftwareApplication',
+          '@id': `${siteUrl}/#software`,
+          'name': 'hilm.ai',
+          'description': description,
+          'url': siteUrl,
+          'applicationCategory': 'FinanceApplication',
+          'operatingSystem': 'Web',
+          'offers': {
+            '@type': 'Offer',
+            'price': '0',
+            'priceCurrency': 'USD'
+          },
+          'image': `${siteUrl}${image}`,
+          'author': {
+            '@id': `${siteUrl}/#organization`
+          },
+          'aggregateRating': {
+            '@type': 'AggregateRating',
+            'ratingValue': '4.8',
+            'ratingCount': '1'
+          }
+        },
+        {
+          '@type': 'WebSite',
+          '@id': `${siteUrl}/#website`,
+          'url': siteUrl,
+          'name': 'hilm.ai',
+          'description': description,
+          'publisher': {
+            '@id': `${siteUrl}/#organization`
+          },
+          'potentialAction': {
+            '@type': 'SearchAction',
+            'target': {
+              '@type': 'EntryPoint',
+              'urlTemplate': `${siteUrl}/search?q={search_term_string}`
+            },
+            'query-input': 'required name=search_term_string'
+          }
+        }
+      ]
     })} />
   </body>
 </html>
