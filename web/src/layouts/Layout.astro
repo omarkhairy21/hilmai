@@ -47,7 +47,7 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
     <!-- Initialize theme before page render to prevent flash -->
     <script is:inline>
       (function() {
-        const theme = localStorage.getItem('hilm-theme') || 'dark';
+        const theme = localStorage.getItem('hilm-theme') || 'light';
         const html = document.documentElement;
         if (theme === 'dark') {
           html.classList.add('dark');

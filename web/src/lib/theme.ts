@@ -7,18 +7,18 @@ const THEME_LIGHT = 'light';
 export type Theme = typeof THEME_DARK | typeof THEME_LIGHT;
 
 /**
- * Get the current theme from localStorage or default to dark
+ * Get the current theme from localStorage or default to light
  */
 export function getTheme(): Theme {
-  if (typeof window === 'undefined') return THEME_DARK;
+  if (typeof window === 'undefined') return THEME_LIGHT;
   
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === THEME_LIGHT || stored === THEME_DARK) {
     return stored;
   }
   
-  // Default to dark mode
-  return THEME_DARK;
+  // Default to light mode
+  return THEME_LIGHT;
 }
 
 /**

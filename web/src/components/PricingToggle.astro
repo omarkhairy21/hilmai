@@ -25,7 +25,7 @@
     <!-- Sliding background indicator -->
     <div
       id="toggle-indicator"
-      class="absolute left-1 z-0 bg-[#d4ff2a]/20 border border-[#d4ff2a]/40 rounded-full transition-all duration-300"
+      class="absolute left-1 z-0 bg-green-500/20 border border-green-500/40 rounded-full transition-all duration-300"
       style="width: calc(50% - 4px); height: calc(100% - 8px); top: 4px;"
     ></div>
   </div>
@@ -45,7 +45,7 @@
   const saveBadges = document.querySelectorAll('.annual-save-badge') as NodeListOf<HTMLElement>;
 
   // Store current selection
-  let currentPeriod = 'annual';
+  let currentPeriod: 'monthly' | 'annual' = 'annual';
 
   // Update pricing cards based on selected period
   function updatePricing(period: 'monthly' | 'annual') {
@@ -90,14 +90,14 @@
 
   function updateButtonStyles() {
     if (currentPeriod === 'monthly') {
-      monthlyBtn.classList.add('text-[#d4ff2a]');
+      monthlyBtn.classList.add('text-green-500');
       monthlyBtn.classList.remove('text-gray-900', 'dark:text-white');
-      annualBtn.classList.remove('text-[#d4ff2a]');
+      annualBtn.classList.remove('text-green-500');
       annualBtn.classList.add('text-gray-900', 'dark:text-white');
     } else {
-      monthlyBtn.classList.remove('text-[#d4ff2a]');
+      monthlyBtn.classList.remove('text-green-500');
       monthlyBtn.classList.add('text-gray-900', 'dark:text-white');
-      annualBtn.classList.add('text-[#d4ff2a]');
+      annualBtn.classList.add('text-green-500');
       annualBtn.classList.remove('text-gray-900', 'dark:text-white');
     }
   }
