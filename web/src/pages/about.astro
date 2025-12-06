@@ -19,12 +19,12 @@ const { Content } = await aboutPage.render();
   ogType="article"
   author="hilm.ai"
 >
-  <article class="min-h-screen px-4 py-20 bg-gradient-to-b from-black via-gray-900 to-black">
+  <article class="min-h-screen px-4 py-20 bg-black">
     <div class="max-w-4xl mx-auto">
       <!-- Back link -->
       <a
         href="/"
-        class="inline-flex items-center gap-2 text-gray-400 hover:text-[#d4ff2a] transition-colors mb-8"
+        class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -54,7 +54,7 @@ const { Content } = await aboutPage.render();
           href="https://t.me/hilmaibot"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transform hover:scale-105 transition-all"
         >
           <span>Try hilm.ai Now</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -107,7 +107,7 @@ const { Content } = await aboutPage.render();
     line-height: 1.8;
   }
   .prose a {
-    color: #d4ff2a;
+    color: white;
     text-decoration: none;
   }
   .prose a:hover {

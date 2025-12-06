@@ -1,6 +1,20 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Footer from '../../components/Footer.astro';
+import {
+  BudgetIcon,
+  EmergencyFundIcon,
+  DebtPayoffIcon,
+  SavingsGoalIcon,
+  DebtToIncomeIcon,
+  FinancialHealthIcon,
+  BudgetPlannerIcon,
+  RetirementIcon,
+  InvestmentIcon,
+  InstantTrackingIcon,
+  AIInsightsIcon,
+  MultipleWaysIcon
+} from '../../components/icons/ToolIcons.tsx';
 ---
 
 <Layout
@@ -13,9 +27,8 @@ import Footer from '../../components/Footer.astro';
   author="hilm.ai"
 >
   <!-- Hero Section -->
-  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+  <section class="relative py-12 md:py-16 px-4 bg-black overflow-hidden">
     <div class="absolute inset-0 opacity-30">
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
       <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
     </div>
 
@@ -30,26 +43,24 @@ import Footer from '../../components/Footer.astro';
   </section>
 
   <!-- Tools Grid -->
-  <section class="py-12 px-4 bg-gray-900">
+  <section class="py-12 px-4 bg-black">
     <div class="max-w-6xl mx-auto">
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- 50/30/20 Budget Calculator -->
         <a
           href="/tools/budget-calculator"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <BudgetIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             50/30/20 Budget Calculator
           </h3>
           <p class="text-gray-400 mb-4">
             Calculate your budget breakdown using the popular 50/30/20 rule. Divide your income into needs, wants, and savings.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -60,20 +71,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Emergency Fund Calculator -->
         <a
           href="/tools/emergency-fund"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <EmergencyFundIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Emergency Fund Calculator
           </h3>
           <p class="text-gray-400 mb-4">
             Calculate how much you need in your emergency fund based on your monthly expenses and target coverage period.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -84,20 +93,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Debt Payoff Calculator -->
         <a
           href="/tools/debt-payoff"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <DebtPayoffIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Debt Payoff Calculator
           </h3>
           <p class="text-gray-400 mb-4">
             Create a strategic plan to eliminate debt faster. Compare debt snowball vs avalanche methods and see your payoff timeline.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -108,20 +115,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Savings Goal Calculator -->
         <a
           href="/tools/savings-goal"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <SavingsGoalIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Savings Goal Calculator
           </h3>
           <p class="text-gray-400 mb-4">
             Plan and track progress toward specific financial goals. Calculate required monthly contributions or timeline to reach your target.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -132,20 +137,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Debt-to-Income Calculator -->
         <a
           href="/tools/debt-to-income"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <DebtToIncomeIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Debt-to-Income Calculator
           </h3>
           <p class="text-gray-400 mb-4">
             Calculate your DTI ratio to assess your ability to manage monthly payments. Important metric for loan approval and financial health.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -156,20 +159,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Financial Health Score -->
         <a
           href="/tools/financial-health"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <FinancialHealthIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Financial Health Score
           </h3>
           <p class="text-gray-400 mb-4">
             Get a comprehensive assessment of your financial well-being. Answer questions to receive a score and personalized recommendations.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -180,20 +181,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Budget Planner -->
         <a
           href="/tools/budget-planner"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <BudgetPlannerIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Monthly Budget Planner
           </h3>
           <p class="text-gray-400 mb-4">
             Create a detailed monthly budget plan. Allocate your income across categories and track planned vs actual spending.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -204,20 +203,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Retirement Calculator -->
         <a
           href="/tools/retirement-calculator"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <RetirementIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Retirement Calculator
           </h3>
           <p class="text-gray-400 mb-4">
             Determine how much you need to save for retirement. Calculate required contributions and see if you're on track.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -228,20 +225,18 @@ import Footer from '../../components/Footer.astro';
         <!-- Investment Return Calculator -->
         <a
           href="/tools/investment-calculator"
-          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-[#d4ff2a]/50 transition-all duration-300"
+          class="group relative bg-gray-800/50 border border-gray-700 rounded-2xl p-8 hover:border-white/50 transition-all duration-300"
         >
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#d4ff2a]/20 transition-colors">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800/70 transition-colors">
+            <InvestmentIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-[#d4ff2a] transition-colors">
+          <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-white transition-colors">
             Investment Return Calculator
           </h3>
           <p class="text-gray-400 mb-4">
             Project future investment value based on initial investment, monthly contributions, return rate, and time period.
           </p>
-          <span class="text-[#d4ff2a] font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+          <span class="text-blue-400 font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Use Calculator
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -253,16 +248,16 @@ import Footer from '../../components/Footer.astro';
   </section>
 
   <!-- Enhanced CTA Section -->
-  <section class="py-16 px-4 bg-gradient-to-b from-gray-900 via-black to-black">
+  <section class="py-16 px-4 bg-black">
     <div class="max-w-5xl mx-auto">
-      <div class="bg-gradient-to-br from-[#d4ff2a]/20 via-[#d4ff2a]/10 to-green-500/10 border-2 border-[#d4ff2a]/40 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+      <div class="bg-gray-900/50 border-2 border-gray-800 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
         <!-- Background decoration -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-[#d4ff2a]/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-gray-800/50 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
         
         <div class="relative z-10">
-          <div class="inline-block bg-[#d4ff2a]/20 border border-[#d4ff2a]/40 rounded-full px-4 py-2 mb-6">
-            <p class="text-sm font-semibold text-[#d4ff2a]">🚀 Start Your Financial Journey Today</p>
+          <div class="inline-block bg-gray-800/50 border border-gray-700 rounded-full px-4 py-2 mb-6">
+            <p class="text-sm font-semibold text-white">🚀 Start Your Financial Journey Today</p>
           </div>
           
           <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -275,17 +270,23 @@ import Footer from '../../components/Footer.astro';
           <!-- Benefits Grid -->
           <div class="grid md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto">
             <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
-              <div class="text-2xl mb-2">⚡</div>
+              <div class="mb-2 flex justify-center">
+                <InstantTrackingIcon className="w-8 h-8" client:load />
+              </div>
               <p class="text-sm text-gray-300 font-medium">Instant Tracking</p>
               <p class="text-xs text-gray-400 mt-1">Log expenses in seconds</p>
             </div>
             <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
-              <div class="text-2xl mb-2">🤖</div>
+              <div class="mb-2 flex justify-center">
+                <AIInsightsIcon className="w-8 h-8" client:load />
+              </div>
               <p class="text-sm text-gray-300 font-medium">AI Insights</p>
               <p class="text-xs text-gray-400 mt-1">Get personalized recommendations</p>
             </div>
             <div class="bg-black/40 rounded-xl p-4 border border-gray-800">
-              <div class="text-2xl mb-2">📱</div>
+              <div class="mb-2 flex justify-center">
+                <MultipleWaysIcon className="w-8 h-8" client:load />
+              </div>
               <p class="text-sm text-gray-300 font-medium">Multiple Ways</p>
               <p class="text-xs text-gray-400 mt-1">Text, voice, or photos</p>
             </div>
@@ -295,7 +296,7 @@ import Footer from '../../components/Footer.astro';
             href="https://t.me/hilmaibot"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-10 py-5 bg-[#d4ff2a] text-black font-bold text-lg rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-2xl shadow-[#d4ff2a]/40 group"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-white text-black font-bold text-lg rounded-xl hover:bg-gray-100 transform hover:scale-105 transition-all shadow-2xl shadow-white/40 group"
           >
             Start Your Free Trial
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">

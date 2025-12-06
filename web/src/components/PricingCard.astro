@@ -19,26 +19,26 @@ const features = [
 ];
 ---
 
-<div class={`group relative rounded-2xl border transition-all duration-300 ${isPopular ? 'border-[#d4ff2a] bg-gray-900/80 shadow-xl shadow-[#d4ff2a]/20' : 'border-gray-800 bg-gray-900/50 hover:border-[#d4ff2a]/50'} ${tier === 'annual' ? 'hidden' : ''}`} id={`pricing-card-${tier}`}>
+<div class={`group relative rounded-2xl border transition-all duration-300 ${isPopular ? 'border-white bg-gray-900/80 shadow-xl shadow-white/20' : 'border-gray-800 bg-gray-900/50 hover:border-white/50'} ${tier === 'annual' ? 'hidden' : ''}`} id={`pricing-card-${tier}`}>
   <!-- Hover glow effect -->
-  <div class={`absolute inset-0 rounded-2xl transition-opacity ${isPopular ? 'bg-[#d4ff2a]/10 opacity-100' : 'bg-[#d4ff2a]/5 opacity-0 group-hover:opacity-100'}`}></div>
+  <div class={`absolute inset-0 rounded-2xl transition-opacity ${isPopular ? 'bg-white/10 opacity-100' : 'bg-white/5 opacity-0 group-hover:opacity-100'}`}></div>
 
   <!-- Popular badge -->
   {isPopular && (
-    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-[#d4ff2a] text-black text-xs font-bold px-4 py-1 rounded-full">
+    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-black text-xs font-bold px-4 py-1 rounded-full">
       Best Value
     </div>
   )}
 
   <div class="relative p-8 md:p-10">
     <!-- Tier name -->
-    <h3 class={`text-2xl font-bold mb-2 ${isPopular ? 'text-[#d4ff2a]' : 'text-white'}`}>
+    <h3 class={`text-2xl font-bold mb-2 text-white`}>
       {tier === 'monthly' ? 'Monthly Pro' : 'Annual Pro'}
     </h3>
 
     <!-- Savings text -->
     {savingsText && (
-      <p class="text-sm text-green-400 mb-6 font-semibold">
+      <p class="text-sm text-gray-300 mb-6 font-semibold">
         {savingsText}
       </p>
     )}
@@ -62,7 +62,7 @@ const features = [
     <ul class="space-y-3 mb-8">
       {features.map((feature) => (
         <li class="text-gray-300 text-sm flex items-start gap-3">
-          <span class={`flex-shrink-0 ${isPopular ? 'text-[#d4ff2a]' : 'text-green-400'}`}>
+          <span class="flex-shrink-0 text-white">
             {feature.substring(0, 1)}
           </span>
           <span>{feature.substring(2)}</span>
@@ -73,7 +73,7 @@ const features = [
     <!-- CTA buttons -->
     <div class="space-y-3 flex flex-col">
       <button
-        class="w-full py-3 px-4 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full py-3 px-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-white/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
         data-plan={tier}
         data-action="subscribe"
         id={`subscribe-btn-${tier}`}
@@ -85,7 +85,7 @@ const features = [
       </button>
 
       <button
-        class="w-full py-3 px-4 bg-gray-800/50 text-white font-semibold rounded-lg border border-gray-700 hover:bg-gray-800 hover:border-[#d4ff2a]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full py-3 px-4 bg-gray-800/50 text-white font-semibold rounded-lg border border-gray-700 hover:bg-gray-800 hover:border-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         data-plan={tier}
         data-action="trial"
         id={`trial-btn-${tier}`}

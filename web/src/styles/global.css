@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-lime: #d4ff2a;
+  /* --color-lime: #d4ff2a; */ /* Deprecated - no longer using green/lime colors */
   --font-sans: system-ui, -apple-system, sans-serif;
 }
 

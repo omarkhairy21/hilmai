@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Footer from '../components/Footer.astro';
 import PricingCard from '../components/PricingCard.astro';
 import PricingToggle from '../components/PricingToggle.astro';
+import { ClockIcon, ListIcon, LockIcon } from '../components/icons/OtherIcons.tsx';
 ---
 
 <Layout
@@ -15,10 +16,9 @@ import PricingToggle from '../components/PricingToggle.astro';
   author="hilm.ai"
 >
   <!-- Hero Section -->
-  <section class="relative py-12 md:py-16 px-4 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
+  <section class="relative py-12 md:py-16 px-4 bg-black overflow-hidden">
     <!-- Background elements -->
     <div class="absolute inset-0 opacity-30">
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4ff2a]/20 rounded-full blur-3xl animate-pulse"></div>
       <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
     </div>
 
@@ -27,7 +27,7 @@ import PricingToggle from '../components/PricingToggle.astro';
       <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
         Simple,
         <br />
-        <span class="bg-gradient-to-r from-[#d4ff2a] to-green-400 bg-clip-text text-transparent">
+        <span class="text-white">
           Transparent Pricing
         </span>
       </h1>
@@ -40,7 +40,7 @@ import PricingToggle from '../components/PricingToggle.astro';
       <!-- Trial info -->
       <div class="inline-block bg-gray-800/50 border border-gray-700 rounded-full px-6 py-3 mb-16">
         <p class="text-gray-300 text-sm">
-          <span class="text-[#d4ff2a] font-semibold">No credit card required</span> for your first 5 messages
+          <span class="text-white font-semibold">No credit card required</span> for your first 5 messages
         </p>
       </div>
     </div>
@@ -83,10 +83,8 @@ import PricingToggle from '../components/PricingToggle.astro';
       <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         <!-- Card 1: Free Trial -->
         <div class="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-lg flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
+            <ClockIcon className="w-6 h-6" client:load />
           </div>
           <h3 class="text-lg font-semibold text-white mb-2">7-Day Free Trial</h3>
           <p class="text-gray-400 text-sm">
@@ -96,10 +94,8 @@ import PricingToggle from '../components/PricingToggle.astro';
 
         <!-- Card 2: Flexible -->
         <div class="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-lg flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12M8 11h12M8 15h12M4 7h.01M4 11h.01M4 15h.01" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
+            <ListIcon className="w-6 h-6" client:load />
           </div>
           <h3 class="text-lg font-semibold text-white mb-2">Flexible</h3>
           <p class="text-gray-400 text-sm">
@@ -109,10 +105,8 @@ import PricingToggle from '../components/PricingToggle.astro';
 
         <!-- Card 3: Secure -->
         <div class="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
-          <div class="w-12 h-12 bg-[#d4ff2a]/10 rounded-lg flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-[#d4ff2a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+          <div class="w-12 h-12 bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
+            <LockIcon className="w-6 h-6" client:load />
           </div>
           <h3 class="text-lg font-semibold text-white mb-2">Secure Payment</h3>
           <p class="text-gray-400 text-sm">
@@ -124,22 +118,22 @@ import PricingToggle from '../components/PricingToggle.astro';
   </section>
 
   <!-- Free Messages Info -->
-  <section class="py-12 px-4 bg-gradient-to-b from-gray-900 to-black">
+  <section class="py-12 px-4 bg-black">
     <div class="max-w-4xl mx-auto">
-      <div class="bg-[#d4ff2a]/10 border border-[#d4ff2a]/30 rounded-2xl p-8 md:p-12">
+      <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 md:p-12">
         <h3 class="text-2xl font-bold text-white mb-4">Get Started Free</h3>
 
         <div class="space-y-4 text-gray-300">
           <p class="flex gap-3">
-            <span class="text-[#d4ff2a] font-bold">1.</span>
+            <span class="text-white font-bold">1.</span>
             <span>Open the hilm.ai bot on Telegram (@hilmaibot) and send your first message</span>
           </p>
           <p class="flex gap-3">
-            <span class="text-[#d4ff2a] font-bold">2.</span>
+            <span class="text-white font-bold">2.</span>
             <span>You'll get 5 free messages to try all features—tracking expenses, getting insights, and more</span>
           </p>
           <p class="flex gap-3">
-            <span class="text-[#d4ff2a] font-bold">3.</span>
+            <span class="text-white font-bold">3.</span>
             <span>After 5 messages, choose to subscribe to a plan or start your 7-day free trial</span>
           </p>
         </div>
@@ -148,7 +142,7 @@ import PricingToggle from '../components/PricingToggle.astro';
           href="https://t.me/hilmaibot"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-[#d4ff2a] text-black font-semibold rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20 group"
+          class="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-white/20 group"
         >
           <span>Try Free Messages Now</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="group-hover:translate-x-1 transition-transform">
@@ -168,10 +162,10 @@ import PricingToggle from '../components/PricingToggle.astro';
 
       <div class="space-y-6">
         <!-- FAQ Item 1 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
+        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-white/50 transition-colors">
           <summary class="flex items-center justify-between font-semibold text-white">
             <span>What's included in the Pro plan?</span>
-            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
+            <span class="text-white text-xl group-open:rotate-180 transition-transform">+</span>
           </summary>
           <p class="text-gray-400 mt-4 leading-relaxed">
             The Pro plan gives you unlimited expense tracking, voice message transcription, receipt photo scanning, AI-powered insights, multi-currency support, and access to all three specialized modes (Logger, Chat, and Query).
@@ -179,10 +173,10 @@ import PricingToggle from '../components/PricingToggle.astro';
         </details>
 
         <!-- FAQ Item 2 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
+        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-white/50 transition-colors">
           <summary class="flex items-center justify-between font-semibold text-white">
             <span>Can I cancel my subscription anytime?</span>
-            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
+            <span class="text-white text-xl group-open:rotate-180 transition-transform">+</span>
           </summary>
           <p class="text-gray-400 mt-4 leading-relaxed">
             Yes! There are no long-term contracts or hidden cancellation fees. You can cancel your subscription anytime through the bot or your Stripe billing portal. Your access continues until the end of your current billing period.
@@ -190,10 +184,10 @@ import PricingToggle from '../components/PricingToggle.astro';
         </details>
 
         <!-- FAQ Item 4 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-[#d4ff2a]/50 transition-colors">
+        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-white/50 transition-colors">
           <summary class="flex items-center justify-between font-semibold text-white">
             <span>Can I switch between monthly and annual plans?</span>
-            <span class="text-[#d4ff2a] text-xl group-open:rotate-180 transition-transform">+</span>
+            <span class="text-white text-xl group-open:rotate-180 transition-transform">+</span>
           </summary>
           <p class="text-gray-400 mt-4 leading-relaxed">
             Absolutely! You can upgrade from monthly to annual anytime and receive a prorated credit for your current plan. Contact support if you need help with this.
