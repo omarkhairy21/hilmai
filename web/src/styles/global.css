@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* --color-lime: #d4ff2a; */ /* Deprecated - no longer using green/lime colors */
+  /* --color-lime: #d4ff2a; */ /* Deprecated - replaced with green-600 (#059669) */
   --font-sans: system-ui, -apple-system, sans-serif;
 }
 

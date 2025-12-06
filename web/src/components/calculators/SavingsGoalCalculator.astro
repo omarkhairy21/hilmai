@@ -18,7 +18,7 @@
           <input
             type="number"
             id="target-amount"
-            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-colors"
             placeholder="10000"
             min="0"
             step="0.01"
@@ -36,7 +36,7 @@
           <input
             type="number"
             id="current-savings"
-            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-colors"
             placeholder="0"
             min="0"
             step="0.01"
@@ -54,7 +54,7 @@
           <button
             type="button"
             id="mode-timeline"
-            class="calc-mode-btn px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:border-[#d4ff2a] transition-colors"
+            class="calc-mode-btn px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:border-green-600 transition-colors"
             data-mode="timeline"
           >
             Monthly Contribution
@@ -62,7 +62,7 @@
           <button
             type="button"
             id="mode-contribution"
-            class="calc-mode-btn px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:border-[#d4ff2a] transition-colors"
+            class="calc-mode-btn px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:border-green-600 transition-colors"
             data-mode="contribution"
           >
             Target Timeline
@@ -80,7 +80,7 @@
           <input
             type="number"
             id="monthly-contribution"
-            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-colors"
             placeholder="500"
             min="0"
             step="0.01"
@@ -96,7 +96,7 @@
         <input
           type="number"
           id="target-months"
-          class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+          class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-colors"
           placeholder="24"
           min="1"
           step="1"
@@ -111,7 +111,7 @@
         <input
           type="number"
           id="interest-rate"
-          class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+          class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-colors"
           placeholder="4"
           min="0"
           max="100"
@@ -124,7 +124,7 @@
       <!-- Calculate Button -->
       <button
         id="calculate-savings-goal"
-        class="w-full px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+        class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transform hover:scale-105 transition-all shadow-lg shadow-green-600/20"
       >
         Calculate Savings Goal
       </button>
@@ -137,7 +137,7 @@
     <div id="timeline-result" class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6">
       <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Timeline to Goal</h4>
       <div class="text-center">
-        <p class="text-4xl font-bold text-[#d4ff2a] mb-2">
+        <p class="text-4xl font-bold text-green-600 dark:text-green-500 mb-2">
           <span id="months-to-goal">0</span> months
         </p>
         <p class="text-gray-600 dark:text-gray-400">
@@ -150,7 +150,7 @@
     <div id="contribution-result" class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 hidden">
       <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Required Monthly Contribution</h4>
       <div class="text-center">
-        <p id="required-contribution" class="text-4xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p id="required-contribution" class="text-4xl font-bold text-green-600 dark:text-green-500 mb-2">$0</p>
       </div>
     </div>
 
@@ -172,11 +172,11 @@
         </div>
         <div class="flex justify-between">
           <span class="text-gray-600 dark:text-gray-400">Interest Earned:</span>
-          <span id="summary-interest" class="text-[#d4ff2a] font-semibold">$0</span>
+          <span id="summary-interest" class="text-green-600 dark:text-green-500 font-semibold">$0</span>
         </div>
         <div class="border-t border-gray-300 dark:border-gray-700 pt-3 flex justify-between">
           <span class="text-gray-900 dark:text-white font-semibold">Final Amount:</span>
-          <span id="summary-final" class="text-[#d4ff2a] font-bold text-lg">$0</span>
+          <span id="summary-final" class="text-green-600 dark:text-green-500 font-bold text-lg">$0</span>
         </div>
       </div>
     </div>
@@ -201,16 +201,16 @@
   function setMode(mode: 'timeline' | 'contribution') {
     currentMode = mode;
     [modeTimelineBtn, modeContributionBtn].forEach((btn) => {
-      btn.classList.remove('border-[#d4ff2a]', 'bg-gray-700');
+      btn.classList.remove('border-green-600', 'bg-gray-700');
       btn.classList.add('border-gray-300 dark:border-gray-700');
     });
 
     if (mode === 'timeline') {
-      modeTimelineBtn.classList.add('border-[#d4ff2a]', 'bg-gray-700');
+      modeTimelineBtn.classList.add('border-green-600', 'bg-gray-700');
       monthlyContributionGroup.classList.remove('hidden');
       targetTimelineGroup.classList.add('hidden');
     } else {
-      modeContributionBtn.classList.add('border-[#d4ff2a]', 'bg-gray-700');
+      modeContributionBtn.classList.add('border-green-600', 'bg-gray-700');
       monthlyContributionGroup.classList.add('hidden');
       targetTimelineGroup.classList.remove('hidden');
     }

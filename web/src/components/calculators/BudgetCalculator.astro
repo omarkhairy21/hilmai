@@ -18,7 +18,7 @@
           <input
             type="number"
             id="monthly-income"
-            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-colors"
             placeholder="5000"
             min="0"
             step="0.01"
@@ -30,7 +30,7 @@
       <!-- Calculate Button -->
       <button
         id="calculate-budget"
-        class="w-full px-6 py-3 bg-[#d4ff2a] text-black font-semibold rounded-lg hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/20"
+        class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transform hover:scale-105 transition-all shadow-lg shadow-green-600/20"
       >
         Calculate Budget
       </button>
@@ -47,7 +47,7 @@
           <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Needs</h4>
           <span class="text-sm text-gray-600 dark:text-gray-400">50%</span>
         </div>
-        <p id="needs-amount" class="text-3xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p id="needs-amount" class="text-3xl font-bold text-green-600 dark:text-green-500 mb-2">$0</p>
         <p class="text-sm text-gray-600 dark:text-gray-400">Housing, utilities, groceries, transportation</p>
       </div>
 
@@ -57,7 +57,7 @@
           <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Wants</h4>
           <span class="text-sm text-gray-600 dark:text-gray-400">30%</span>
         </div>
-        <p id="wants-amount" class="text-3xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p id="wants-amount" class="text-3xl font-bold text-green-600 dark:text-green-500 mb-2">$0</p>
         <p class="text-sm text-gray-600 dark:text-gray-400">Dining out, entertainment, hobbies</p>
       </div>
 
@@ -67,7 +67,7 @@
           <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Savings</h4>
           <span class="text-sm text-gray-600 dark:text-gray-400">20%</span>
         </div>
-        <p id="savings-amount" class="text-3xl font-bold text-[#d4ff2a] mb-2">$0</p>
+        <p id="savings-amount" class="text-3xl font-bold text-green-600 dark:text-green-500 mb-2">$0</p>
         <p class="text-sm text-gray-600 dark:text-gray-400">Emergency fund, retirement, investments</p>
       </div>
     </div>
@@ -83,7 +83,7 @@
             <span id="needs-bar-amount" class="text-sm font-semibold text-gray-900 dark:text-white">$0</span>
           </div>
           <div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-4 overflow-hidden">
-            <div id="needs-bar" class="h-full bg-[#d4ff2a] transition-all duration-500" style="width: 50%"></div>
+            <div id="needs-bar" class="h-full bg-green-600 transition-all duration-500" style="width: 50%"></div>
           </div>
         </div>
 
@@ -113,7 +113,7 @@
 
     <!-- CTA After Results -->
     <div id="budget-cta" class="hidden mt-8">
-      <div class="bg-gradient-to-r from-[#d4ff2a]/20 to-green-500/20 border-2 border-[#d4ff2a]/50 rounded-2xl p-8 text-center">
+      <div class="bg-gradient-to-r from-green-600/20 to-green-500/20 border-2 border-green-600/50 rounded-2xl p-8 text-center">
         <h4 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Ready to Track Your Actual Spending?</h4>
         <p class="text-gray-700 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
           Now that you know your budget breakdown, use hilm.ai to automatically track every expense and see how your actual spending compares to your 50/30/20 budget. Log expenses with text, voice, or photos—no forms, no hassle.
@@ -122,7 +122,7 @@
           href="https://t.me/hilmaibot"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-8 py-4 bg-[#d4ff2a] text-black font-bold rounded-xl hover:bg-[#c5f01a] transform hover:scale-105 transition-all shadow-lg shadow-[#d4ff2a]/30 group"
+          class="inline-flex items-center gap-2 px-8 py-4 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transform hover:scale-105 transition-all shadow-lg shadow-green-600/30 group"
         >
           Start Tracking Free
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">
