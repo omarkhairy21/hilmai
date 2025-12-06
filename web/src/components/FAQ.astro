@@ -36,10 +36,10 @@ const faqs = [
   <div class="max-w-3xl mx-auto">
     <!-- Section Header -->
     <div class="text-center mb-12">
-      <h2 class="text-4xl md:text-5xl font-bold mb-4">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
         Frequently Asked Questions
       </h2>
-      <p class="text-lg text-gray-400">
+      <p class="text-lg text-gray-600 dark:text-gray-400">
         Everything you need to know about hilm.ai. Find answers to the most common questions below.
       </p>
     </div>
@@ -47,9 +47,9 @@ const faqs = [
     <!-- FAQ Accordion -->
     <div class="space-y-4">
       {faqs.map((faq, index) => (
-        <div class="border border-gray-800 rounded-xl overflow-hidden">
+        <div class="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-transparent">
           <button
-            class="faq-question w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-900/50 transition-colors"
+            class="faq-question w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors text-gray-900 dark:text-white"
             data-index={index}
           >
             <span class="font-medium text-lg">{faq.question}</span>
@@ -63,7 +63,7 @@ const faqs = [
             </svg>
           </button>
           <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
-            <div class="px-6 pb-5 text-gray-400 leading-relaxed">
+            <div class="px-6 pb-5 text-gray-600 dark:text-gray-400 leading-relaxed">
               {faq.answer}
             </div>
           </div>
@@ -101,6 +101,9 @@ const faqs = [
 
 <style>
   .faq-icon {
+    color: rgb(17 24 39);
+  }
+  html.dark .faq-icon {
     color: white;
   }
 </style>

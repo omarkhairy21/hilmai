@@ -16,7 +16,7 @@ import { ClockIcon, ListIcon, LockIcon } from '../components/icons/OtherIcons.ts
   author="hilm.ai"
 >
   <!-- Hero Section -->
-  <section class="relative py-12 md:py-16 px-4 bg-black overflow-hidden">
+  <section class="relative py-12 md:py-16 px-4 bg-white dark:bg-black overflow-hidden">
     <!-- Background elements -->
     <div class="absolute inset-0 opacity-30">
       <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -24,37 +24,37 @@ import { ClockIcon, ListIcon, LockIcon } from '../components/icons/OtherIcons.ts
 
     <div class="relative max-w-6xl mx-auto text-center z-10">
       <!-- Heading -->
-      <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+      <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-gray-900 dark:text-white">
         Simple,
         <br />
-        <span class="text-white">
+        <span class="text-gray-900 dark:text-white">
           Transparent Pricing
         </span>
       </h1>
 
       <!-- Subheading -->
-      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-3xl mx-auto leading-relaxed">
+      <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto leading-relaxed">
         Start with 5 free messages to experience hilm.ai. Then choose to upgrade to our Pro plan or start a 7-day free trial with full access.
       </p>
 
       <!-- Trial info -->
-      <div class="inline-block bg-gray-800/50 border border-gray-700 rounded-full px-6 py-3 mb-16">
-        <p class="text-gray-300 text-sm">
-          <span class="text-white font-semibold">No credit card required</span> for your first 5 messages
+      <div class="inline-block bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-full px-6 py-3 mb-16">
+        <p class="text-gray-700 dark:text-gray-300 text-sm">
+          <span class="text-gray-900 dark:text-white font-semibold">No credit card required</span> for your first 5 messages
         </p>
       </div>
     </div>
   </section>
 
   <!-- Pricing Cards Section -->
-  <section class="py-8 px-4 bg-gray-900">
+  <section class="py-8 px-4 bg-gray-50 dark:bg-gray-900">
     <div class="max-w-6xl mx-auto">
       <!-- Section Header -->
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
           Choose Your Plan
         </h2>
-        <p class="text-gray-400 text-lg">
+        <p class="text-gray-600 dark:text-gray-400 text-lg">
           Both plans include full access to all hilm.ai features
         </p>
       </div>
@@ -82,34 +82,34 @@ import { ClockIcon, ListIcon, LockIcon } from '../components/icons/OtherIcons.ts
       <!-- Information Cards -->
       <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         <!-- Card 1: Free Trial -->
-        <div class="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
-          <div class="w-12 h-12 bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
+        <div class="bg-gray-100/50 dark:bg-gray-800/30 border border-gray-300 dark:border-gray-700 rounded-xl p-6">
+          <div class="w-12 h-12 bg-gray-200 dark:bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
             <ClockIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-lg font-semibold text-white mb-2">7-Day Free Trial</h3>
-          <p class="text-gray-400 text-sm">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">7-Day Free Trial</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">
             Full access to all Pro features. Cancel anytime, no hidden fees.
           </p>
         </div>
 
         <!-- Card 2: Flexible -->
-        <div class="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
-          <div class="w-12 h-12 bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
+        <div class="bg-gray-100/50 dark:bg-gray-800/30 border border-gray-300 dark:border-gray-700 rounded-xl p-6">
+          <div class="w-12 h-12 bg-gray-200 dark:bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
             <ListIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-lg font-semibold text-white mb-2">Flexible</h3>
-          <p class="text-gray-400 text-sm">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Flexible</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">
             Switch between monthly and annual plans, or cancel at any time.
           </p>
         </div>
 
         <!-- Card 3: Secure -->
-        <div class="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
-          <div class="w-12 h-12 bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
+        <div class="bg-gray-100/50 dark:bg-gray-800/30 border border-gray-300 dark:border-gray-700 rounded-xl p-6">
+          <div class="w-12 h-12 bg-gray-200 dark:bg-gray-800/50 rounded-lg flex items-center justify-center mb-3">
             <LockIcon className="w-6 h-6" client:load />
           </div>
-          <h3 class="text-lg font-semibold text-white mb-2">Secure Payment</h3>
-          <p class="text-gray-400 text-sm">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Secure Payment</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">
             Powered by Stripe. Your payment info is encrypted and protected.
           </p>
         </div>
@@ -118,22 +118,22 @@ import { ClockIcon, ListIcon, LockIcon } from '../components/icons/OtherIcons.ts
   </section>
 
   <!-- Free Messages Info -->
-  <section class="py-12 px-4 bg-black">
+  <section class="py-12 px-4 bg-white dark:bg-black">
     <div class="max-w-4xl mx-auto">
-      <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 md:p-12">
-        <h3 class="text-2xl font-bold text-white mb-4">Get Started Free</h3>
+      <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 md:p-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Get Started Free</h3>
 
-        <div class="space-y-4 text-gray-300">
+        <div class="space-y-4 text-gray-700 dark:text-gray-300">
           <p class="flex gap-3">
-            <span class="text-white font-bold">1.</span>
+            <span class="text-gray-900 dark:text-white font-bold">1.</span>
             <span>Open the hilm.ai bot on Telegram (@hilmaibot) and send your first message</span>
           </p>
           <p class="flex gap-3">
-            <span class="text-white font-bold">2.</span>
+            <span class="text-gray-900 dark:text-white font-bold">2.</span>
             <span>You'll get 5 free messages to try all features—tracking expenses, getting insights, and more</span>
           </p>
           <p class="flex gap-3">
-            <span class="text-white font-bold">3.</span>
+            <span class="text-gray-900 dark:text-white font-bold">3.</span>
             <span>After 5 messages, choose to subscribe to a plan or start your 7-day free trial</span>
           </p>
         </div>
@@ -142,7 +142,7 @@ import { ClockIcon, ListIcon, LockIcon } from '../components/icons/OtherIcons.ts
           href="https://t.me/hilmaibot"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-white/20 group"
+          class="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-semibold rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-gray-900/20 dark:shadow-white/20 group"
         >
           <span>Try Free Messages Now</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="group-hover:translate-x-1 transition-transform">
@@ -154,42 +154,42 @@ import { ClockIcon, ListIcon, LockIcon } from '../components/icons/OtherIcons.ts
   </section>
 
   <!-- FAQ Section -->
-  <section class="py-12 px-4 bg-black">
+  <section class="py-12 px-4 bg-white dark:bg-black">
     <div class="max-w-3xl mx-auto">
-      <h2 class="text-3xl md:text-4xl font-bold text-white mb-12 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-12 text-center">
         Frequently Asked Questions
       </h2>
 
       <div class="space-y-6">
         <!-- FAQ Item 1 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-white/50 transition-colors">
-          <summary class="flex items-center justify-between font-semibold text-white">
+        <details class="group bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg p-6 cursor-pointer hover:border-gray-400 dark:hover:border-white/50 transition-colors">
+          <summary class="flex items-center justify-between font-semibold text-gray-900 dark:text-white">
             <span>What's included in the Pro plan?</span>
-            <span class="text-white text-xl group-open:rotate-180 transition-transform">+</span>
+            <span class="text-gray-900 dark:text-white text-xl group-open:rotate-180 transition-transform">+</span>
           </summary>
-          <p class="text-gray-400 mt-4 leading-relaxed">
+          <p class="text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">
             The Pro plan gives you unlimited expense tracking, voice message transcription, receipt photo scanning, AI-powered insights, multi-currency support, and access to all three specialized modes (Logger, Chat, and Query).
           </p>
         </details>
 
         <!-- FAQ Item 2 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-white/50 transition-colors">
-          <summary class="flex items-center justify-between font-semibold text-white">
+        <details class="group bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg p-6 cursor-pointer hover:border-gray-400 dark:hover:border-white/50 transition-colors">
+          <summary class="flex items-center justify-between font-semibold text-gray-900 dark:text-white">
             <span>Can I cancel my subscription anytime?</span>
-            <span class="text-white text-xl group-open:rotate-180 transition-transform">+</span>
+            <span class="text-gray-900 dark:text-white text-xl group-open:rotate-180 transition-transform">+</span>
           </summary>
-          <p class="text-gray-400 mt-4 leading-relaxed">
+          <p class="text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">
             Yes! There are no long-term contracts or hidden cancellation fees. You can cancel your subscription anytime through the bot or your Stripe billing portal. Your access continues until the end of your current billing period.
           </p>
         </details>
 
         <!-- FAQ Item 4 -->
-        <details class="group bg-gray-900/50 border border-gray-800 rounded-lg p-6 cursor-pointer hover:border-white/50 transition-colors">
-          <summary class="flex items-center justify-between font-semibold text-white">
+        <details class="group bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg p-6 cursor-pointer hover:border-gray-400 dark:hover:border-white/50 transition-colors">
+          <summary class="flex items-center justify-between font-semibold text-gray-900 dark:text-white">
             <span>Can I switch between monthly and annual plans?</span>
-            <span class="text-white text-xl group-open:rotate-180 transition-transform">+</span>
+            <span class="text-gray-900 dark:text-white text-xl group-open:rotate-180 transition-transform">+</span>
           </summary>
-          <p class="text-gray-400 mt-4 leading-relaxed">
+          <p class="text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">
             Absolutely! You can upgrade from monthly to annual anytime and receive a prorated credit for your current plan. Contact support if you need help with this.
           </p>
         </details>

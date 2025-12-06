@@ -20,8 +20,8 @@ const sortedPosts = blogPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.p
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="mb-16">
-        <h1 class="text-5xl md:text-6xl font-bold mb-4">Blog</h1>
-        <p class="text-xl text-gray-400">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4 text-gray-900 dark:text-white">Blog</h1>
+        <p class="text-xl text-gray-600 dark:text-gray-400">
           Insights, tips, and updates about personal finance management, expense tracking, and AI-powered financial solutions
         </p>
       </div>
@@ -29,27 +29,27 @@ const sortedPosts = blogPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.p
       <!-- Blog Posts -->
       <div class="space-y-8">
         {sortedPosts.map((post) => (
-          <article class="border border-gray-800 rounded-2xl p-8 hover:border-white/50 transition-colors">
+          <article class="border border-gray-200 dark:border-gray-800 rounded-2xl p-8 hover:border-gray-400 dark:hover:border-white/50 transition-colors bg-white dark:bg-transparent">
             <a href={`/blog/${post.slug}`} class="block">
-              <time class="text-sm text-gray-500 mb-2 block">
+              <time class="text-sm text-gray-500 dark:text-gray-500 mb-2 block">
                 {post.data.pubDate.toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
                 })}
               </time>
-              <h2 class="text-2xl font-bold mb-3 hover:text-white transition-colors">
+              <h2 class="text-2xl font-bold mb-3 text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-white transition-colors">
                 {post.data.title}
               </h2>
-              <p class="text-gray-400 mb-4">
+              <p class="text-gray-600 dark:text-gray-400 mb-4">
                 {post.data.description}
               </p>
               <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <span class="text-sm text-gray-500">By {post.data.author}</span>
+                <span class="text-sm text-gray-500 dark:text-gray-500">By {post.data.author}</span>
                 {post.data.tags && post.data.tags.length > 0 && (
                   <div class="flex flex-wrap gap-2">
                     {post.data.tags.map((tag: string) => (
-                      <span class="text-xs bg-gray-800 text-gray-300 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-600 hover:bg-gray-700 transition-colors">
+                      <span class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                         {tag}
                       </span>
                     ))}

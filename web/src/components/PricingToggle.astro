@@ -3,11 +3,11 @@
 ---
 
 <div class="flex justify-center items-center mb-8 gap-4">
-  <div class="relative inline-flex items-center bg-gray-800/50 border border-gray-700 rounded-full p-1">
+  <div class="relative inline-flex items-center bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-full p-1">
     <!-- Monthly Option -->
     <button
       id="monthly-toggle"
-      class="pricing-toggle-btn relative z-10 px-4 py-2 rounded-full font-semibold text-white transition-all duration-300 whitespace-nowrap"
+      class="pricing-toggle-btn relative z-10 px-4 py-2 rounded-full font-semibold text-gray-900 dark:text-white transition-all duration-300 whitespace-nowrap"
       data-period="monthly"
     >
       Monthly
@@ -16,7 +16,7 @@
     <!-- Annual Option -->
     <button
       id="annual-toggle"
-      class="pricing-toggle-btn relative z-10 px-4 py-2 rounded-full font-semibold text-white transition-all duration-300 whitespace-nowrap"
+      class="pricing-toggle-btn relative z-10 px-4 py-2 rounded-full font-semibold text-gray-900 dark:text-white transition-all duration-300 whitespace-nowrap"
       data-period="annual"
     >
       Annual
@@ -91,14 +91,14 @@
   function updateButtonStyles() {
     if (currentPeriod === 'monthly') {
       monthlyBtn.classList.add('text-[#d4ff2a]');
-      monthlyBtn.classList.remove('text-white');
+      monthlyBtn.classList.remove('text-gray-900', 'dark:text-white');
       annualBtn.classList.remove('text-[#d4ff2a]');
-      annualBtn.classList.add('text-white');
+      annualBtn.classList.add('text-gray-900', 'dark:text-white');
     } else {
       monthlyBtn.classList.remove('text-[#d4ff2a]');
-      monthlyBtn.classList.add('text-white');
+      monthlyBtn.classList.add('text-gray-900', 'dark:text-white');
       annualBtn.classList.add('text-[#d4ff2a]');
-      annualBtn.classList.remove('text-white');
+      annualBtn.classList.remove('text-gray-900', 'dark:text-white');
     }
   }
 

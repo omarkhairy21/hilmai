@@ -3,17 +3,17 @@
 import { FcCamera, FcVoicePresentation, FcDocument } from 'react-icons/fc';
 ---
 
-<section id="how-it-works" class="py-20 px-4 bg-black">
+<section id="how-it-works" class="py-20 px-4 bg-white dark:bg-black">
   <div class="max-w-6xl mx-auto">
     <!-- Section Header -->
     <div class="text-center mb-16">
-      <h2 class="text-4xl md:text-5xl font-bold mb-4">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
         Real Conversations,
-        <span class="text-white">
+        <span class="text-gray-900 dark:text-white">
           Real Results
         </span>
       </h2>
-      <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+      <p class="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
         See how easy it is to manage your finances through natural conversations with your AI agent
       </p>
     </div>
@@ -21,13 +21,13 @@ import { FcCamera, FcVoicePresentation, FcDocument } from 'react-icons/fc';
     <!-- Screenshots Grid -->
     <div class="grid md:grid-cols-3 gap-8">
       <!-- Receipt Logging Screenshot -->
-      <div class="bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
+      <div class="bg-gray-50 dark:bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
         <div class="flex items-center gap-3 mb-4">
           <FcCamera className="w-6 h-6" client:load />
-          <h3 class="text-xl font-semibold text-white">Snap & Auto-Extract</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Snap & Auto-Extract</h3>
         </div>
-        <p class="text-sm text-gray-400 mb-6">Snap a photo and watch transactions log automatically</p>
-          <div class="relative overflow-hidden rounded-3xl border border-gray-700 hover:border-white/50 transition-colors">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Snap a photo and watch transactions log automatically</p>
+          <div class="relative overflow-hidden rounded-3xl border border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-white/50 transition-colors">
           <img
             src="/receipt-loggin.png"
             alt="Receipt logging example"
@@ -37,13 +37,13 @@ import { FcCamera, FcVoicePresentation, FcDocument } from 'react-icons/fc';
       </div>
 
       <!-- Voice Logging Screenshot -->
-      <div class="bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
+      <div class="bg-gray-50 dark:bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
         <div class="flex items-center gap-3 mb-4">
           <FcVoicePresentation className="w-6 h-6" client:load />
-          <h3 class="text-xl font-semibold text-white">Voice to Transaction</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Voice to Transaction</h3>
         </div>
-        <p class="text-sm text-gray-400 mb-6">Speak naturally and let AI extract every expense detail</p>
-          <div class="relative overflow-hidden rounded-3xl border border-gray-700 hover:border-white/50 transition-colors">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Speak naturally and let AI extract every expense detail</p>
+          <div class="relative overflow-hidden rounded-3xl border border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-white/50 transition-colors">
           <img
             src="/voice-loggin.png"
             alt="Voice logging example"
@@ -53,13 +53,13 @@ import { FcCamera, FcVoicePresentation, FcDocument } from 'react-icons/fc';
       </div>
 
       <!-- Type Logging Screenshot -->
-      <div class="bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
+      <div class="bg-gray-50 dark:bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm">
         <div class="flex items-center gap-3 mb-4">
           <FcDocument className="w-6 h-6" client:load />
-          <h3 class="text-xl font-semibold text-white">Quick Manual Entry</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Quick Manual Entry</h3>
         </div>
-        <p class="text-sm text-gray-400 mb-6">Type your expenses and get instant categorization</p>
-          <div class="relative overflow-hidden rounded-3xl border border-gray-700 hover:border-white/50 transition-colors">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Type your expenses and get instant categorization</p>
+          <div class="relative overflow-hidden rounded-3xl border border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-white/50 transition-colors">
           <img
             src="/type-loggin.png"
             alt="Type logging example"

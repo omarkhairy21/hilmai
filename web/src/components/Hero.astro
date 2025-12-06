@@ -4,11 +4,11 @@
 
 <section class="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
   <!-- Background -->
-  <div class="absolute inset-0 bg-black"></div>
+  <div class="absolute inset-0 bg-white dark:bg-black"></div>
 
   <!-- Animated background elements -->
   <div class="absolute inset-0 opacity-30">
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 dark:bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
   </div>
 
   <div class="relative max-w-6xl mx-auto text-center z-10">
@@ -22,16 +22,16 @@
     </div>
 
     <!-- Main Heading -->
-    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
+    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight text-gray-900 dark:text-white">
       Your AI Personal Finance
       <br />
-      <span class="text-white">
+      <span class="text-gray-900 dark:text-white">
         Assistant
       </span>
     </h1>
 
     <!-- Subheading -->
-    <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+    <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
       Chat with your money, get smart insights. Send expenses via text, voice, or receipt photos—get instant insights and tailored advice.
     </p>
 
@@ -42,7 +42,7 @@
         href="https://t.me/hilmaibot"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-white/20 group"
+        class="inline-flex items-center gap-2 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-semibold rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-gray-900/20 dark:shadow-white/20 group"
       >
         <span>Try Now</span>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="group-hover:translate-x-1 transition-transform">
@@ -52,7 +52,7 @@
       <a
         href="/pricing"
         id="view-pricing-btn"
-        class="px-8 py-4 bg-gray-800/50 text-white font-semibold rounded-xl border border-gray-700 hover:bg-gray-800 hover:border-white transition-all backdrop-blur-sm"
+        class="px-8 py-4 bg-gray-100 dark:bg-gray-800/50 text-gray-900 dark:text-white font-semibold rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-white transition-all backdrop-blur-sm"
       >
         View Pricing
       </a>
@@ -60,11 +60,11 @@
 
     <!-- Status Badge -->
     <div class="text-center">
-      <p class="text-gray-400 text-sm mb-2">
-        <span class="inline-block bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded-full mr-2">BETA</span>
-        Available now on <span class="text-white font-semibold">Telegram</span> • Start your 7-day free trial
+      <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">
+        <span class="inline-block bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-xs font-bold px-2 py-1 rounded-full mr-2">BETA</span>
+        Available now on <span class="text-gray-900 dark:text-white font-semibold">Telegram</span> • Start your 7-day free trial
       </p>
-      <p class="text-gray-500 text-xs">
+      <p class="text-gray-500 dark:text-gray-500 text-xs">
         Early access • Your feedback shapes the product
       </p>
     </div>

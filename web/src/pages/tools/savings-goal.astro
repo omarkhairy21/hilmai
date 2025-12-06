@@ -14,64 +14,64 @@ import Footer from '../../components/Footer.astro';
   author="hilm.ai"
 >
   <!-- Hero Section -->
-  <section class="relative py-12 md:py-16 px-4 bg-black overflow-hidden">
+  <section class="relative py-12 md:py-16 px-4 bg-white dark:bg-black overflow-hidden">
     <div class="absolute inset-0 opacity-30">
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-900/10 dark:bg-white/10 rounded-full blur-3xl animate-pulse"></div>
     </div>
 
     <div class="relative max-w-4xl mx-auto text-center z-10">
-      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight text-gray-900 dark:text-white">
         Savings Goal Calculator
       </h1>
-      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+      <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
         Plan and track progress toward specific financial goals. Calculate required monthly contributions or timeline to reach your target.
       </p>
     </div>
   </section>
 
   <!-- Calculator Section -->
-  <section class="py-12 px-4 bg-black">
+  <section class="py-12 px-4 bg-white dark:bg-black">
     <div class="max-w-6xl mx-auto">
       <SavingsGoalCalculator />
     </div>
   </section>
 
   <!-- About Section -->
-  <section class="py-12 px-4 bg-black">
+  <section class="py-12 px-4 bg-white dark:bg-black">
     <div class="max-w-4xl mx-auto">
       <div class="prose prose-invert max-w-none">
-        <h2 class="text-3xl font-bold text-white mb-6">How to Use This Calculator</h2>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">How to Use This Calculator</h2>
         
-        <p class="text-gray-300 mb-4 leading-relaxed">
+        <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
           This calculator helps you plan for any savings goal—whether it's a down payment, vacation, emergency fund, or major purchase. You can calculate in two ways:
         </p>
 
-        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Calculate Timeline</h3>
-        <p class="text-gray-300 mb-4 leading-relaxed">
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Calculate Timeline</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
           Enter your target amount, current savings, and monthly contribution to see how long it will take to reach your goal.
         </p>
 
-        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Calculate Required Contribution</h3>
-        <p class="text-gray-300 mb-4 leading-relaxed">
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Calculate Required Contribution</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
           Enter your target amount, current savings, and desired timeline to see how much you need to save each month.
         </p>
 
-        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Tips for Reaching Your Goals</h3>
-        <ul class="space-y-2 text-gray-300 mb-6">
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Tips for Reaching Your Goals</h3>
+        <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Automate savings:</strong> Set up automatic transfers to a dedicated savings account</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Use high-yield accounts:</strong> Earn interest while you save</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Review regularly:</strong> Adjust your timeline or contribution as needed</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Track progress:</strong> Use hilm.ai to monitor your savings growth</span>
           </li>
         </ul>
@@ -80,24 +80,24 @@ import Footer from '../../components/Footer.astro';
   </section>
 
   <!-- CTA Section -->
-  <section class="py-16 px-4 bg-black">
+  <section class="py-16 px-4 bg-white dark:bg-black">
     <div class="max-w-5xl mx-auto">
-      <div class="bg-gray-900/50 border-2 border-gray-800 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+      <div class="bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-gray-900/5 dark:bg-white/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-gray-900/5 dark:bg-white/5 rounded-full blur-3xl"></div>
         
         <div class="relative z-10">
-          <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h3 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Get Personalized Savings Advice with hilm.ai
           </h3>
-          <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p class="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
             Connect with hilm.ai to get personalized insights on reaching your savings goals. Our AI can help you understand your financial patterns and make better decisions.
           </p>
           <a
             href="https://t.me/hilmaibot"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-10 py-5 bg-white text-black font-bold text-lg rounded-xl hover:bg-gray-100 transform hover:scale-105 transition-all shadow-2xl shadow-white/40 group"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-gray-900 dark:bg-white text-white dark:text-black font-bold text-lg rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transform hover:scale-105 transition-all shadow-2xl shadow-gray-900/40 dark:shadow-white/40 group"
           >
             Start Your Free Trial
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">

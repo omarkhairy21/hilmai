@@ -3,21 +3,21 @@
 import { FcSearch, FcFlashOn, FcBarChart } from 'react-icons/fc';
 ---
 
-<section class="py-20 px-4 bg-black">
+<section class="py-20 px-4 bg-white dark:bg-black">
   <div class="max-w-6xl mx-auto">
     <!-- Decorative dots -->
     <div class="flex justify-center gap-2 mb-16">
-      <div class="w-2 h-2 rounded-full bg-gray-700"></div>
-      <div class="w-2 h-2 rounded-full bg-gray-700"></div>
-      <div class="w-2 h-2 rounded-full bg-gray-700"></div>
+      <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-700"></div>
+      <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-700"></div>
+      <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-700"></div>
     </div>
 
     <!-- 2-Column Layout: Image Left, Content Right -->
     <div class="grid md:grid-cols-2 gap-12 items-start">
       <!-- Left Column: Screenshot -->
       <div>
-        <div class="bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm border border-gray-700/50 h-full">
-          <div class="relative overflow-hidden rounded-2xl border border-gray-700 hover:border-white/50 transition-colors">
+        <div class="bg-gray-50 dark:bg-gray-800/20 rounded-2xl p-6 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 h-full">
+          <div class="relative overflow-hidden rounded-2xl border border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-white/50 transition-colors">
             <img
               src="/query.png"
               alt="Smart insights and query example"
@@ -31,16 +31,16 @@ import { FcSearch, FcFlashOn, FcBarChart } from 'react-icons/fc';
       <div class="flex flex-col justify-center">
         <!-- Section Header -->
         <div class="mb-8">
-          <h2 class="text-4xl md:text-5xl font-bold mb-4">
+          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
             Your Financial Agent
-            <span class="text-white">
+            <span class="text-gray-900 dark:text-white">
               Works For You
             </span>
           </h2>
-          <p class="text-gray-400 text-lg mb-2">
+          <p class="text-gray-600 dark:text-gray-400 text-lg mb-2">
             Ask. Analyze. Plan your future.
           </p>
-          <p class="text-gray-400 text-lg">
+          <p class="text-gray-600 dark:text-gray-400 text-lg">
             Get instant AI-powered answers to your financial questions. Ask about spending, trends, and watch insights compound into smarter decisions.
           </p>
         </div>
@@ -53,8 +53,8 @@ import { FcSearch, FcFlashOn, FcBarChart } from 'react-icons/fc';
               <FcSearch className="w-6 h-6" client:load />
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Spending Analysis</h3>
-              <p class="text-sm text-gray-400">AI-powered tracking that reveals where every dollar flows</p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Spending Analysis</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">AI-powered tracking that reveals where every dollar flows</p>
             </div>
           </div>
 
@@ -64,8 +64,8 @@ import { FcSearch, FcFlashOn, FcBarChart } from 'react-icons/fc';
               <FcFlashOn className="w-6 h-6" client:load />
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Smart Insights</h3>
-              <p class="text-sm text-gray-400">Personalized AI guidance that compounds your financial growth</p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Smart Insights</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Personalized AI guidance that compounds your financial growth</p>
             </div>
           </div>
 
@@ -75,8 +75,8 @@ import { FcSearch, FcFlashOn, FcBarChart } from 'react-icons/fc';
               <FcBarChart className="w-6 h-6" client:load />
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Trends & Reports</h3>
-              <p class="text-sm text-gray-400">Visualize patterns and track your compounding progress over time</p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Trends & Reports</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Visualize patterns and track your compounding progress over time</p>
             </div>
           </div>
         </div>

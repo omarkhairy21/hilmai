@@ -14,90 +14,90 @@ import Footer from '../../components/Footer.astro';
   author="hilm.ai"
 >
   <!-- Hero Section -->
-  <section class="relative py-12 md:py-16 px-4 bg-black overflow-hidden">
+  <section class="relative py-12 md:py-16 px-4 bg-white dark:bg-black overflow-hidden">
     <div class="absolute inset-0 opacity-30">
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-900/10 dark:bg-white/10 rounded-full blur-3xl animate-pulse"></div>
     </div>
 
     <div class="relative max-w-4xl mx-auto text-center z-10">
-      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight text-gray-900 dark:text-white">
         Investment Return Calculator
       </h1>
-      <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+      <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
         Project future investment value based on initial investment, monthly contributions, return rate, and time period.
       </p>
     </div>
   </section>
 
   <!-- Calculator Section -->
-  <section class="py-12 px-4 bg-black">
+  <section class="py-12 px-4 bg-white dark:bg-black">
     <div class="max-w-6xl mx-auto">
       <InvestmentCalculator />
     </div>
   </section>
 
   <!-- About Section -->
-  <section class="py-12 px-4 bg-black">
+  <section class="py-12 px-4 bg-white dark:bg-black">
     <div class="max-w-4xl mx-auto">
       <div class="prose prose-invert max-w-none">
-        <h2 class="text-3xl font-bold text-white mb-6">Understanding Investment Growth</h2>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Understanding Investment Growth</h2>
         
-        <p class="text-gray-300 mb-4 leading-relaxed">
+        <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
           This calculator shows you how your investments can grow over time through the power of compound interest. The longer you invest, the more your money can grow.
         </p>
 
-        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">How Compound Interest Works</h3>
-        <p class="text-gray-300 mb-4 leading-relaxed">
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">How Compound Interest Works</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
           Compound interest means you earn returns on both your initial investment and previously earned returns. Over time, this creates exponential growth, making time your greatest asset in investing.
         </p>
 
-        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Expected Return Rates</h3>
-        <ul class="space-y-2 text-gray-300 mb-6">
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Expected Return Rates</h3>
+        <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Savings Account:</strong> 0.5-2% annually</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Bonds:</strong> 3-5% annually</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Balanced Portfolio:</strong> 6-8% annually</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Stock Market (S&P 500):</strong> 7-10% historically</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Aggressive Portfolio:</strong> 8-12% (higher risk)</span>
           </li>
         </ul>
-        <p class="text-gray-400 text-sm italic mb-6">
+        <p class="text-gray-600 dark:text-gray-400 text-sm italic mb-6">
           Note: Past performance doesn't guarantee future results. Use conservative estimates for planning.
         </p>
 
-        <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Tips for Successful Investing</h3>
-        <ul class="space-y-2 text-gray-300 mb-6">
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Tips for Successful Investing</h3>
+        <ul class="space-y-2 text-gray-700 dark:text-gray-300 mb-6">
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Start early:</strong> Time is your biggest advantage</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Invest consistently:</strong> Regular contributions build wealth</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Stay diversified:</strong> Don't put all money in one investment</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Think long-term:</strong> Avoid emotional decisions based on short-term market moves</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-white mt-1">•</span>
+            <span class="text-gray-900 dark:text-white mt-1">•</span>
             <span><strong>Keep costs low:</strong> High fees eat into returns</span>
           </li>
         </ul>
@@ -106,24 +106,24 @@ import Footer from '../../components/Footer.astro';
   </section>
 
   <!-- CTA Section -->
-  <section class="py-16 px-4 bg-black">
+  <section class="py-16 px-4 bg-white dark:bg-black">
     <div class="max-w-5xl mx-auto">
-      <div class="bg-gray-900/50 border-2 border-gray-800 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+      <div class="bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-gray-900/5 dark:bg-white/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-gray-900/5 dark:bg-white/5 rounded-full blur-3xl"></div>
         
         <div class="relative z-10">
-          <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h3 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Get Personalized Investment Advice with hilm.ai
           </h3>
-          <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p class="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
             Connect with hilm.ai to get personalized investment insights. Our AI understands your financial goals and can help you make smarter investment decisions.
           </p>
           <a
             href="https://t.me/hilmaibot"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-10 py-5 bg-white text-black font-bold text-lg rounded-xl hover:bg-gray-100 transform hover:scale-105 transition-all shadow-2xl shadow-white/40 group"
+            class="inline-flex items-center gap-2 px-10 py-5 bg-gray-900 dark:bg-white text-white dark:text-black font-bold text-lg rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transform hover:scale-105 transition-all shadow-2xl shadow-gray-900/40 dark:shadow-white/40 group"
           >
             Start Your Free Trial
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform">

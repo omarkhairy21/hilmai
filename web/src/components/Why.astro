@@ -4,13 +4,13 @@ import { BookmarkIcon, FlashOnIcon } from './icons/OtherIcons.tsx';
 // Why section - Personal story behind building hilm.ai
 ---
 
-<section id="why" class="py-20 px-4 bg-black">
+<section id="why" class="py-20 px-4 bg-white dark:bg-black">
   <div class="max-w-4xl mx-auto">
     <!-- Section Header -->
     <div class="text-center mb-12">
-      <h2 class="text-4xl md:text-5xl font-bold mb-4">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
         Why I Built
-        <span class="text-white">
+        <span class="text-gray-900 dark:text-white">
           hilm.ai
         </span>
       </h2>
@@ -19,52 +19,52 @@ import { BookmarkIcon, FlashOnIcon } from './icons/OtherIcons.tsx';
     <!-- Story Content -->
     <div class="space-y-8">
       <!-- Combined Inspiration & Questions Section -->
-      <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 md:p-10">
+      <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 md:p-10">
         <!-- Inspiration -->
         <div class="flex items-start gap-4 mb-8">
-          <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-800/50 flex items-center justify-center">
+          <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex items-center justify-center">
             <BookmarkIcon className="w-6 h-6" client:load />
           </div>
           <div class="flex-1">
-            <p class="text-lg md:text-xl text-gray-300 leading-relaxed mb-4">
-              I was inspired by Morgan Housel's book <span class="text-white font-semibold">"The Art of Spending Money"</span>, where he talks about owning your future through saving while preventing saving addiction or overspending.
+            <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              I was inspired by Morgan Housel's book <span class="text-gray-900 dark:text-white font-semibold">"The Art of Spending Money"</span>, where he talks about owning your future through saving while preventing saving addiction or overspending.
             </p>
-            <p class="text-gray-400 leading-relaxed mb-6">
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
               Finding the right balance requires data about your spending and insights—but I realized I had neither.
             </p>
             
             <!-- Questions Heading -->
-            <h3 class="text-2xl md:text-3xl font-bold text-white mb-4">
+            <h3 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               The Questions I Couldn't Answer
             </h3>
             
             <!-- Questions Rows -->
             <div class="flex flex-col gap-3">
               <div class="flex items-start gap-3">
-                <div class="w-2 h-2 rounded-full bg-white mt-2 flex-shrink-0"></div>
-                <p class="text-gray-300 leading-relaxed">
-                  <span class="font-semibold text-white">Spending Patterns:</span> How much did I spend last 3 months on shopping, dining, or groceries? I had no clue.
+                <div class="w-2 h-2 rounded-full bg-gray-900 dark:bg-white mt-2 flex-shrink-0"></div>
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span class="font-semibold text-gray-900 dark:text-white">Spending Patterns:</span> How much did I spend last 3 months on shopping, dining, or groceries? I had no clue.
                 </p>
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="w-2 h-2 rounded-full bg-white mt-2 flex-shrink-0"></div>
-                <p class="text-gray-300 leading-relaxed">
-                  <span class="font-semibold text-white">Balance Check:</span> Am I overspending or over-saving? Am I truly owning my future?
+                <div class="w-2 h-2 rounded-full bg-gray-900 dark:bg-white mt-2 flex-shrink-0"></div>
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span class="font-semibold text-gray-900 dark:text-white">Balance Check:</span> Am I overspending or over-saving? Am I truly owning my future?
                 </p>
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="w-2 h-2 rounded-full bg-white mt-2 flex-shrink-0"></div>
-                <p class="text-gray-300 leading-relaxed">
-                  <span class="font-semibold text-white">Margin of Safety:</span> If I get laid off, do I have 6 months of expenses covered? What's my short-term safety net?
+                <div class="w-2 h-2 rounded-full bg-gray-900 dark:bg-white mt-2 flex-shrink-0"></div>
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span class="font-semibold text-gray-900 dark:text-white">Margin of Safety:</span> If I get laid off, do I have 6 months of expenses covered? What's my short-term safety net?
                 </p>
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="w-2 h-2 rounded-full bg-white mt-2 flex-shrink-0"></div>
-                <p class="text-gray-300 leading-relaxed">
-                  <span class="font-semibold text-white">Investment Readiness:</span> How about investing? Do I have the right foundation to start?
+                <div class="w-2 h-2 rounded-full bg-gray-900 dark:bg-white mt-2 flex-shrink-0"></div>
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span class="font-semibold text-gray-900 dark:text-white">Investment Readiness:</span> How about investing? Do I have the right foundation to start?
                 </p>
               </div>
             </div>
@@ -73,19 +73,19 @@ import { BookmarkIcon, FlashOnIcon } from './icons/OtherIcons.tsx';
       </div>
 
       <!-- The Solution -->
-      <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 md:p-10 mt-12">
+      <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 md:p-10 mt-12">
         <div class="flex items-start gap-4">
-          <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-800/50 flex items-center justify-center">
+          <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex items-center justify-center">
             <FlashOnIcon className="w-6 h-6" client:load />
           </div>
           <div class="flex-1">
-            <h3 class="text-2xl md:text-3xl font-bold text-white mb-4">
+            <h3 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               The Solution
             </h3>
-            <p class="text-lg text-gray-300 leading-relaxed">
+            <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
               So I built hilmai as ai agent for myself first—to get answers at any moment. To understand my spending patterns, track my progress toward financial goals, and make informed decisions about saving, spending, and investing.
             </p>
-            <p class="text-gray-400 mt-4 leading-relaxed">
+            <p class="text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">
               Now it's available for anyone who wants to own their financial future with data-driven insights.
             </p>
           </div>

@@ -16,12 +16,12 @@ const navLinks: NavLink[] = [
 ];
 ---
 
-<nav class="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
+<nav class="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
   <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
     <!-- Logo -->
     <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
       <img src="/logo.png" alt="hilm.ai" class="h-8 w-auto" />
-      <span class="text-xl font-bold text-white hidden sm:inline">hilm.ai</span>
+      <span class="text-xl font-bold text-gray-900 dark:text-white hidden sm:inline">hilm.ai</span>
     </a>
 
     <!-- Desktop Navigation Links -->
@@ -31,8 +31,8 @@ const navLinks: NavLink[] = [
           href={link.href}
           class={`text-sm font-medium transition-colors ${
             currentPath === link.href
-              ? 'text-white'
-              : 'text-gray-400 hover:text-white'
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
           {link.label}
@@ -40,13 +40,54 @@ const navLinks: NavLink[] = [
       ))}
     </div>
 
-    <!-- Desktop CTA Button -->
-    <div class="hidden md:block">
+    <!-- Desktop Actions -->
+    <div class="hidden md:flex items-center gap-4">
+      <!-- Theme Toggle Button -->
+      <button
+        id="theme-toggle"
+        class="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        aria-label="Toggle theme"
+      >
+        <!-- Sun icon (light mode) -->
+        <svg
+          id="sun-icon"
+          class="w-5 h-5 hidden dark:block"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          ></path>
+        </svg>
+        <!-- Moon icon (dark mode) -->
+        <svg
+          id="moon-icon"
+          class="w-5 h-5 block dark:hidden"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          ></path>
+        </svg>
+      </button>
+
+      <!-- CTA Button -->
       <a
         href="https://t.me/hilmaibot"
         target="_blank"
         rel="noopener noreferrer"
-        class="px-4 py-2 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-white/20 text-sm"
+        class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-black font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transform hover:scale-105 transition-all shadow-lg shadow-gray-900/20 dark:shadow-white/20 text-sm"
       >
         Open Bot
       </a>
@@ -55,7 +96,7 @@ const navLinks: NavLink[] = [
     <!-- Mobile Menu Button -->
     <button
       id="mobile-menu-button"
-      class="md:hidden p-2 text-white hover:text-gray-300 transition-colors"
+      class="md:hidden p-2 text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
       aria-label="Toggle menu"
       aria-expanded="false"
     >
@@ -95,7 +136,7 @@ const navLinks: NavLink[] = [
   <!-- Mobile Menu -->
   <div
     id="mobile-menu"
-    class="hidden md:hidden border-t border-gray-800 bg-black/95 backdrop-blur-md"
+    class="hidden md:hidden border-t border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-black/95 backdrop-blur-md"
   >
     <div class="max-w-6xl mx-auto px-4 py-4 space-y-4">
       {navLinks.map((link) => (
@@ -103,18 +144,56 @@ const navLinks: NavLink[] = [
           href={link.href}
           class={`block text-base font-medium transition-colors py-2 ${
             currentPath === link.href
-              ? 'text-white'
-              : 'text-gray-400 hover:text-white'
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
           {link.label}
         </a>
       ))}
+      <!-- Mobile Theme Toggle -->
+      <button
+        id="mobile-theme-toggle"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+        aria-label="Toggle theme"
+      >
+        <svg
+          id="mobile-sun-icon"
+          class="w-5 h-5 hidden dark:block"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          ></path>
+        </svg>
+        <svg
+          id="mobile-moon-icon"
+          class="w-5 h-5 block dark:hidden"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          ></path>
+        </svg>
+        <span id="mobile-theme-text">Toggle Theme</span>
+      </button>
       <a
         href="https://t.me/hilmaibot"
         target="_blank"
         rel="noopener noreferrer"
-        class="block w-full text-center px-4 py-2 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg shadow-white/20 text-sm mt-4"
+        class="block w-full text-center px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-black font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg shadow-gray-900/20 dark:shadow-white/20 text-sm mt-2"
       >
         Open Bot
       </a>
@@ -143,6 +222,9 @@ const navLinks: NavLink[] = [
 </style>
 
 <script>
+  import { toggleTheme, getTheme } from '../lib/theme';
+
+  // Mobile menu toggle
   const menuButton = document.getElementById('mobile-menu-button');
   const mobileMenu = document.getElementById('mobile-menu');
   const menuIcon = document.getElementById('menu-icon');
@@ -173,4 +255,61 @@ const navLinks: NavLink[] = [
       });
     });
   }
+
+  // Theme toggle handlers
+  function updateThemeIcons() {
+    const theme = getTheme();
+    const isDark = theme === 'dark';
+    
+    // Desktop icons
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    if (sunIcon) sunIcon.classList.toggle('hidden', !isDark);
+    if (moonIcon) moonIcon.classList.toggle('hidden', isDark);
+    
+    // Mobile icons
+    const mobileSunIcon = document.getElementById('mobile-sun-icon');
+    const mobileMoonIcon = document.getElementById('mobile-moon-icon');
+    const mobileThemeText = document.getElementById('mobile-theme-text');
+    if (mobileSunIcon) mobileSunIcon.classList.toggle('hidden', !isDark);
+    if (mobileMoonIcon) mobileMoonIcon.classList.toggle('hidden', isDark);
+    if (mobileThemeText) {
+      mobileThemeText.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+  }
+
+  // Desktop theme toggle
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      toggleTheme();
+      updateThemeIcons();
+    });
+  }
+
+  // Mobile theme toggle
+  const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+  if (mobileThemeToggle) {
+    mobileThemeToggle.addEventListener('click', () => {
+      toggleTheme();
+      updateThemeIcons();
+    });
+  }
+
+  // Initialize theme icons on load
+  updateThemeIcons();
+
+  // Listen for theme changes from other tabs/windows
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'hilm-theme') {
+      const theme = e.newValue === 'light' ? 'light' : 'dark';
+      const html = document.documentElement;
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+      updateThemeIcons();
+    }
+  });
 </script>

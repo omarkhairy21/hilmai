@@ -39,9 +39,28 @@ const canonicalUrl = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.u
     <meta name="google-site-verification" content="HGMQilkylYICY5hRKJfBwO3LM5jMzIlvoZbACz7yHs0" />
 
     <!-- Theme and Color -->
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- Initialize theme before page render to prevent flash -->
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('hilm-theme') || 'dark';
+        const html = document.documentElement;
+        if (theme === 'dark') {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+        // Update meta theme-color
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', theme === 'dark' ? '#000000' : '#ffffff');
+        }
+      })();
+    </script>
 
     <!-- Favicons -->
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />

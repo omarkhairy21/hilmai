@@ -11,7 +11,7 @@ import Layout from '../layouts/Layout.astro';
   ogType="website"
   author="hilm.ai"
 >
-  <section class="relative min-h-screen py-20 px-4 bg-black">
+  <section class="relative min-h-screen py-20 px-4 bg-white dark:bg-black">
     <!-- Background elements -->
     <div class="absolute inset-0 opacity-30">
       <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -21,14 +21,14 @@ import Layout from '../layouts/Layout.astro';
       <!-- Success Message -->
       <div class="text-center mb-12">
         <div class="text-6xl mb-6">✅</div>
-        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Payment Successful!</h1>
-        <p class="text-lg text-gray-300">Your subscription is ready to activate</p>
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">Payment Successful!</h1>
+        <p class="text-lg text-gray-700 dark:text-gray-300">Your subscription is ready to activate</p>
       </div>
 
       <!-- Main Card -->
-      <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-8 md:p-12 mb-12">
+      <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 md:p-12 mb-12">
         <!-- Activation Instructions Header -->
-        <h2 class="text-2xl font-bold text-white mb-8 text-center">Choose Your Activation Method</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">Choose Your Activation Method</h2>
 
         <!-- METHOD 1: Auto-Activate (Deep Link) -->
         <div class="mb-8">
@@ -39,8 +39,8 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-xl font-semibold text-white mb-2">⚡ Fastest: Open Bot & Activate</h3>
-              <p class="text-gray-300 text-sm mb-4">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">⚡ Fastest: Open Bot & Activate</h3>
+              <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 One click to activate your subscription. This is the quickest way!
               </p>
               <button
@@ -68,21 +68,21 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-xl font-semibold text-white mb-2">📋 Manual Code Entry</h3>
-              <p class="text-gray-300 text-sm mb-4">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">📋 Manual Code Entry</h3>
+              <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 Copy your activation code and send it to the bot if you prefer to do it manually.
               </p>
 
               <!-- Code Display Box -->
-              <div class="bg-gray-900/50 border border-gray-600 rounded-lg p-4 mb-4">
-                <p class="text-xs text-gray-400 mb-2">Your Activation Code:</p>
+              <div class="bg-gray-100 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4">
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Your Activation Code:</p>
                 <div class="flex items-center justify-between gap-3">
                   <code id="activation-code-text" class="text-xl font-mono font-bold text-[#d4ff2a] break-all">
                     Loading...
                   </code>
                   <button
                     id="copy-code-btn"
-                    class="flex-shrink-0 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-sm font-semibold transition-colors"
+                    class="flex-shrink-0 px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-md text-sm font-semibold transition-colors"
                     title="Copy to clipboard"
                   >
                     Copy
@@ -91,7 +91,7 @@ import Layout from '../layouts/Layout.astro';
               </div>
 
               <!-- Instructions -->
-              <ol class="text-sm text-gray-300 space-y-2 ml-4">
+              <ol class="text-sm text-gray-700 dark:text-gray-300 space-y-2 ml-4">
                 <li class="flex gap-2">
                   <span class="text-[#d4ff2a]">1.</span>
                   <span>Open the hilm.ai bot (<a href="https://t.me/hilmaibot" target="_blank" rel="noopener noreferrer" class="text-[#d4ff2a] hover:underline">@hilmaibot</a>)</span>
@@ -115,17 +115,17 @@ import Layout from '../layouts/Layout.astro';
 
       <!-- Loading State -->
       <div id="loading-state" class="hidden text-center">
-        <div class="inline-flex items-center gap-3 px-6 py-3 bg-gray-800/50 border border-gray-700 rounded-lg">
+        <div class="inline-flex items-center gap-3 px-6 py-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg">
           <div class="w-4 h-4 border-2 border-[#d4ff2a] border-t-transparent rounded-full animate-spin"></div>
-          <span class="text-gray-300">Preparing your activation code...</span>
+          <span class="text-gray-700 dark:text-gray-300">Preparing your activation code...</span>
         </div>
       </div>
 
       <!-- Error State -->
       <div id="error-state" class="hidden mb-6">
         <div class="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
-          <p class="text-red-400 text-sm mb-3" id="error-message"></p>
-          <a href="https://t.me/hilmaibot" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-md transition-colors">
+          <p class="text-red-600 dark:text-red-400 text-sm mb-3" id="error-message"></p>
+          <a href="https://t.me/hilmaibot" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-600 dark:text-red-400 rounded-md transition-colors">
             <span>Contact Support</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -135,8 +135,8 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <!-- Help Section -->
-      <div class="bg-gray-900/30 border border-gray-700 rounded-lg p-6 text-center">
-        <p class="text-gray-400 text-sm mb-4">
+      <div class="bg-gray-100 dark:bg-gray-900/30 border border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center">
+        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
           Having trouble? Both activation methods work perfectly. Choose whichever is easiest for you.
         </p>
         <a href="https://t.me/hilmaibot" target="_blank" rel="noopener noreferrer" class="text-[#d4ff2a] hover:underline text-sm font-semibold">

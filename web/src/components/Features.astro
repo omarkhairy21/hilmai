@@ -30,17 +30,17 @@ const features = [
 ];
 ---
 
-<section id="features" class="py-20 px-4 bg-black">
+<section id="features" class="py-20 px-4 bg-white dark:bg-black">
   <div class="max-w-6xl mx-auto">
     <!-- Section Header -->
     <div class="text-center mb-16">
-      <h2 class="text-4xl md:text-5xl font-bold mb-4">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
         Everything You Need to
-        <span class="text-white">
+        <span class="text-gray-900 dark:text-white">
           Master Your Money
         </span>
       </h2>
-      <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+      <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
         Track, manage, and optimize your finances—all through simple conversations in Telegram.
       </p>
     </div>
@@ -48,22 +48,22 @@ const features = [
     <!-- Features Grid -->
     <div class="grid md:grid-cols-2 gap-6">
       {features.map((feature) => (
-        <div class={`group relative bg-gray-900/50 border rounded-2xl p-8 transition-all duration-300 ${feature.comingSoon ? 'border-gray-700 opacity-75' : 'border-gray-800 hover:border-white/50'}`}>
+        <div class={`group relative bg-gray-50 dark:bg-gray-900/50 border rounded-2xl p-8 transition-all duration-300 ${feature.comingSoon ? 'border-gray-300 dark:border-gray-700 opacity-75' : 'border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-white/50'}`}>
           <!-- Hover glow effect -->
           {!feature.comingSoon && (
-            <div class="absolute inset-0 bg-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="absolute inset-0 bg-gray-200/50 dark:bg-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
           )}
 
           <!-- Coming Soon Badge -->
           {feature.comingSoon && (
-            <div class="absolute -top-3 -right-3 bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded-full border border-gray-700">
+            <div class="absolute -top-3 -right-3 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-xs font-bold px-3 py-1 rounded-full border border-gray-300 dark:border-gray-700">
               Coming Soon
             </div>
           )}
 
           <div class="relative">
             <!-- Icon -->
-            <div class={`w-12 h-12 mb-4 rounded-xl flex items-center justify-center transition-colors ${feature.comingSoon ? 'bg-gray-700/30' : 'bg-gray-800/50'}`}>
+            <div class={`w-12 h-12 mb-4 rounded-xl flex items-center justify-center transition-colors ${feature.comingSoon ? 'bg-gray-200/50 dark:bg-gray-700/30' : 'bg-gray-100 dark:bg-gray-800/50'}`}>
               {feature.iconType === 'upload' && <UploadIcon className="w-6 h-6" client:load />}
               {feature.iconType === 'idea' && <IdeaIcon className="w-6 h-6" client:load />}
               {feature.iconType === 'alarm' && <AlarmClockIcon className="w-6 h-6" client:load />}
@@ -71,10 +71,10 @@ const features = [
             </div>
 
             <!-- Title -->
-            <h3 class={`text-xl font-semibold mb-3 ${feature.comingSoon ? 'text-gray-300' : 'text-white'}`}>{feature.title}</h3>
+            <h3 class={`text-xl font-semibold mb-3 ${feature.comingSoon ? 'text-gray-600 dark:text-gray-300' : 'text-gray-900 dark:text-white'}`}>{feature.title}</h3>
 
             <!-- Description -->
-            <p class={`leading-relaxed ${feature.comingSoon ? 'text-gray-500' : 'text-gray-400'}`}>{feature.description}</p>
+            <p class={`leading-relaxed ${feature.comingSoon ? 'text-gray-500 dark:text-gray-500' : 'text-gray-600 dark:text-gray-400'}`}>{feature.description}</p>
           </div>
         </div>
       ))}

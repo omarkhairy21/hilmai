@@ -4,59 +4,59 @@
 
 <div class="emergency-fund-calculator max-w-4xl mx-auto">
   <!-- Calculator Form -->
-  <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8">
-    <h3 class="text-2xl font-bold text-white mb-6">Calculate Your Emergency Fund</h3>
+  <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 mb-8">
+    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Calculate Your Emergency Fund</h3>
     
     <div class="space-y-6">
       <!-- Monthly Expenses Input -->
       <div>
-        <label for="monthly-expenses" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="monthly-expenses" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Monthly Expenses
         </label>
         <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400">$</span>
           <input
             type="number"
             id="monthly-expenses"
-            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
             placeholder="3000"
             min="0"
             step="0.01"
           />
         </div>
-        <p class="mt-2 text-sm text-gray-500">Your total monthly essential expenses</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-500">Your total monthly essential expenses</p>
       </div>
 
       <!-- Target Months Selection -->
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Target Emergency Fund Coverage
         </label>
         <div class="grid grid-cols-4 gap-3">
           {[3, 6, 9, 12].map((months) => (
             <button
               type="button"
-              class="target-months-btn px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-[#d4ff2a] hover:bg-gray-700 transition-colors"
+              class="target-months-btn px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:border-[#d4ff2a] hover:bg-gray-200 dark:bg-gray-700 transition-colors"
               data-months={months}
             >
               {months} months
             </button>
           ))}
         </div>
-        <p class="mt-2 text-sm text-gray-500">Recommended: 3-6 months for most people</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-500">Recommended: 3-6 months for most people</p>
       </div>
 
       <!-- Current Savings Input -->
       <div>
-        <label for="current-savings" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="current-savings" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Current Savings (Optional)
         </label>
         <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400">$</span>
           <input
             type="number"
             id="current-savings"
-            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
             placeholder="0"
             min="0"
             step="0.01"
@@ -67,22 +67,22 @@
 
       <!-- Monthly Contribution Input -->
       <div>
-        <label for="monthly-contribution" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="monthly-contribution" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Monthly Contribution (Optional)
         </label>
         <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400">$</span>
           <input
             type="number"
             id="monthly-contribution"
-            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
             placeholder="500"
             min="0"
             step="0.01"
             value="0"
           />
         </div>
-        <p class="mt-2 text-sm text-gray-500">How much you can save each month</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-500">How much you can save each month</p>
       </div>
 
       <!-- Calculate Button -->
@@ -98,47 +98,47 @@
   <!-- Results Section -->
   <div id="emergency-fund-results" class="hidden">
     <!-- Target Amount Card -->
-    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
-      <h4 class="text-xl font-semibold text-white mb-4">Your Emergency Fund Goal</h4>
+    <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6">
+      <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Emergency Fund Goal</h4>
       <div class="text-center">
         <p id="target-amount" class="text-4xl font-bold text-[#d4ff2a] mb-2">$0</p>
-        <p class="text-gray-400">Based on <span id="target-months-display">0</span> months of expenses</p>
+        <p class="text-gray-600 dark:text-gray-400">Based on <span id="target-months-display">0</span> months of expenses</p>
       </div>
     </div>
 
     <!-- Progress Card -->
-    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
+    <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6">
       <div class="flex items-center justify-between mb-4">
-        <h4 class="text-lg font-semibold text-white">Progress</h4>
+        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Progress</h4>
         <span id="progress-percentage" class="text-lg font-bold text-[#d4ff2a]">0%</span>
       </div>
-      <div class="w-full bg-gray-800 rounded-full h-6 overflow-hidden mb-4">
+      <div class="w-full bg-white dark:bg-gray-800 rounded-full h-6 overflow-hidden mb-4">
         <div id="progress-bar" class="h-full bg-[#d4ff2a] transition-all duration-500" style="width: 0%"></div>
       </div>
       <div class="flex items-center justify-between text-sm">
-        <span class="text-gray-400">Current: <span id="current-savings-display" class="text-white font-semibold">$0</span></span>
-        <span class="text-gray-400">Remaining: <span id="remaining-needed" class="text-white font-semibold">$0</span></span>
+        <span class="text-gray-600 dark:text-gray-400">Current: <span id="current-savings-display" class="text-gray-900 dark:text-white font-semibold">$0</span></span>
+        <span class="text-gray-600 dark:text-gray-400">Remaining: <span id="remaining-needed" class="text-gray-900 dark:text-white font-semibold">$0</span></span>
       </div>
     </div>
 
     <!-- Timeline Card -->
-    <div id="timeline-card" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6 hidden">
-      <h4 class="text-lg font-semibold text-white mb-4">Timeline to Goal</h4>
+    <div id="timeline-card" class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 hidden">
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timeline to Goal</h4>
       <div class="text-center">
         <p class="text-3xl font-bold text-[#d4ff2a] mb-2">
           <span id="months-to-save">0</span> months
         </p>
-        <p class="text-gray-400">
-          Saving <span id="monthly-contribution-display" class="text-white font-semibold">$0</span> per month
+        <p class="text-gray-600 dark:text-gray-400">
+          Saving <span id="monthly-contribution-display" class="text-gray-900 dark:text-white font-semibold">$0</span> per month
         </p>
-        <p id="timeline-note" class="mt-4 text-sm text-gray-500"></p>
+        <p id="timeline-note" class="mt-4 text-sm text-gray-600 dark:text-gray-500"></p>
       </div>
     </div>
 
     <!-- Tips Card -->
     <div class="bg-[#d4ff2a]/10 border border-[#d4ff2a]/30 rounded-xl p-6 mb-6">
-      <h4 class="text-lg font-semibold text-white mb-3">💡 Tips for Building Your Emergency Fund</h4>
-      <ul class="space-y-2 text-gray-300">
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">💡 Tips for Building Your Emergency Fund</h4>
+      <ul class="space-y-2 text-gray-700 dark:text-gray-300">
         <li class="flex items-start gap-2">
           <span class="text-[#d4ff2a] mt-1">•</span>
           <span>Automate your savings by setting up automatic transfers to a separate savings account</span>
@@ -161,8 +161,8 @@
     <!-- CTA After Results -->
     <div id="emergency-fund-cta" class="hidden">
       <div class="bg-gradient-to-r from-[#d4ff2a]/20 to-green-500/20 border-2 border-[#d4ff2a]/50 rounded-2xl p-8 text-center">
-        <h4 class="text-2xl font-bold text-white mb-3">Track Your Savings Journey with hilm.ai</h4>
-        <p class="text-gray-300 mb-6 max-w-2xl mx-auto">
+        <h4 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Track Your Savings Journey with hilm.ai</h4>
+        <p class="text-gray-700 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
           Building an emergency fund is easier when you can see your progress. Use hilm.ai to log every savings deposit, track your growth over time, and get personalized insights to help you reach your goal faster.
         </p>
         <a
@@ -213,11 +213,11 @@
   targetMonthsButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       targetMonthsButtons.forEach((b) => {
-        b.classList.remove('border-[#d4ff2a]', 'bg-gray-700');
-        b.classList.add('border-gray-700');
+        b.classList.remove('border-[#d4ff2a]', 'bg-gray-200 dark:bg-gray-700');
+        b.classList.add('border-gray-300 dark:border-gray-700');
       });
-      btn.classList.add('border-[#d4ff2a]', 'bg-gray-700');
-      btn.classList.remove('border-gray-700');
+      btn.classList.add('border-[#d4ff2a]', 'bg-gray-200 dark:bg-gray-700');
+      btn.classList.remove('border-gray-300 dark:border-gray-700');
       selectedMonths = parseInt(btn.dataset.months || '6');
     });
   });

@@ -24,12 +24,12 @@ const { Content } = await post.render();
   ogType="article"
   author={post.data.author || 'hilm.ai'}
 >
-  <article class="min-h-screen px-4 py-20">
+  <article class="min-h-screen px-4 py-20 bg-white dark:bg-black">
     <div class="max-w-3xl mx-auto">
       <!-- Back link -->
       <a
         href="/blog"
-        class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8"
+        class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-8"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -39,22 +39,22 @@ const { Content } = await post.render();
 
       <!-- Article header -->
       <header class="mb-12">
-        <time class="text-sm text-gray-500 mb-4 block">
+        <time class="text-sm text-gray-500 dark:text-gray-500 mb-4 block">
           {post.data.pubDate.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
           })}
         </time>
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
           {post.data.title}
         </h1>
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <span class="text-gray-400">By {post.data.author}</span>
+          <span class="text-gray-600 dark:text-gray-400">By {post.data.author}</span>
           {post.data.tags && post.data.tags.length > 0 && (
             <div class="flex flex-wrap gap-2">
               {post.data.tags.map((tag: string) => (
-                <span class="text-xs bg-gray-800 text-gray-300 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-600 hover:bg-gray-700 transition-colors">
+                <span class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                   {tag}
                 </span>
               ))}
@@ -104,11 +104,17 @@ const { Content } = await post.render();
 
 <style is:global>
   .prose {
+    color: rgb(55 65 81);
+  }
+  html.dark .prose {
     color: #e5e7eb;
   }
   .prose h1, .prose h2, .prose h3, .prose h4 {
-    color: #fff;
+    color: rgb(17 24 39);
     font-weight: 700;
+  }
+  html.dark .prose h1, html.dark .prose h2, html.dark .prose h3, html.dark .prose h4 {
+    color: #fff;
   }
   .prose h2 {
     font-size: 2rem;
@@ -125,8 +131,11 @@ const { Content } = await post.render();
     line-height: 1.8;
   }
   .prose a {
-    color: white;
+    color: rgb(17 24 39);
     text-decoration: none;
+  }
+  html.dark .prose a {
+    color: white;
   }
   .prose a:hover {
     text-decoration: underline;
@@ -139,13 +148,19 @@ const { Content } = await post.render();
     margin-bottom: 0.5rem;
   }
   .prose strong {
-    color: #fff;
+    color: rgb(17 24 39);
     font-weight: 600;
   }
+  html.dark .prose strong {
+    color: #fff;
+  }
   .prose code {
-    background: #1f2937;
+    background: rgb(229 231 235);
     padding: 0.2rem 0.4rem;
     border-radius: 0.25rem;
     font-size: 0.9em;
+  }
+  html.dark .prose code {
+    background: #1f2937;
   }
 </style>

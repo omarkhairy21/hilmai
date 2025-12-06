@@ -19,12 +19,12 @@ const { Content } = await aboutPage.render();
   ogType="article"
   author="hilm.ai"
 >
-  <article class="min-h-screen px-4 py-20 bg-black">
+  <article class="min-h-screen px-4 py-20 bg-white dark:bg-black">
     <div class="max-w-4xl mx-auto">
       <!-- Back link -->
       <a
         href="/"
-        class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8"
+        class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-8"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -34,7 +34,7 @@ const { Content } = await aboutPage.render();
 
       <!-- Article header -->
       <header class="mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
           {aboutPage.data.title}
         </h1>
       </header>
@@ -45,16 +45,16 @@ const { Content } = await aboutPage.render();
       </div>
 
       <!-- CTA Section -->
-      <div class="mt-12 p-8 bg-gray-900/50 border border-gray-800 rounded-2xl">
-        <h2 class="text-2xl font-bold mb-4">Ready to take control of your finances?</h2>
-        <p class="text-gray-400 mb-6">
+      <div class="mt-12 p-8 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Ready to take control of your finances?</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
           Start tracking your expenses today and get the insights you need to make better financial decisions.
         </p>
         <a
           href="https://t.me/hilmaibot"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transform hover:scale-105 transition-all"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-black font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transform hover:scale-105 transition-all"
         >
           <span>Try hilm.ai Now</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -86,11 +86,17 @@ const { Content } = await aboutPage.render();
 
 <style is:global>
   .prose {
+    color: rgb(55 65 81);
+  }
+  html.dark .prose {
     color: #e5e7eb;
   }
   .prose h1, .prose h2, .prose h3, .prose h4 {
-    color: #fff;
+    color: rgb(17 24 39);
     font-weight: 700;
+  }
+  html.dark .prose h1, html.dark .prose h2, html.dark .prose h3, html.dark .prose h4 {
+    color: #fff;
   }
   .prose h2 {
     font-size: 2rem;
@@ -107,8 +113,11 @@ const { Content } = await aboutPage.render();
     line-height: 1.8;
   }
   .prose a {
-    color: white;
+    color: rgb(17 24 39);
     text-decoration: none;
+  }
+  html.dark .prose a {
+    color: white;
   }
   .prose a:hover {
     text-decoration: underline;
@@ -121,14 +130,20 @@ const { Content } = await aboutPage.render();
     margin-bottom: 0.5rem;
   }
   .prose strong {
-    color: #fff;
+    color: rgb(17 24 39);
     font-weight: 600;
   }
+  html.dark .prose strong {
+    color: #fff;
+  }
   .prose code {
-    background: #1f2937;
+    background: rgb(229 231 235);
     padding: 0.2rem 0.4rem;
     border-radius: 0.25rem;
     font-size: 0.9em;
+  }
+  html.dark .prose code {
+    background: #1f2937;
   }
 </style>
 

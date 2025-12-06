@@ -5,6 +5,8 @@
   --font-sans: system-ui, -apple-system, sans-serif;
 }
 
+@variant dark (&:is(.dark, .dark *));
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -14,9 +16,15 @@
 
   body {
     font-family: var(--font-sans);
+    background: white;
+    color: rgb(17 24 39);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.dark body {
     background: #000;
     color: #fff;
-    overflow-x: hidden;
   }
 
   html {

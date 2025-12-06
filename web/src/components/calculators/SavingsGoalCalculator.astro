@@ -4,21 +4,21 @@
 
 <div class="savings-goal-calculator max-w-4xl mx-auto">
   <!-- Calculator Form -->
-  <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8">
-    <h3 class="text-2xl font-bold text-white mb-6">Calculate Your Savings Goal</h3>
+  <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 mb-8">
+    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Calculate Your Savings Goal</h3>
     
     <div class="space-y-6">
       <!-- Target Amount -->
       <div>
-        <label for="target-amount" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="target-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Target Savings Goal
         </label>
         <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400">$</span>
           <input
             type="number"
             id="target-amount"
-            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
             placeholder="10000"
             min="0"
             step="0.01"
@@ -28,15 +28,15 @@
 
       <!-- Current Savings -->
       <div>
-        <label for="current-savings" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="current-savings" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Current Savings
         </label>
         <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400">$</span>
           <input
             type="number"
             id="current-savings"
-            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
             placeholder="0"
             min="0"
             step="0.01"
@@ -47,14 +47,14 @@
 
       <!-- Mode Selection -->
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Calculate By
         </label>
         <div class="grid grid-cols-2 gap-3">
           <button
             type="button"
             id="mode-timeline"
-            class="calc-mode-btn px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-[#d4ff2a] transition-colors"
+            class="calc-mode-btn px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:border-[#d4ff2a] transition-colors"
             data-mode="timeline"
           >
             Monthly Contribution
@@ -62,7 +62,7 @@
           <button
             type="button"
             id="mode-contribution"
-            class="calc-mode-btn px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-[#d4ff2a] transition-colors"
+            class="calc-mode-btn px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:border-[#d4ff2a] transition-colors"
             data-mode="contribution"
           >
             Target Timeline
@@ -72,15 +72,15 @@
 
       <!-- Monthly Contribution (if mode is timeline) -->
       <div id="monthly-contribution-group">
-        <label for="monthly-contribution" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="monthly-contribution" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Monthly Contribution
         </label>
         <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400">$</span>
           <input
             type="number"
             id="monthly-contribution"
-            class="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+            class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
             placeholder="500"
             min="0"
             step="0.01"
@@ -90,13 +90,13 @@
 
       <!-- Target Timeline (if mode is contribution) -->
       <div id="target-timeline-group" class="hidden">
-        <label for="target-months" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="target-months" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Target Timeline (Months)
         </label>
         <input
           type="number"
           id="target-months"
-          class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+          class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
           placeholder="24"
           min="1"
           step="1"
@@ -105,13 +105,13 @@
 
       <!-- Interest Rate -->
       <div>
-        <label for="interest-rate" class="block text-sm font-medium text-gray-300 mb-2">
+        <label for="interest-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Annual Interest Rate (%)
         </label>
         <input
           type="number"
           id="interest-rate"
-          class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
+          class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-[#d4ff2a] focus:ring-1 focus:ring-[#d4ff2a] transition-colors"
           placeholder="4"
           min="0"
           max="100"
@@ -134,48 +134,48 @@
   <!-- Results Section -->
   <div id="savings-results" class="hidden">
     <!-- Timeline Result -->
-    <div id="timeline-result" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
-      <h4 class="text-xl font-semibold text-white mb-4">Timeline to Goal</h4>
+    <div id="timeline-result" class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6">
+      <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Timeline to Goal</h4>
       <div class="text-center">
         <p class="text-4xl font-bold text-[#d4ff2a] mb-2">
           <span id="months-to-goal">0</span> months
         </p>
-        <p class="text-gray-400">
+        <p class="text-gray-600 dark:text-gray-400">
           (<span id="years-to-goal">0</span> years)
         </p>
       </div>
     </div>
 
     <!-- Contribution Result -->
-    <div id="contribution-result" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6 hidden">
-      <h4 class="text-xl font-semibold text-white mb-4">Required Monthly Contribution</h4>
+    <div id="contribution-result" class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 hidden">
+      <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Required Monthly Contribution</h4>
       <div class="text-center">
         <p id="required-contribution" class="text-4xl font-bold text-[#d4ff2a] mb-2">$0</p>
       </div>
     </div>
 
     <!-- Summary -->
-    <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-      <h4 class="text-lg font-semibold text-white mb-4">Summary</h4>
+    <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Summary</h4>
       <div class="space-y-3">
         <div class="flex justify-between">
-          <span class="text-gray-400">Target Amount:</span>
-          <span id="summary-target" class="text-white font-semibold">$0</span>
+          <span class="text-gray-600 dark:text-gray-400">Target Amount:</span>
+          <span id="summary-target" class="text-gray-900 dark:text-white font-semibold">$0</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-400">Current Savings:</span>
-          <span id="summary-current" class="text-white font-semibold">$0</span>
+          <span class="text-gray-600 dark:text-gray-400">Current Savings:</span>
+          <span id="summary-current" class="text-gray-900 dark:text-white font-semibold">$0</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-400">Total Contributed:</span>
-          <span id="summary-contributed" class="text-white font-semibold">$0</span>
+          <span class="text-gray-600 dark:text-gray-400">Total Contributed:</span>
+          <span id="summary-contributed" class="text-gray-900 dark:text-white font-semibold">$0</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-400">Interest Earned:</span>
+          <span class="text-gray-600 dark:text-gray-400">Interest Earned:</span>
           <span id="summary-interest" class="text-[#d4ff2a] font-semibold">$0</span>
         </div>
-        <div class="border-t border-gray-700 pt-3 flex justify-between">
-          <span class="text-white font-semibold">Final Amount:</span>
+        <div class="border-t border-gray-300 dark:border-gray-700 pt-3 flex justify-between">
+          <span class="text-gray-900 dark:text-white font-semibold">Final Amount:</span>
           <span id="summary-final" class="text-[#d4ff2a] font-bold text-lg">$0</span>
         </div>
       </div>
@@ -202,7 +202,7 @@
     currentMode = mode;
     [modeTimelineBtn, modeContributionBtn].forEach((btn) => {
       btn.classList.remove('border-[#d4ff2a]', 'bg-gray-700');
-      btn.classList.add('border-gray-700');
+      btn.classList.add('border-gray-300 dark:border-gray-700');
     });
 
     if (mode === 'timeline') {
