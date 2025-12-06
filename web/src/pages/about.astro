@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Footer from '../components/Footer.astro';
 import { getEntry } from 'astro:content';
 
 const aboutPage = await getEntry('pages', 'about');
@@ -63,6 +64,8 @@ const { Content } = await aboutPage.render();
       </div>
     </div>
   </article>
+
+  <Footer />
 
   <!-- Article Structured Data -->
   <script type="application/ld+json" is:inline set:html={JSON.stringify({
