@@ -320,7 +320,7 @@ export const queryExecutorAgent = new Agent({
   name: 'queryExecutor',
   instructions: queryExecutorInstructions,
 
-  model: 'openai/gpt-4o-mini',
+  model:  'openai/gpt-4.1-mini',
 
   memory: getAgentMemory('query'),
 
