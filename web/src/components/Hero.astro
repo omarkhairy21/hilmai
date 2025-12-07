@@ -11,18 +11,9 @@
     <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 dark:bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
   </div>
 
-  <div class="relative max-w-6xl mx-auto text-center z-10">
-    <!-- Logo -->
-    <div class="mb-8 flex justify-center">
-      <img
-        src="/logo.png"
-        alt="hilm.ai logo"
-        class="w-20 h-20 transform hover:scale-110 transition-transform"
-      />
-    </div>
-
+  <div class="relative max-w-6xl mx-auto z-10">
     <!-- Main Heading -->
-    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight text-gray-900 dark:text-white">
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-gray-900 dark:text-white text-center">
       Your AI Personal Finance
       <br />
       <span class="text-gray-900 dark:text-white">
@@ -31,12 +22,12 @@
     </h1>
 
     <!-- Subheading -->
-    <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto leading-relaxed text-center">
       Chat with your money, get smart insights. Send expenses via text, voice, or receipt photos—get instant insights and tailored advice.
     </p>
 
     <!-- CTA Buttons -->
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
       <a
         id="try-now-btn"
         href="https://t.me/hilmaibot"
@@ -49,20 +40,50 @@
           <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </a>
-      <a
-        href="/pricing"
-        id="view-pricing-btn"
-        class="px-8 py-4 bg-gray-100 dark:bg-gray-800/50 text-gray-900 dark:text-white font-semibold rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-white transition-all backdrop-blur-sm"
-      >
-        View Pricing
-      </a>
+    </div>
+
+    <!-- Feature Highlights -->
+    <div class="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-3 md:gap-5 mb-6 max-w-md sm:max-w-none mx-auto">
+      <div class="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors cursor-default">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-purple-600 dark:text-purple-400 flex-shrink-0">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+        </svg>
+        <span class="font-medium text-xs md:text-sm">AI-powered insights</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors cursor-default">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-purple-600 dark:text-purple-400 flex-shrink-0">
+          <path d="M12 2L2 7L12 12L22 7L12 2ZM2 17L12 22L22 17M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="font-medium text-xs md:text-sm">Smart categorization</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors cursor-default">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-purple-600 dark:text-purple-400 flex-shrink-0">
+          <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="font-medium text-xs md:text-sm">Natural language</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors cursor-default">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-purple-600 dark:text-purple-400 flex-shrink-0">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M2 12H22M12 2C15 6 16 9 16 12C16 15 15 18 12 22C9 18 8 15 8 12C8 9 9 6 12 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+        <span class="font-medium text-xs md:text-sm">Works on any device</span>
+      </div>
+    </div>
+
+    <!-- Hero Image - Value Proposition -->
+    <div class="mb-12 flex justify-center animate-fade-in">
+      <img
+        src="/hero.png"
+        alt="HilmAi chat interface showing AI personal finance assistant"
+        class="w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800"
+      />
     </div>
 
     <!-- Status Badge -->
     <div class="text-center">
       <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">
-        <span class="inline-block bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-xs font-bold px-2 py-1 rounded-full mr-2">BETA</span>
-        Available now on <span class="text-gray-900 dark:text-white font-semibold">Telegram</span> • Start your 7-day free trial
+        Available now on <span class="text-gray-900 dark:text-white font-semibold">Telegram</span>
       </p>
       <p class="text-gray-500 dark:text-gray-500 text-xs">
         Early access • Your feedback shapes the product
@@ -81,14 +102,6 @@
       conversionEvents.clickTryNow();
     });
   }
-
-  // Track View Pricing button click
-  const viewPricingBtn = document.getElementById('view-pricing-btn');
-  if (viewPricingBtn) {
-    viewPricingBtn.addEventListener('click', () => {
-      conversionEvents.clickViewPricing();
-    });
-  }
 </script>
 
 <style>
@@ -101,8 +114,23 @@
     }
   }
 
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .animate-pulse {
     animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
   }
 
   .delay-1000 {
