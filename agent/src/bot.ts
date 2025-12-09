@@ -79,33 +79,6 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
       });
     });
 
-  // Set bot description (shown in the "What can this bot do?" screen before start)
-  bot.api
-    .setMyDescription(
-      "HilmAI is your AI personal finance assistant.\n\n" +
-        "💰 Log expenses by voice, text, or photo\n" +
-        "📊 Get instant spending insights\n" +
-        "🌍 Multi-currency & timezone support\n" +
-        "⚡ Fast, secure, and easy to use\n\n" +
-        "Click Start to begin your financial freedom journey!"
-    )
-    .catch((error) => {
-      logger.warn('Failed to set bot description', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    });
-
-  // Set bot short description (shown in chat list and profile)
-  bot.api
-    .setMyShortDescription(
-      "Your AI personal finance assistant. Track expenses, get insights, and achieve financial goals."
-    )
-    .catch((error) => {
-      logger.warn('Failed to set bot short description', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    });
-
   // Register all handlers (commands, callbacks, messages)
   registerAllHandlers(bot, mastra);
 
