@@ -2,17 +2,15 @@ import { fmt, b } from '@grammyjs/parse-mode';
 
 export const messages = {
   start: {
-    welcome: () => fmt`👋 ${b()}Welcome to HilmAI!
+    welcome: () => fmt`👋 ${b()}Welcome to HilmAI — your AI money assistant in Telegram!
 
-I'm your AI personal finance assistant focused on helping you understand spending, set achievable goals, and work toward financial freedom.
+I can help you:
+• Log expenses by text, voice, or photo
+• Auto-categorize spending and see weekly/monthly insights
+• Ask AI agent questions for financial planning insights
+• Multi-currency & timezone support
 
-${b()}I help you by:
-• Understanding where you're spending money
-• Setting the right and achievable goals
-• Providing tailored financial advice
-• Tracking expenses effortlessly
-
-${b()}Why HilmAI changes everything:
+${b()}How it works:
 
 💬 ${b()}Just talk naturally
 "I spent 50$ at Amazon"
@@ -26,21 +24,28 @@ I'll extract everything instantly.
 Say it in any language.
 I'll understand and save it.
 
-🧠 ${b()}Smart insights
-"How much on groceries?"
-Get instant answers, zero effort.
+🧠 ${b()}Query mode insights
+"How much on groceries?" or "Help me plan my budget"
+Ask AI agent questions and get instant answers.
 
-${b()} Let's setup your account or keep talking naturally.
+${b()}Note: Informational only — not financial advice. Use /privacy for privacy details.
+
+${b()}Let's setup your account or keep talking naturally.
 `,
 
     fallback: () =>
-      `👋 Welcome to HilmAI!\n\n` +
-      `Your AI assistant for effortless expense tracking.\n\n` +
+      `👋 Welcome to HilmAI — your AI money assistant in Telegram.\n\n` +
+      `I can help you:\n` +
+      `• Log expenses by text, voice, or photo\n` +
+      `• Auto-categorize spending and see weekly/monthly insights\n` +
+      `• Ask AI agent questions for financial planning insights\n` +
+      `• Multi-currency & timezone support\n\n` +
       `💬 Just talk: "I spent 50$ at Amazon"\n` +
       `📸 Snap receipts: Instant extraction\n` +
       `🎤 Voice messages: Any language\n` +
-      `🧠 Get insights: "How much on groceries?"\n\n` +
-      `Try it now or use /mode to pick your style!`,
+      `🧠 Query mode: "How much on groceries?" or "Help me plan my budget"\n\n` +
+      `Note: Informational only — not financial advice. Use /privacy for privacy details.\n\n` +
+      `Let's setup your account or keep talking naturally.`,
 
     profileSetup: () => fmt`🔧 ${b()}Let's personalize HilmAI
 
@@ -113,6 +118,39 @@ ${b()}💌 Need Direct Support?
 📧 Email: omar@hilm.ai or support@hilm.ai
 📱 Telegram: @omark4y
 💬 Or use Chat Mode above!`,
+  },
+
+  privacy: {
+    main: () => fmt`🔒 ${b()}Privacy Policy
+
+We take your privacy seriously. Here's how we handle your data:
+
+${b()}What We Collect:
+• Transaction details (amounts, merchants, categories)
+• Receipt images and voice messages
+• Spending patterns and queries
+• Telegram user ID and preferences
+
+${b()}How We Use It:
+• Provide personalized insights
+• Process and categorize transactions
+• Answer your financial questions
+• Improve our AI service
+
+${b()}Data Security:
+• Encrypted in transit and at rest
+• Stored securely in Supabase
+• We don't sell or share your data
+
+${b()}Your Rights:
+• Access your data
+• Export or delete your account
+• Contact us: support@hilm.ai
+
+${b()}Full Privacy Policy:
+https://hilm.ai/privacy
+
+Note: Informational only — not financial advice.`,
   },
 
   mode: {

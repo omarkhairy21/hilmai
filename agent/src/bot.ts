@@ -69,6 +69,10 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
         description: '❓ Get help and instructions',
       },
       {
+        command: 'privacy',
+        description: '🔒 View privacy policy',
+      },
+      {
         command: 'clear',
         description: '🗑️ Clear cached responses',
       },
@@ -92,6 +96,7 @@ export function createBot(mastra: Mastra, options?: BotOptions): Bot {
       ctx: err.ctx,
     });
   });
+
 
   // Register webhook if provided in options
   if (options?.webhook?.url) {

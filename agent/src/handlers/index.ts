@@ -4,6 +4,7 @@ import type { Mastra } from '@mastra/core/mastra';
 // Command handlers
 import { registerStartCommand } from './commands/start.handler';
 import { registerHelpCommand } from './commands/help.handler';
+import { registerPrivacyCommand } from './commands/privacy.handler';
 import { registerModeCommands } from './commands/mode.handler';
 import { registerCurrencyCommand } from './commands/currency.handler';
 import { registerTimezoneCommand } from './commands/timezone.handler';
@@ -34,6 +35,7 @@ export function registerAllHandlers(bot: Bot, mastra: Mastra): void {
   // Register command handlers
   registerStartCommand(bot, mastra);
   registerHelpCommand(bot, mastra);
+  registerPrivacyCommand(bot, mastra);
   registerModeCommands(bot, mastra); // /mode, /mode_logger, /mode_chat, /mode_query
   registerCurrencyCommand(bot, mastra);
   registerTimezoneCommand(bot, mastra);
