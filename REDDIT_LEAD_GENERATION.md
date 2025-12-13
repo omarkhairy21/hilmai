@@ -98,68 +98,74 @@ Posts should indicate:
 
 ## COMMENT PROMPT (For Engaging on Reddit Posts)
 
-Use this template when commenting on posts where users are sharing their expense tracking challenges or discoveries:
+**Goal:** Generate short, casual comments that naturally promote HilmAI with its key features. If users ask for calculators/tools, promote our free tools page as indirect marketing.
 
-### Template Structure:
+### Comment Strategy:
 
-**Opening (Empathize & Relate):**
-- Acknowledge their situation/realization
-- Share a brief relatable experience or validation
+**Primary Goal:** Promote HilmAI with features (receipt scanning, voice input, AI insights, chat-based tracking)
+**Secondary Goal:** If post asks for calculators/tools → promote `hilm.ai/tools` (indirect marketing)
 
-**Value Add (Provide Insight):**
-- Offer a helpful tip or insight related to their post
-- Reference the specific issue they mentioned
+### Key HilmAI Features to Highlight:
+- **Receipt scanning** - Just snap a photo, AI extracts everything automatically
+- **Voice input** - Say expenses out loud, no typing needed
+- **Text messages** - Quick expense logging via chat
+- **AI insights** - Ask questions like "where is my money going?" and get instant answers
+- **Automatic categorization** - No manual tagging required
+- **Conversational** - Chat naturally, no forms or menus
 
-**Soft Introduction (Natural Transition):**
-- Mention your solution organically
-- Focus on how it solves their specific problem
-
-**Call to Action (Low Pressure):**
-- Invite them to try it if interested
-- Keep it casual and helpful
+### Available Tools to Promote (when relevant):
+- Budget Calculator (50/30/20 rule)
+- Emergency Fund Calculator
+- Debt Payoff Calculator
+- Savings Goal Calculator
+- Debt-to-Income Calculator
+- Financial Health Score
+- Budget Planner
+- Retirement Calculator
+- Investment Calculator
 
 ### Example Comment Templates:
 
-#### Template 1: For Posts About Discovering Hidden Spending
+#### Template 1: Receipt Scanning Posts (Primary - HilmAI Promotion)
 
-That's such a common realization! Those small daily expenses really add up fast. I had a similar moment with takeout - didn't think $12-15 here and there was much until I saw it totaled $300+ in a month.
+You can check out hilm.ai for exactly this - just snap a photo of your receipt and it automatically extracts the merchant, amount, date, and categorizes it. You can also use voice ("spent $45 at Trader Joe's") or text. The cool part is you can chat with it - ask "how much did I spend on groceries this month?" and it gives instant insights. Free to try: hilm.ai/app
 
-The key is catching those expenses as they happen, not trying to remember them later. I built an AI-powered assistant called hilm.ai that lets me just message expenses as I spend (like "coffee $4" or "lunch $12") and it automatically categorizes and tracks everything. But the cool part is you can actually chat with it - ask "how much did I spend on coffee this month?" and it gives you instant insights. It's been a game-changer for catching those small purchases before they become big problems.
+#### Template 2: Expense Tracking Solutions (Primary - HilmAI Promotion)
 
-Happy to share the link if you want to try it - it's free and takes like 30 seconds to set up. Either way, great job on tracking and making that change!
+You can use hilm.ai - it's super simple. Just message expenses as they happen (text, voice, or receipt photo) and it auto-categorizes everything. You can also ask it questions like "where is my money going?" and get instant answers. No app download, works right in Telegram. Free: hilm.ai/app
 
-#### Template 2: For Posts Asking for Tracking Solutions
+#### Template 3: Mint/YNAB Alternatives (Primary - HilmAI Promotion)
 
-I totally get the struggle with manual tracking - spreadsheets are tedious and easy to forget about.
+You can check out hilm.ai as a lightweight alternative - no complex setup, just chat naturally. Message expenses as you spend (or snap receipt photos), and it tracks everything automatically. Ask it questions about your spending and get instant insights. Much simpler than traditional apps. Free: hilm.ai/app
 
-I actually built an AI-powered assistant called hilm.ai for this exact problem. You just message it your expenses as they happen (voice or text), and it automatically categorizes and tracks everything. But what makes it special is you can actually have conversations with it - ask questions like "where is my money going?" or "am I spending too much on X?" and it gives you instant answers based on your actual spending. No app to download, no complex setup. Just natural conversation.
+#### Template 4: Financial Goals/Planning (Primary - HilmAI Promotion)
 
-It's free to use and might be worth checking out if you want something simpler than spreadsheets. Let me know if you want the link!
+hilm.ai has been great for staying consistent - just message expenses as they happen (voice/text/photo) and it tracks everything. You can ask "how am I doing on my savings goal?" and get personalized insights. The receipt scanning is a game-changer too. Free: hilm.ai/app
 
-#### Template 3: For Posts About Mint/YNAB Alternatives
+#### Template 5: Budget Calculators Needed (Secondary - Tools Promotion)
 
-Sorry to hear about [Mint shutting down/struggling with YNAB]. Finding the right tool is frustrating.
+There are free calculators at hilm.ai/tools - budget planner, emergency fund, debt payoff, savings goals, etc. All free and no signup needed. If you want to actually track expenses automatically after planning, hilm.ai can help with that too (receipt scanning, voice input, AI insights). Check it out: hilm.ai/tools
 
-I actually built an AI-powered expense tracker called hilm.ai that's super simple - no complex setup, just chat with it naturally. You message expenses as you spend, but you can also ask it questions about your spending and get instant insights. It's like having a conversation with your finances instead of digging through menus.
+#### Template 6: Debt Payoff Planning (Hybrid - Tools + HilmAI)
 
-It's free and might be worth checking out if you want something lightweight and conversational. Happy to share more details if you're interested. Either way, hope you find something that works for you!
+There's a free debt payoff calculator at hilm.ai/tools that shows snowball vs avalanche methods. Once you have your plan, hilm.ai can help track expenses automatically - just message expenses (text/voice/photo) and it categorizes everything. You can ask "how much did I save this month?" and get instant answers. Tools: hilm.ai/tools | Tracker: hilm.ai/app
 
-#### Template 4: For Posts Sharing Financial Goals
+#### Template 7: Emergency Fund/Savings Goals (Hybrid - Tools + HilmAI)
 
-Love that you're being proactive about [debt payoff/saving goal]! Tracking is definitely the foundation.
+You can check out the free emergency fund calculator at hilm.ai/tools - helps you figure out how much you need. For actually tracking progress, hilm.ai makes it easy - just message expenses as you spend and it auto-categorizes. Ask "how much did I save this month?" and get instant insights. Calculators: hilm.ai/tools | Tracker: hilm.ai/app
 
-I built an AI-powered assistant called hilm.ai that makes expense tracking super quick - just message expenses as they happen and it automatically categorizes everything. But the real value is you can actually talk to it - ask "how am I doing on my goal?" or "what should I cut back on?" and it gives you personalized advice based on your spending patterns. It's helped me stay consistent because I can log things immediately AND get insights on demand.
+#### Template 8: Budget Planning Questions (Hybrid - Tools + HilmAI)
 
-Free to use if you want to check it out. Good luck hitting that goal!
+There are free budget calculators at hilm.ai/tools (50/30/20 rule, budget planner, etc.) - all free, no signup. Once you set your budget, hilm.ai can help track expenses automatically. Just message expenses (text/voice/receipt photo) and it categorizes everything. Ask "am I over budget?" and get instant answers. Tools: hilm.ai/tools | Tracker: hilm.ai/app
 
 ### Comment Best Practices:
-- **Personalize** - Reference specific details from their post
-- **Be Genuine** - Don't sound like a sales pitch
-- **Provide Value First** - Give helpful advice before mentioning your solution
-- **Keep it Short** - 3-4 sentences max, Reddit users appreciate brevity
-- **Be Helpful** - Even if they don't use your product, provide value
-- **Don't Oversell** - One mention of your solution is enough
-- **Engage Authentically** - Respond to other comments in the thread too
+- **Keep it SHORT** - 2-3 sentences max, Reddit users scroll fast
+- **Be Casual** - Write like you're texting a friend, not marketing
+- **Lead with Value** - Mention the feature that solves their specific problem first
+- **One Link Max** - Don't overwhelm with multiple links
+- **Personalize** - Reference their specific situation if possible
+- **No Hard Sell** - Present it as helpful, not pushy
+- **Feature-Focused** - Highlight what makes HilmAI different (receipt scanning, voice, AI chat)
 
 ---
 
@@ -180,6 +186,16 @@ Use DMs sparingly and only for high-intent leads. Always reference their specifi
 **Value Proposition:**
 - Explain how your solution addresses their exact problem
 - Keep it concise and benefit-focused
+- **Pick 2-3 AI features that match their specific situation** (debt payoff, grad student budgeting, irregular income, etc.)
+- **Avoid generic phrases** like "where is my money going?" unless they specifically mentioned that themselves
+- Highlight concrete, relevant capabilities such as:
+  - Building simple payoff plans ("If you pay $X/month you'll be debt-free by Y")
+  - Suggesting realistic monthly targets based on income, rent, and essentials
+  - Tracking progress toward specific goals (e.g., paying off a $15k card)
+  - Highlighting safe spending ranges per category for low/variable income
+  - Giving "what if" simulations ("what if I add $100 more to debt each month?")
+  - Showing how different payment amounts change payoff timelines
+  - Reducing stress by eliminating spreadsheets and complex apps
 
 **Low-Pressure CTA:**
 - Invite them to try it
@@ -212,15 +228,13 @@ Use DMs sparingly and only for high-intent leads. Always reference their specifi
 
 Hey [username],
 
-Saw your post about [specific issue they mentioned - e.g., "spending $127 on coffee last month"]. That's such a relatable realization - those small expenses really sneak up on you.
+Saw your post about [specific issue they mentioned - e.g., "spending $127 on coffee last month"]. Those small expenses really sneak up on you.
 
-I built an AI-powered assistant called hilm.ai that makes tracking expenses super quick. You just chat with it naturally - message expenses as you spend (like "coffee $4" or "lunch $12") and it automatically categorizes and tracks everything. But here's the cool part: you can actually have conversations with it. Ask things like "how much did I spend on coffee this month?" or "where is my money going?" and it gives you instant insights based on your actual spending.
+You can check out hilm.ai - it's an AI assistant that makes tracking super quick. Just message expenses as you spend (text, voice, or receipt photo) and it automatically categorizes everything. The real value is you can chat with it - ask "how much did I spend on coffee this month?" or "what categories are eating my budget?" and get instant insights.
 
-It's like having a financial assistant that understands you - no forms, no spreadsheets, just natural conversation. It's free to use and might help you catch those small expenses before they add up.
+No forms or spreadsheets, just natural conversation. Free to use: https://hilm.ai/app
 
-Here's the link: https://hilm.ai/app
-
-Happy to answer any questions if you want to try it out!
+Happy to answer questions if you want to try it!
 
 Omar
 
@@ -228,33 +242,57 @@ Omar
 
 Hi [username],
 
-Noticed you're looking for alternatives to [Mint/YNAB/etc]. I built an AI-powered assistant called hilm.ai that's super lightweight - no complex features, just natural conversation.
+Noticed you're looking for alternatives to [Mint/YNAB/etc]. You can check out hilm.ai - it's super lightweight, no complex setup, just chat naturally.
 
-You message expenses as they happen, and it automatically categorizes and tracks everything. But the real game-changer is you can actually chat with it like a person. Ask "what did I spend most on this week?" or "am I on track with my budget?" and it gives you instant answers based on your actual spending data. No digging through menus or learning a new interface - just ask questions naturally.
+Message expenses as they happen and it auto-categorizes everything. Ask "what did I spend most on this week?" or "am I over budget?" and get instant answers. No menus to learn - just ask questions naturally.
 
-It's free and might be worth checking out if you want something simpler and more conversational than traditional apps.
+Free and might be worth checking out if you want something simpler: https://hilm.ai/app
 
-Link: https://hilm.ai/app
-
-Let me know if you have any questions!
+Let me know if you have questions!
 
 Omar
 
-#### Template 3: For Users Sharing Financial Goals
+#### Template 3: For Debt Payoff / Financial Planning Posts
 
 Hey [username],
 
-Saw your post about [specific goal]. That's awesome that you're being proactive about it!
+Saw your post about [specific situation - e.g., "$15k credit card debt as a grad student"]. That's really tough, especially with variable income.
 
-I built an AI-powered assistant called hilm.ai for expense tracking that might help you stay consistent. You just message expenses as you spend, and it automatically tracks and categorizes everything. But what makes it special is you can actually talk to it - ask questions like "how am I doing on my savings goal?" or "what should I cut back on?" and it gives you personalized insights based on your spending patterns.
+I built hilm.ai to help with exactly this. It's an AI assistant that helps you plan month-by-month while still covering essentials. You can ask things like "if I pay $500/month, when will I be debt-free?" or "how much can I safely spend on groceries this month?" It shows you how different payment amounts change your payoff timeline, and tracks your progress automatically.
 
-It's like having a financial coach in your pocket that actually understands your situation. It's free and takes like 30 seconds to set up.
+It's designed for tight budgets and irregular income - no spreadsheets needed, just chat naturally. Free to use: https://hilm.ai/app
 
-Might be worth checking out: https://hilm.ai/app
-
-Good luck hitting that goal!
+Hope this helps. Let me know if you have questions!
 
 Omar
+
+### Feature Examples to Mention in DMs:
+
+**Always pick the features that are most relevant to the pain described in the post and describe them in plain, human language.**
+
+#### For Debt Payoff Posts:
+- Payoff timeline calculator ("If you pay $X/month, you'll be debt-free by Y")
+- Target monthly payment suggestions based on income and expenses
+- Progress tracking toward specific debt goals
+- Alerts when spending threatens your payoff plan
+- "What if" simulations showing how payment changes affect timeline
+- Working with tight budgets and irregular income
+
+#### For Budgeting/Spending Control Posts:
+- Category spending caps and limits
+- Daily/weekly spending check-ins
+- Frictionless logging via voice, text, or receipt photos
+- Gentle nudges when approaching category limits
+- Identifying spending patterns and problem areas
+- Safe spending ranges per category for your income level
+
+#### For Savings/Goal Posts:
+- Goal tracking with progress milestones
+- Trade-off analysis ("If you cut $X here, you reach goal Y months sooner")
+- Progress celebrations and motivation
+- Showing how small changes compound over time
+- Budget adjustments to accelerate goal achievement
+- Tracking multiple goals simultaneously
 
 ### DM Best Practices:
 - **Only DM High-Intent Leads** - Users actively seeking solutions
@@ -274,11 +312,36 @@ Omar
 - User seems satisfied with their current method
 - Post has low engagement (might be spam or inactive user)
 
+### Example DM: Grad Student with Credit Card Debt
+
+**Scenario:** Grad student with $15k credit card debt, $2k-$2.8k/month variable income, $1200/month fixed expenses, paying $500/month toward debt, asking for advice on managing finances daily and paying off debt effectively.
+
+**DM:**
+
+Hey [username],
+
+Saw your post about tackling $15k in credit card debt as a grad student. That's really tough, especially with variable income from TA duties - I know how stressful that uncertainty can be.
+
+I built hilm.ai to help with exactly this situation. It's an AI assistant that helps you plan month-by-month while still covering your essentials. You can ask things like "if I keep paying $500/month, when will I be debt-free?" or "how much can I safely spend on groceries this month given my income?" It shows you how different payment amounts change your payoff timeline, and helps you see if you can squeeze out a bit more when your income is higher.
+
+The best part is it tracks everything automatically - just message expenses as you spend (text, voice, or receipt photo) and it categorizes everything. No spreadsheets, no complex apps. It's designed for tight budgets and irregular income, so it understands that some months you have more flexibility than others.
+
+It's free to use and might help you get a clearer picture of your path forward: https://hilm.ai/app
+
+Hope this helps. Let me know if you have questions!
+
+Omar
+
 ---
 
 ## Usage Notes
 
 This prompt is designed to be used with Popsy.ai or similar Reddit lead generation tools. The structured format helps identify high-intent leads who are actively seeking expense tracking solutions and are likely to convert.
+
+**Comment Strategy:**
+- **Primary:** Promote HilmAI with key features (receipt scanning, voice input, AI insights) when users need expense tracking
+- **Secondary:** Promote free tools (`hilm.ai/tools`) when users ask for calculators/budget planning tools
+- **Hybrid:** Combine both when users need planning AND tracking (tools for planning, HilmAI for tracking)
 
 **Best Practices:**
 - Run searches on multiple subreddits separately for better targeting
@@ -286,6 +349,8 @@ This prompt is designed to be used with Popsy.ai or similar Reddit lead generati
 - Prioritize posts with engagement (comments/upvotes) as they indicate genuine need
 - Follow up quickly on high-intent leads while their problem is top of mind
 - **Comment first, DM second** - Build rapport through public comments before sending DMs
-- **Personalize everything** - Generic messages get ignored or reported as spam
+- **Keep comments SHORT** - 2-3 sentences max, Reddit users appreciate brevity
+- **Feature-focused** - Highlight what makes HilmAI unique (receipt scanning, voice, conversational AI)
+- **Personalize everything** - Reference their specific situation, generic messages get ignored
 - **Track your outreach** - Monitor which templates and approaches work best
 
