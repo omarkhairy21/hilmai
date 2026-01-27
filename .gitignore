@@ -5,6 +5,12 @@ node_modules
 dist
 dist-ssr
 .output
+.mastra
+output
+
+#
+*.db
+*.db-*
 
 # Environment
 .env
